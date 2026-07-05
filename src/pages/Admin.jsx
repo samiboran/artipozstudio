@@ -179,11 +179,11 @@ function Admin() {
 
           {tab === 'siparisler' && (() => {
             const o = orders.find(x => x.id === selected)
-            if (!o) return <div style={{ color: '#aaa', paddingTop: '3rem', textAlign: 'center', fontFamily: "'Cormorant Garamond', serif", fontSize: '1.2rem', fontStyle: 'italic' }}>Bir sipariş seçin</div>
+            if (!o) return <div style={{ color: '#aaa', paddingTop: '3rem', textAlign: 'center', fontFamily: "'Archivo Black', sans-serif", fontSize: '1.2rem', fontStyle: 'italic' }}>Bir sipariş seçin</div>
             return (
               <div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
-                  <h2 style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: '1.8rem', fontWeight: 300, margin: 0 }}>Sipariş Detayı</h2>
+                  <h2 style={{ fontFamily: "'Archivo Black', sans-serif", fontSize: '1.8rem', fontWeight: 300, margin: 0 }}>Sipariş Detayı</h2>
                   <div style={{ fontSize: '.65rem', color: '#aaa' }}>{new Date(o.created_at).toLocaleString('tr-TR')}</div>
                 </div>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1.5rem' }}>
@@ -227,7 +227,7 @@ function Admin() {
           {tab === 'eserler' && (
             <>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
-                <h2 style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: '1.8rem', fontWeight: 300 }}>
+                <h2 style={{ fontFamily: "'Archivo Black', sans-serif", fontSize: '1.8rem', fontWeight: 300 }}>
                   {selected ? 'Eseri Düzenle' : 'Yeni Eser'}
                 </h2>
                 {selected && (

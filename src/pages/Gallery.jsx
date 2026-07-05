@@ -39,12 +39,12 @@ function Gallery() {
       }}>
         <div>
           <h1 style={{
-            fontFamily: "'Cormorant Garamond', serif",
-            fontSize: 'clamp(2rem, 3.5vw, 3rem)',
-            fontWeight: 300, lineHeight: 1.1
+            fontFamily: "'Archivo Black', sans-serif",
+            fontSize: 'clamp(2.2rem, 4vw, 3.4rem)',
+            lineHeight: .96, letterSpacing: '-.02em', textTransform: 'lowercase'
           }}>
-            Fine Art<br />
-            <em style={{ fontStyle: 'italic', color: 'var(--gold)' }}>Koleksiyonu</em>
+            fine art<br />
+            <span style={{ color: 'var(--blue)' }}>koleksiyonu</span>
           </h1>
           <p style={{
             fontSize: '.7rem', letterSpacing: '.12em',
@@ -76,7 +76,7 @@ function Gallery() {
             style={{
               background: 'var(--surface)', border: '1px solid var(--border)',
               padding: '.48rem 2.2rem .48rem 1rem',
-              fontFamily: "'Cormorant Garamond', serif",
+              fontFamily: "'Archivo Black', sans-serif",
               fontSize: '.95rem', fontStyle: 'italic',
               color: 'var(--ink)', width: '240px', outline: 'none'
             }}
@@ -128,7 +128,7 @@ function Gallery() {
         {loading ? (
           <div style={{
             textAlign: 'center', padding: '6rem 2rem',
-            fontFamily: "'Cormorant Garamond', serif",
+            fontFamily: "'Archivo Black', sans-serif",
             fontSize: '1.5rem', color: '#bbb', fontStyle: 'italic'
           }}>
             Yükleniyor…
@@ -136,7 +136,7 @@ function Gallery() {
         ) : artworks.length === 0 ? (
           <div style={{
             textAlign: 'center', padding: '6rem 2rem',
-            fontFamily: "'Cormorant Garamond', serif",
+            fontFamily: "'Archivo Black', sans-serif",
             fontSize: '1.5rem', color: '#bbb', fontStyle: 'italic'
           }}>
             "{search || activeTag}" için sonuç bulunamadı

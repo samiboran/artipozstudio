@@ -26,19 +26,20 @@ function Navbar({ cartCount = 0, onCartClick }) {
         borderBottom: '1px solid var(--border)'
       }}>
 
-        <Link to="/" style={{
-          fontFamily: "'Cormorant Garamond', serif",
-          fontSize: '1.4rem', fontWeight: 600,
-          letterSpacing: '.22em', textTransform: 'uppercase',
-          display: 'flex', alignItems: 'center', gap: '.7rem',
-          color: 'var(--ink)'
-        }}>
-          <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
-            <circle cx="11" cy="11" r="10" stroke="#111" strokeWidth="1.2"/>
-            <ellipse cx="11" cy="11" rx="4.5" ry="10" stroke="#111" strokeWidth="1"/>
-            <line x1="1" y1="11" x2="21" y2="11" stroke="#111" strokeWidth="1"/>
-          </svg>
-          Fossil Garden
+        <Link to="/" style={{ display: 'flex', flexDirection: 'column', lineHeight: 1 }}>
+          <span style={{
+            fontFamily: "'Archivo Black', sans-serif",
+            fontSize: '1.35rem', letterSpacing: '-.02em',
+            color: 'var(--blue)', textTransform: 'lowercase'
+          }}>
+            artı poz
+          </span>
+          <span style={{
+            fontSize: '.5rem', letterSpacing: '.34em',
+            textTransform: 'uppercase', color: 'var(--muted)', marginTop: '.2rem'
+          }}>
+            Fine Art Print Lab
+          </span>
         </Link>
 
         <ul style={{ display: 'flex', gap: '2rem', listStyle: 'none', margin: 0, padding: 0 }}
@@ -75,6 +76,12 @@ function Navbar({ cartCount = 0, onCartClick }) {
               transform: 'translateY(-50%)', color: 'var(--muted)'
             }}>⌕</span>
           </div>
+
+          <Link to="/favoriler" aria-label="Favoriler" style={{
+            fontSize: '1rem', color: 'var(--muted)', lineHeight: 1
+          }}>
+            ♡
+          </Link>
 
           <button onClick={onCartClick} style={{
             background: 'none', border: 'none',

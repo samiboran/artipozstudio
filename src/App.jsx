@@ -1,3 +1,4 @@
+
 import { useState } from 'react'
 import { Routes, Route } from 'react-router-dom'
 import Navbar from './components/Navbar'
@@ -9,6 +10,10 @@ import ProductDetail from './pages/ProductDetail'
 import Admin from './pages/Admin'
 import Login from './pages/Login'
 import NotFound from './pages/NotFound'
+import Favorites from './pages/Favorites'
+import About from './pages/About'
+import Legal from './pages/Legal'
+import WhatsAppButton from './components/WhatsAppButton'
 
 function App() {
   const { count } = useCart()
@@ -22,9 +27,13 @@ function App() {
         <Route path="/product/:slug" element={<ProductDetail />} />
         <Route path="/admin" element={<Admin />} />
         <Route path="/login" element={<Login />} />
+        <Route path="/favoriler" element={<Favorites />} />
+        <Route path="/hakkimizda" element={<About />} />
+        <Route path="/yasal/:page" element={<Legal />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
       <CartSidebar open={cartOpen} onClose={() => setCartOpen(false)} />
+      <WhatsAppButton />
       <Footer />
     </>
   )

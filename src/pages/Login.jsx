@@ -34,12 +34,12 @@ function Login() {
       <div style={{ width: '100%', maxWidth: 360, padding: '0 2rem' }}>
 
         <div style={{
-          fontFamily: "'Cormorant Garamond', serif",
+          fontFamily: "'Archivo Black', sans-serif",
           fontSize: '1.8rem', fontWeight: 300,
           textAlign: 'center', marginBottom: '2.5rem',
           letterSpacing: '.1em'
         }}>
-          Fossil Garden
+          Artı Poz
         </div>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>

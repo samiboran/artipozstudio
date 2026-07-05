@@ -3,10 +3,13 @@ import { useParams, useNavigate } from 'react-router-dom'
 import { fetchArtworkBySlug } from '../lib/artworks'
 import { makeSVG } from '../lib/makeSVG'
 import { useCart } from '../hooks/useCart'
+import { useFavorites } from '../hooks/useFavorites'
 
 function ProductDetail() {
   const { slug } = useParams()
   const { addItem } = useCart()
+  const { isFav, toggle } = useFavorites()
+  const [view, setView] = useState('print') // 'print' | 'wall'
   const [added, setAdded] = useState(false)
   const navigate = useNavigate()
   const [artwork, setArtwork] = useState(null)
@@ -19,18 +22,20 @@ function ProductDetail() {
       .then(data => {
         setArtwork(data)
         if (data?.sizes?.length) setActiveSize(data.sizes[0].label)
+        if (data?.title) document.title = `${data.title} — Artı Poz`
       })
       .finally(() => setLoading(false))
+    return () => { document.title = 'Artı Poz — Fine Art Baskı & Özgün Eserler' }
   }, [slug])
 
   if (loading) return (
-    <div style={{ paddingTop: '8rem', textAlign: 'center', fontFamily: "'Cormorant Garamond', serif", fontSize: '1.5rem', color: 'var(--muted)', fontStyle: 'italic' }}>
+    <div style={{ paddingTop: '8rem', textAlign: 'center', fontFamily: "'Archivo Black', sans-serif", fontSize: '1.5rem', color: 'var(--muted)', fontStyle: 'italic' }}>
       Yükleniyor…
     </div>
   )
 
   if (!artwork) return (
-    <div style={{ paddingTop: '8rem', textAlign: 'center', fontFamily: "'Cormorant Garamond', serif", fontSize: '1.5rem', color: 'var(--muted)' }}>
+    <div style={{ paddingTop: '8rem', textAlign: 'center', fontFamily: "'Archivo Black', sans-serif", fontSize: '1.5rem', color: 'var(--muted)' }}>
       Eser bulunamadı
     </div>
   )
@@ -64,7 +69,7 @@ function ProductDetail() {
           ← Geri
         </button>
         <span style={{ opacity: .35 }}>/</span>
-        <span style={{ cursor: 'pointer' }} onClick={() => navigate('/')}>Fossil Garden</span>
+        <span style={{ cursor: 'pointer' }} onClick={() => navigate('/')}>Artı Poz</span>
         <span style={{ opacity: .35 }}>/</span>
         <span style={{ color: 'var(--ink)' }}>{artwork.title}</span>
       </div>
@@ -82,16 +87,58 @@ function ProductDetail() {
           display: 'flex', flexDirection: 'column',
           gap: '.8rem', paddingRight: '3rem', paddingTop: '1.5rem', paddingBottom: '1.5rem'
         }}>
+          {/* Görünüm seçici */}
+          <div style={{ display: 'flex', gap: '.4rem' }}>
+            {[['print', 'Baskı'], ['wall', 'Duvarda']].map(([key, label]) => (
+              <button key={key} onClick={() => setView(key)} style={{
+                padding: '.4rem .9rem',
+                border: `1px solid ${view === key ? 'var(--ink)' : 'var(--border)'}`,
+                background: view === key ? 'var(--ink)' : 'none',
+                color: view === key ? '#fff' : 'var(--muted)',
+                fontSize: '.58rem', letterSpacing: '.16em', textTransform: 'uppercase',
+                cursor: 'pointer'
+              }}>
+                {label}
+              </button>
+            ))}
+          </div>
+
           <div style={{ flex: 1, overflow: 'hidden', background: 'var(--surface)', position: 'relative' }}>
-            {artwork.is_original && (
+            {artwork.is_original && view === 'print' && (
               <div style={{ position: 'absolute', top: '.9rem', left: '.9rem', zIndex: 2, background: 'var(--ink)', color: '#fff', fontSize: '.56rem', letterSpacing: '.18em', textTransform: 'uppercase', padding: '.28rem .7rem' }}>
                 Orijinal
               </div>
             )}
-            {artwork.image_url
-              ? <img src={artwork.image_url} alt={artwork.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-              : <div dangerouslySetInnerHTML={{ __html: makeSVG(0) }} style={{ width: '100%', height: '100%' }} />
-            }
+
+            {view === 'print' ? (
+              artwork.image_url
+                ? <img src={artwork.image_url} alt={artwork.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                : <div dangerouslySetInnerHTML={{ __html: makeSVG(0) }} style={{ width: '100%', height: '100%' }} />
+            ) : (
+              /* Duvar mockup sahnesi */
+              <div style={{
+                width: '100%', height: '100%', position: 'relative',
+                background: 'linear-gradient(180deg, #efece6 0%, #e9e5de 78%, #d8d3ca 78%, #cfc9bf 100%)'
+              }}>
+                {/* Süpürgelik */}
+                <div style={{ position: 'absolute', left: 0, right: 0, top: '76.5%', height: '1.5%', background: '#f4f1ec', boxShadow: '0 1px 2px rgba(0,0,0,.08)' }} />
+                {/* Çerçeve */}
+                <div style={{
+                  position: 'absolute', left: '50%', top: '42%', transform: 'translate(-50%, -50%)',
+                  width: '52%', aspectRatio: '4/5',
+                  background: '#1c1a18', padding: '1.1%',
+                  boxShadow: '0 18px 40px rgba(0,0,0,.28), 0 4px 10px rgba(0,0,0,.18)'
+                }}>
+                  {/* Paspartu */}
+                  <div style={{ width: '100%', height: '100%', background: '#fbfaf7', padding: '9%', boxSizing: 'border-box' }}>
+                    {artwork.image_url
+                      ? <img src={artwork.image_url} alt={artwork.title} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+                      : <div dangerouslySetInnerHTML={{ __html: makeSVG(0) }} style={{ width: '100%', height: '100%' }} />
+                    }
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         </div>
 
@@ -104,7 +151,7 @@ function ProductDetail() {
               width: 38, height: 38, borderRadius: '50%',
               background: 'var(--surface)', border: '1px solid var(--border)',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontFamily: "'Cormorant Garamond', serif", fontSize: '.95rem', color: 'var(--gold)'
+              fontFamily: "'Archivo Black', sans-serif", fontSize: '.95rem', color: 'var(--gold)'
             }}>
               {artwork.artist.split(' ').map(w => w[0]).join('').slice(0, 2)}
             </div>
@@ -116,9 +163,24 @@ function ProductDetail() {
             </div>
           </div>
 
-          <h1 style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 'clamp(1.9rem, 2.8vw, 2.8rem)', fontWeight: 300, lineHeight: 1.1, marginBottom: '.3rem' }}>
-            {artwork.title}
-          </h1>
+          <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '1rem' }}>
+            <h1 style={{ fontFamily: "'Archivo Black', sans-serif", fontSize: 'clamp(1.9rem, 2.8vw, 2.8rem)', fontWeight: 300, lineHeight: 1.1, marginBottom: '.3rem' }}>
+              {artwork.title}
+            </h1>
+            <button
+              onClick={() => toggle(artwork.id)}
+              aria-label="Favorilere ekle"
+              style={{
+                background: 'none', border: `1px solid ${isFav(artwork.id) ? 'var(--red)' : 'var(--border)'}`,
+                width: 38, height: 38, flexShrink: 0, marginTop: '.3rem',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                fontSize: '1.05rem', color: isFav(artwork.id) ? 'var(--red)' : 'var(--muted)',
+                cursor: 'pointer'
+              }}
+            >
+              {isFav(artwork.id) ? '♥' : '♡'}
+            </button>
+          </div>
           <div style={{ fontSize: '.6rem', letterSpacing: '.14em', textTransform: 'uppercase', color: 'var(--muted)', marginBottom: '1.4rem' }}>
             {artwork.year} · {artwork.medium}
           </div>
@@ -127,7 +189,7 @@ function ProductDetail() {
 
           {activePrice && (
             <div style={{ display: 'flex', alignItems: 'baseline', gap: '.8rem', marginBottom: '1.3rem' }}>
-              <div style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: '2.1rem' }}>
+              <div style={{ fontFamily: "'Archivo Black', sans-serif", fontSize: '2.1rem' }}>
                 ₺{activePrice.toLocaleString('tr-TR')}
               </div>
               <div style={{ fontSize: '.6rem', letterSpacing: '.1em', textTransform: 'uppercase', color: 'var(--muted)' }}>
@@ -193,7 +255,7 @@ setTimeout(() => setAdded(false), 1800)
                   <span key={tag} onClick={() => navigate(`/?category=${tag}`)} style={{
                     fontSize: '.6rem', letterSpacing: '.1em', textTransform: 'uppercase',
                     color: 'var(--gold)', padding: '.25rem .65rem',
-                    border: '1px solid rgba(154,122,74,.28)', cursor: 'pointer'
+                    border: '1px solid rgba(18,42,150,.28)', cursor: 'pointer'
                   }}>
                     #{tag}
                   </span>

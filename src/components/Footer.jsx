@@ -1,3 +1,8 @@
+import { Link } from 'react-router-dom'
+
+const INSTAGRAM_URL = 'https://instagram.com/HESAP_ADIN'
+const PINTEREST_URL = 'https://pinterest.com/HESAP_ADIN'
+
 function Footer() {
   return (
     <footer style={{
@@ -13,13 +18,13 @@ function Footer() {
       {/* Marka */}
       <div>
         <div style={{
-          fontFamily: "'Cormorant Garamond', serif",
+          fontFamily: "'Archivo Black', sans-serif",
           fontSize: '1.1rem',
           letterSpacing: '.2em',
           textTransform: 'uppercase',
           marginBottom: '.8rem'
         }}>
-          Fossil Garden
+          Artı Poz
         </div>
         <p style={{ fontSize: '.72rem', lineHeight: 1.8, color: 'var(--muted)', maxWidth: 220 }}>
           Hahnemühle sertifikalı fine art baskı ve özgün eserler. İstanbul.
@@ -33,9 +38,9 @@ function Footer() {
         </div>
         {['Fotoğraf', 'Resim', 'Baskı', 'Heykel'].map(item => (
           <div key={item} style={{ marginBottom: '.5rem' }}>
-            <span style={{ fontSize: '.75rem', color: 'var(--muted)', cursor: 'pointer' }}>
+            <Link to={`/?category=${item.toLowerCase()}`} style={{ fontSize: '.75rem', color: 'var(--muted)' }}>
               {item}
-            </span>
+            </Link>
           </div>
         ))}
       </div>
@@ -45,11 +50,17 @@ function Footer() {
         <div style={{ fontSize: '.6rem', letterSpacing: '.18em', textTransform: 'uppercase', marginBottom: '1rem', color: 'var(--ink)' }}>
           Bilgi
         </div>
-        {['Hakkımızda', 'Kargo & İade', 'Sertifika', 'SSS'].map(item => (
-          <div key={item} style={{ marginBottom: '.5rem' }}>
-            <span style={{ fontSize: '.75rem', color: 'var(--muted)', cursor: 'pointer' }}>
-              {item}
-            </span>
+        {[
+          ['Hakkımızda', '/hakkimizda'],
+          ['Teslimat', '/yasal/teslimat'],
+          ['İade & Değişim', '/yasal/iade'],
+          ['Mesafeli Satış Sözleşmesi', '/yasal/mesafeli-satis'],
+          ['Gizlilik & KVKK', '/yasal/gizlilik'],
+        ].map(([label, to]) => (
+          <div key={to} style={{ marginBottom: '.5rem' }}>
+            <Link to={to} style={{ fontSize: '.75rem', color: 'var(--muted)' }}>
+              {label}
+            </Link>
           </div>
         ))}
       </div>
@@ -64,14 +75,14 @@ function Footer() {
           <div>İstanbul, Türkiye</div>
         </div>
         <div style={{ display: 'flex', gap: '.8rem', marginTop: '1rem' }}>
-          {['Instagram', 'Pinterest'].map(s => (
-            <span key={s} style={{
+          {[['Instagram', INSTAGRAM_URL], ['Pinterest', PINTEREST_URL]].map(([name, url]) => (
+            <a key={name} href={url} target="_blank" rel="noopener noreferrer" style={{
               fontSize: '.6rem', letterSpacing: '.12em', textTransform: 'uppercase',
-              color: 'var(--gold)', cursor: 'pointer',
-              borderBottom: '1px solid rgba(154,122,74,.3)', paddingBottom: '.1rem'
+              color: 'var(--gold)',
+              borderBottom: '1px solid rgba(18,42,150,.3)', paddingBottom: '.1rem'
             }}>
-              {s}
-            </span>
+              {name}
+            </a>
           ))}
         </div>
       </div>
@@ -88,7 +99,7 @@ function Footer() {
         gap: '.5rem'
       }}>
         <span style={{ fontSize: '.6rem', letterSpacing: '.1em', textTransform: 'uppercase', color: 'var(--muted)' }}>
-          © {new Date().getFullYear()} Fossil Garden. Tüm hakları saklıdır.
+          © {new Date().getFullYear()} Artı Poz. Tüm hakları saklıdır.
         </span>
         <span style={{ fontSize: '.6rem', letterSpacing: '.1em', textTransform: 'uppercase', color: 'var(--muted)' }}>
           Fine Art Print Studio · İstanbul

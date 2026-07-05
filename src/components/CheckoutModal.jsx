@@ -74,7 +74,7 @@ export default function CheckoutModal({ open, onClose, items, total, onSuccess }
       }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.8rem' }}>
           <div>
-            <h2 style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: '1.7rem', fontWeight: 300, margin: 0 }}>
+            <h2 style={{ fontFamily: "'Archivo Black', sans-serif", fontSize: '1.7rem', fontWeight: 300, margin: 0 }}>
               Sipariş Ver
             </h2>
             <div style={{ fontSize: '.68rem', color: '#aaa', letterSpacing: '.1em', marginTop: '.3rem' }}>

@@ -1,9 +1,23 @@
 import { useState } from 'react'
 import { makeSVG } from '../lib/makeSVG'
+import { useFavorites } from '../hooks/useFavorites'
+import { useCart } from '../hooks/useCart'
 
 function ArtCard({ artwork, index, onClick, onTagClick }) {
-  const [liked, setLiked] = useState(false)
+  const { isFav, toggle } = useFavorites()
+  const { addItem } = useCart()
+  const liked = isFav(artwork.id)
   const [hovered, setHovered] = useState(false)
+  const [added, setAdded] = useState(false)
+
+  function quickAdd(e) {
+    e.stopPropagation()
+    const s = artwork.sizes?.[0]
+    if (!s) { onClick(); return } // boyut bilgisi yoksa ürün sayfasına götür
+    addItem(artwork, s.label, Number(s.price) || 0)
+    setAdded(true)
+    setTimeout(() => setAdded(false), 1400)
+  }
 
   return (
     <div
@@ -39,7 +53,7 @@ function ArtCard({ artwork, index, onClick, onTagClick }) {
 
         {/* Favori butonu */}
         <button
-          onClick={e => { e.stopPropagation(); setLiked(!liked) }}
+          onClick={e => { e.stopPropagation(); toggle(artwork.id) }}
           style={{
             position: 'absolute', top: '.65rem', right: '.65rem',
             background: 'rgba(255,255,255,.88)',
@@ -53,6 +67,24 @@ function ArtCard({ artwork, index, onClick, onTagClick }) {
         >
           {liked ? '♥' : '♡'}
         </button>
+
+        {/* Hızlı sepete ekle */}
+        <button
+          onClick={quickAdd}
+          aria-label="Sepete ekle"
+          style={{
+            position: 'absolute', top: 'calc(.65rem + 36px)', right: '.65rem',
+            background: added ? 'var(--gold)' : 'rgba(255,255,255,.88)',
+            border: `1px solid ${added ? 'var(--gold)' : 'var(--border)'}`,
+            width: 30, height: 30,
+            display: hovered || added ? 'flex' : 'none',
+            alignItems: 'center', justifyContent: 'center',
+            fontSize: '.85rem', color: added ? '#fff' : 'var(--muted)',
+            cursor: 'pointer', transition: 'background .2s'
+          }}
+        >
+          {added ? '✓' : '+'}
+        </button>
       </div>
 
       {/* Bilgi */}
@@ -60,7 +92,7 @@ function ArtCard({ artwork, index, onClick, onTagClick }) {
         <div style={{ fontSize: '.58rem', letterSpacing: '.14em', textTransform: 'uppercase', color: 'var(--muted)', marginBottom: '.2rem' }}>
           {artwork.artist}
         </div>
-        <div style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: '1.15rem', marginBottom: '.45rem', lineHeight: 1.2 }}>
+        <div style={{ fontFamily: "'Archivo Black', sans-serif", fontSize: '1.15rem', marginBottom: '.45rem', lineHeight: 1.2 }}>
           {artwork.title}
         </div>
 
@@ -74,7 +106,7 @@ function ArtCard({ artwork, index, onClick, onTagClick }) {
                 fontSize: '.56rem', letterSpacing: '.1em',
                 textTransform: 'uppercase', color: 'var(--gold)',
                 padding: '.18rem .45rem',
-                border: '1px solid rgba(154,122,74,.22)',
+                border: '1px solid rgba(18,42,150,.22)',
                 cursor: 'pointer'
               }}
             >
@@ -84,7 +116,7 @@ function ArtCard({ artwork, index, onClick, onTagClick }) {
         </div>
 
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
-          <div style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: '1.25rem' }}>
+          <div style={{ fontFamily: "'Archivo Black', sans-serif", fontSize: '1.25rem' }}>
             {artwork.price}
           </div>
           <div style={{ fontSize: '.58rem', letterSpacing: '.08em', textTransform: 'uppercase', color: 'var(--muted)' }}>

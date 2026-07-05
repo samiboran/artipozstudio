@@ -1,3 +1,4 @@
+
 import { useState } from 'react'
 
 let listeners = []
@@ -34,8 +35,12 @@ export function useCart() {
     setCart(cartState.map(i => i.key === key ? { ...i, qty } : i))
   }
 
+  function clearCart() {
+    setCart([])
+  }
+
   const total = items.reduce((sum, i) => sum + (Number(i.price) || 0) * i.qty, 0)
   const count = items.reduce((sum, i) => sum + i.qty, 0)
 
-  return { items, addItem, removeItem, updateQty, total, count }
+  return { items, addItem, removeItem, updateQty, clearCart, total, count }
 }

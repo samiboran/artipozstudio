@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600&family=Archivo+Black&display=swap');
 
 *, *::before, *::after {
   margin: 0;
@@ -7,14 +7,15 @@
 }
 
 :root {
-  --ink: #111010;
-  --bg: #ffffff;
-  --surface: #f8f8f8;
-  --warm: #f2f2f2;
-  --border: #e4e4e4;
-  --accent: #3d3530;
-  --gold: #9a7a4a;
-  --muted: #888;
+  --ink: #111111;         /* Black */
+  --bg: #F8F7F3;          /* Paper White */
+  --surface: #efeee9;
+  --warm: #eceae4;
+  --border: #e0ded6;
+  --accent: #122A96;      /* Artı Poz Blue */
+  --gold: #122A96;        /* eski accent değişkeni — artık Artı Poz Blue */
+  --blue: #122A96;
+  --muted: #77756e;
   --red: #b03020;
 }
 
@@ -26,8 +27,8 @@ html {
 body {
   background: var(--bg);
   color: var(--ink);
-  font-family: 'Outfit', sans-serif;
-  font-weight: 300;
+  font-family: 'Archivo', sans-serif;
+  font-weight: 400;
 }
 
 a {
@@ -37,7 +38,7 @@ a {
 
 button {
   cursor: pointer;
-  font-family: 'Outfit', sans-serif;
+  font-family: 'Archivo', sans-serif;
 }
 
 @keyframes fadeUp {

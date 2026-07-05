@@ -15,7 +15,7 @@ function NotFound() {
       gap: '1.5rem'
     }}>
       <div style={{
-        fontFamily: "'Cormorant Garamond', serif",
+        fontFamily: "'Archivo Black', sans-serif",
         fontSize: 'clamp(6rem, 15vw, 12rem)',
         fontWeight: 300,
         lineHeight: 1,
@@ -26,7 +26,7 @@ function NotFound() {
       </div>
 
       <div style={{
-        fontFamily: "'Cormorant Garamond', serif",
+        fontFamily: "'Archivo Black', sans-serif",
         fontSize: 'clamp(1.4rem, 3vw, 2rem)',
         fontWeight: 300,
         color: 'var(--ink)'

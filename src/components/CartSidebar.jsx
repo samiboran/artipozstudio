@@ -55,7 +55,7 @@ export default function CartSidebar({ open, onClose }) {
           {success ? (
             <div style={{
               textAlign: 'center', paddingTop: '4rem',
-              fontFamily: "'Cormorant Garamond', serif",
+              fontFamily: "'Archivo Black', sans-serif",
               fontSize: '1.3rem', color: '#4a9a6a', fontStyle: 'italic'
             }}>
               ✓ Siparişiniz alındı!<br />
@@ -64,7 +64,7 @@ export default function CartSidebar({ open, onClose }) {
           ) : items.length === 0 ? (
             <div style={{
               textAlign: 'center', paddingTop: '4rem',
-              fontFamily: "'Cormorant Garamond', serif",
+              fontFamily: "'Archivo Black', sans-serif",
               fontSize: '1.2rem', color: 'var(--muted)', fontStyle: 'italic'
             }}>
               Sepetiniz boş
@@ -90,7 +90,7 @@ export default function CartSidebar({ open, onClose }) {
                       <span style={{ fontSize: '.8rem', minWidth: 16, textAlign: 'center' }}>{item.qty}</span>
                       <button onClick={() => updateQty(item.key, item.qty + 1)} style={{ background: 'none', border: '1px solid var(--border)', width: 24, height: 24, cursor: 'pointer', fontSize: '.8rem' }}>+</button>
                     </div>
-                    <div style={{ fontSize: '.9rem', fontFamily: "'Cormorant Garamond', serif" }}>
+                    <div style={{ fontSize: '.9rem', fontFamily: "'Archivo Black', sans-serif" }}>
                       ₺{(item.price * item.qty).toLocaleString('tr-TR')}
                     </div>
                   </div>
@@ -105,7 +105,7 @@ export default function CartSidebar({ open, onClose }) {
           <div style={{ padding: '1.5rem 1.8rem', borderTop: '1px solid var(--border)' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1.2rem' }}>
               <span style={{ fontSize: '.7rem', letterSpacing: '.1em', textTransform: 'uppercase', color: 'var(--muted)' }}>Toplam</span>
-              <span style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: '1.4rem' }}>₺{total.toLocaleString('tr-TR')}</span>
+              <span style={{ fontFamily: "'Archivo Black', sans-serif", fontSize: '1.4rem' }}>₺{total.toLocaleString('tr-TR')}</span>
             </div>
             <button
               onClick={() => setCheckoutOpen(true)}
