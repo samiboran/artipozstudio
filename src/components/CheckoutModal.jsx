@@ -1,5 +1,4 @@
 import { useState } from 'react'
-import { supabase } from '../lib/supabase'
 
 export default function CheckoutModal({ open, onClose, items, total, onSuccess }) {
   const [form, setForm] = useState({ name: '', email: '', phone: '', address: '' })
@@ -25,26 +24,32 @@ export default function CheckoutModal({ open, onClose, items, total, onSuccess }
     setSaving(true)
     setError('')
 
-    const order = {
+    // Dikkat: price GÖNDERMİYORUZ. Fiyat sunucuda (create-order fonksiyonu içinde)
+    // artworks tablosundan yeniden hesaplanıyor, client'tan gelen fiyata güvenilmiyor.
+    const payload = {
       name: form.name,
       email: form.email,
       phone: form.phone,
       address: form.address,
-      items: items,
-      total: total,
+      items: items.map(i => ({
+        artwork_id: i.artwork.id,
+        size: i.size,
+        qty: i.qty,
+      })),
     }
 
-    const { error } = await supabase.from('orders').insert(order)
-    if (error) { setSaving(false); setError('Sipariş gönderilemedi: ' + error.message); return }
-
     try {
-      await fetch('https://qrbkzjosorimiwdbwyyl.supabase.co/functions/v1/send-order-email', {
+      const res = await fetch('https://qrbkzjosorimiwdbwyyl.supabase.co/functions/v1/create-order', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}` },
-        body: JSON.stringify({ order })
+        body: JSON.stringify(payload)
       })
+      const data = await res.json()
+      if (!res.ok) { setSaving(false); setError(data.error || 'Sipariş gönderilemedi.'); return }
     } catch (e) {
-      console.error('Mail gönderilemedi:', e)
+      setSaving(false)
+      setError('Sipariş gönderilemedi: bağlantı hatası.')
+      return
     }
 
     setSaving(false)

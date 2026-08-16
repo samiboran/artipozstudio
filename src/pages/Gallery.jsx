@@ -2,8 +2,10 @@ import { useState, useEffect } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { fetchArtworks } from '../lib/artworks'
 import ArtCard from '../components/ArtCard'
+import Hero from '../components/Hero';
+import CategoryBar from '../components/CategoryBar';
 
-const TAGS = ['tümü', 'fotoğraf', 'resim', 'baskı', 'heykel', 'landscape', 'botanik', 'siyah-beyaz', 'portre', 'soyut', 'deniz']
+const TAGS = ['tümü', 'fotoğraf', 'baskı', 'landscape', 'siyah-beyaz', 'portre', 'soyut']
 
 function Gallery() {
   const [searchParams] = useSearchParams()
@@ -28,42 +30,17 @@ function Gallery() {
   }, [activeTag, search])
 
   return (
-    <div style={{ paddingTop: '4.2rem' }}>
 
-      {/* Hero */}
-      <div style={{
-        padding: '3rem 2rem 2rem',
-        borderBottom: '1px solid var(--border)',
-        display: 'flex', alignItems: 'flex-end',
-        justifyContent: 'space-between', flexWrap: 'wrap', gap: '1rem'
-      }}>
-        <div>
-          <h1 style={{
-            fontFamily: "'Archivo Black', sans-serif",
-            fontSize: 'clamp(2.2rem, 4vw, 3.4rem)',
-            lineHeight: .96, letterSpacing: '-.02em', textTransform: 'lowercase'
-          }}>
-            fine art<br />
-            <span style={{ color: 'var(--blue)' }}>koleksiyonu</span>
-          </h1>
-          <p style={{
-            fontSize: '.7rem', letterSpacing: '.12em',
-            textTransform: 'uppercase', color: 'var(--muted)', marginTop: '.5rem'
-          }}>
-            Özgün eserler, sınırlı edisyonlar
-          </p>
-        </div>
-        <div style={{ fontSize: '.7rem', letterSpacing: '.1em', textTransform: 'uppercase', color: 'var(--muted)' }}>
-          {loading ? '...' : `${artworks.length} eser`}
-        </div>
-      </div>
+    <div>
+      <CategoryBar />
+      <Hero />
 
       {/* Arama + Filtre */}
       <div style={{
         display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '.8rem',
         padding: '.9rem 2rem',
         borderBottom: '1px solid var(--border)',
-        position: 'sticky', top: '4.2rem', zIndex: 100,
+        position: 'sticky', top: 0, zIndex: 100,
         background: 'rgba(255,255,255,0.97)',
         backdropFilter: 'blur(6px)'
       }}>
@@ -76,8 +53,8 @@ function Gallery() {
             style={{
               background: 'var(--surface)', border: '1px solid var(--border)',
               padding: '.48rem 2.2rem .48rem 1rem',
-              fontFamily: "'Archivo Black', sans-serif",
-              fontSize: '.95rem', fontStyle: 'italic',
+              fontFamily: "'Archivo', sans-serif",
+              fontSize: '.7rem',
               color: 'var(--ink)', width: '240px', outline: 'none'
             }}
           />
@@ -120,6 +97,13 @@ function Gallery() {
               ✕ Temizle
             </button>
           )}
+          <div style={{
+            marginLeft: 'auto',
+            fontSize: '.7rem', letterSpacing: '.1em',
+            textTransform: 'uppercase', color: 'var(--muted)'
+          }}>
+            {loading ? '...' : `${artworks.length} eser`}
+          </div>
         </div>
       </div>
 
@@ -163,5 +147,6 @@ function Gallery() {
     </div>
   )
 }
+
 
 export default Gallery

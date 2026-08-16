@@ -1,8 +1,6 @@
 import { Link, useNavigate } from 'react-router-dom'
 import { useState } from 'react'
 
-const CATS = ['Fotoğraf', 'Resim', 'Baskı', 'Heykel']
-
 function Navbar({ cartCount = 0, onCartClick }) {
   const [search, setSearch] = useState('')
   const [menuOpen, setMenuOpen] = useState(false)
@@ -18,11 +16,10 @@ function Navbar({ cartCount = 0, onCartClick }) {
   return (
     <>
       <nav style={{
-        position: 'fixed', top: 0, left: 0, right: 0, zIndex: 200,
+        position: 'relative',
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
         padding: '1.1rem 2rem',
         background: 'rgba(255,255,255,0.96)',
-        backdropFilter: 'blur(12px)',
         borderBottom: '1px solid var(--border)'
       }}>
 
@@ -42,22 +39,30 @@ function Navbar({ cartCount = 0, onCartClick }) {
           </span>
         </Link>
 
-        <ul style={{ display: 'flex', gap: '2rem', listStyle: 'none', margin: 0, padding: 0 }}
-          className="desktop-nav">
-          {CATS.map(cat => (
-            <li key={cat}>
-              <Link to={`/?category=${cat.toLowerCase()}`} style={{
-                fontSize: '.68rem', letterSpacing: '.16em',
-                textTransform: 'uppercase', color: 'var(--muted)'
-              }}>
-                {cat}
-              </Link>
-            </li>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '1.6rem' }} className="desktop-nav">
+          {[
+            { label: 'Ana Sayfa', to: '/' },
+            { label: 'Fotoğraf Baskı', to: '/fotograf-baski' },
+            { label: 'Fine Art Baskı', to: '/fine-art-baski' },
+            { label: 'Çerçeve', to: '/cerceve' },
+          ].map(item => (
+            <Link
+              key={item.to}
+              to={item.to}
+              style={{
+                fontFamily: "'Archivo', sans-serif",
+                fontSize: '.68rem', letterSpacing: '.12em',
+                textTransform: 'uppercase', color: 'var(--muted)',
+                whiteSpace: 'nowrap',
+              }}
+            >
+              {item.label}
+            </Link>
           ))}
-        </ul>
+        </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-          <div style={{ position: 'relative' }} className="desktop-nav">
+        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }} className="desktop-nav">
+          <div style={{ position: 'relative' }}>
             <input
               type="text"
               placeholder="ara..."
@@ -67,6 +72,7 @@ function Navbar({ cartCount = 0, onCartClick }) {
               style={{
                 background: 'var(--surface)', border: '1px solid var(--border)',
                 padding: '.42rem 2rem .42rem .85rem',
+                fontFamily: "'Archivo', sans-serif",
                 fontSize: '.7rem', color: 'var(--ink)',
                 width: '190px', outline: 'none'
               }}
@@ -91,33 +97,82 @@ function Navbar({ cartCount = 0, onCartClick }) {
             Sepet ({cartCount})
           </button>
 
-          <button
-            onClick={() => setMenuOpen(!menuOpen)}
-            className="hamburger"
-            style={{
-              background: 'none', border: 'none', cursor: 'pointer',
-              display: 'none', flexDirection: 'column',
-              gap: '5px', padding: '4px'
-            }}
-          >
-            <span style={{ display: 'block', width: 22, height: 1.5, background: menuOpen ? 'transparent' : 'var(--ink)', transition: 'all .25s' }} />
-            <span style={{ display: 'block', width: 22, height: 1.5, background: 'var(--ink)', transition: 'all .25s',
-              transform: menuOpen ? 'rotate(45deg) translate(4px, 4px)' : 'none' }} />
-            <span style={{ display: 'block', width: 22, height: 1.5, background: 'var(--ink)', transition: 'all .25s',
-              transform: menuOpen ? 'rotate(-45deg) translate(4px, -4px)' : 'none' }} />
-          </button>
+          <span style={{ width: 1, height: 16, background: 'var(--border)' }} />
+
+          {/* TODO: rota doğrula — Login.jsx için gerçek path'i onayla */}
+          <Link to="/login" style={{
+            fontSize: '.68rem', letterSpacing: '.14em',
+            textTransform: 'uppercase', color: 'var(--muted)'
+          }}>
+            Log in
+          </Link>
+
+          {/* TODO: ayrı bir kayıt sayfası yoksa şimdilik /login'e gidiyor */}
+          <Link to="/login" style={{
+            fontSize: '.68rem', letterSpacing: '.14em',
+            textTransform: 'uppercase', color: 'var(--bg)',
+            background: 'var(--accent)', padding: '.5rem 1rem'
+          }}>
+            Sign up
+          </Link>
         </div>
+
+        <button
+          onClick={() => setMenuOpen(!menuOpen)}
+          className="hamburger"
+          style={{
+            background: 'none', border: 'none', cursor: 'pointer',
+            display: 'none', flexDirection: 'column',
+            gap: '5px', padding: '4px'
+          }}
+        >
+          <span style={{ display: 'block', width: 22, height: 1.5, background: menuOpen ? 'transparent' : 'var(--ink)', transition: 'all .25s' }} />
+          <span style={{ display: 'block', width: 22, height: 1.5, background: 'var(--ink)', transition: 'all .25s',
+            transform: menuOpen ? 'rotate(45deg) translate(4px, 4px)' : 'none' }} />
+          <span style={{ display: 'block', width: 22, height: 1.5, background: 'var(--ink)', transition: 'all .25s',
+            transform: menuOpen ? 'rotate(-45deg) translate(4px, -4px)' : 'none' }} />
+        </button>
       </nav>
 
       {menuOpen && (
         <div style={{
-          position: 'fixed', top: '4.2rem', left: 0, right: 0, zIndex: 199,
+          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 199,
           background: 'rgba(255,255,255,0.98)',
-          backdropFilter: 'blur(12px)',
-          borderBottom: '1px solid var(--border)',
           padding: '1.5rem 2rem 2rem',
-          display: 'flex', flexDirection: 'column', gap: '1.2rem'
+          display: 'flex', flexDirection: 'column', gap: '1.2rem',
+          overflowY: 'auto'
         }}>
+          <button
+            onClick={() => setMenuOpen(false)}
+            style={{
+              alignSelf: 'flex-end', background: 'none', border: 'none',
+              fontSize: '1.4rem', color: 'var(--muted)', cursor: 'pointer'
+            }}
+            aria-label="Kapat"
+          >
+            ×
+          </button>
+
+          {[
+            { label: 'Ana Sayfa', to: '/' },
+            { label: 'Fotoğraf Baskı', to: '/fotograf-baski' },
+            { label: 'Fine Art Baskı', to: '/fine-art-baski' },
+            { label: 'Çerçeve', to: '/cerceve' },
+          ].map(item => (
+            <Link
+              key={item.to}
+              to={item.to}
+              onClick={() => setMenuOpen(false)}
+              style={{
+                fontSize: '.8rem', letterSpacing: '.16em',
+                textTransform: 'uppercase', color: 'var(--ink)',
+                borderBottom: '1px solid var(--border)', paddingBottom: '.8rem'
+              }}
+            >
+              {item.label}
+            </Link>
+          ))}
+
           <div style={{ position: 'relative' }}>
             <input
               type="text"
@@ -136,20 +191,38 @@ function Navbar({ cartCount = 0, onCartClick }) {
             <span style={{ position: 'absolute', right: '.6rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--muted)' }}>⌕</span>
           </div>
 
-          {CATS.map(cat => (
-            <Link
-              key={cat}
-              to={`/?category=${cat.toLowerCase()}`}
-              onClick={() => setMenuOpen(false)}
-              style={{
-                fontSize: '.8rem', letterSpacing: '.16em',
-                textTransform: 'uppercase', color: 'var(--ink)',
-                borderBottom: '1px solid var(--border)', paddingBottom: '.8rem'
-              }}
-            >
-              {cat}
-            </Link>
-          ))}
+          <Link to="/favoriler" onClick={() => setMenuOpen(false)} style={{
+            fontSize: '.8rem', letterSpacing: '.16em',
+            textTransform: 'uppercase', color: 'var(--ink)',
+            borderBottom: '1px solid var(--border)', paddingBottom: '.8rem'
+          }}>
+            Favoriler
+          </Link>
+
+          <button onClick={() => { onCartClick(); setMenuOpen(false) }} style={{
+            background: 'none', border: 'none', textAlign: 'left', cursor: 'pointer',
+            fontSize: '.8rem', letterSpacing: '.16em',
+            textTransform: 'uppercase', color: 'var(--ink)',
+            borderBottom: '1px solid var(--border)', paddingBottom: '.8rem'
+          }}>
+            Sepet ({cartCount})
+          </button>
+
+          <Link to="/login" onClick={() => setMenuOpen(false)} style={{
+            fontSize: '.8rem', letterSpacing: '.16em',
+            textTransform: 'uppercase', color: 'var(--ink)',
+            borderBottom: '1px solid var(--border)', paddingBottom: '.8rem'
+          }}>
+            Log in
+          </Link>
+
+          <Link to="/login" onClick={() => setMenuOpen(false)} style={{
+            fontSize: '.8rem', letterSpacing: '.16em',
+            textTransform: 'uppercase', color: 'var(--bg)',
+            background: 'var(--accent)', padding: '.7rem 1rem', textAlign: 'center'
+          }}>
+            Sign up
+          </Link>
         </div>
       )}
 

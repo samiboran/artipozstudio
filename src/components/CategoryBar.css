@@ -1,0 +1,26 @@
+/* src/components/CategoryBar.css */
+
+.category-bar {
+  display: flex;
+  justify-content: center;
+  gap: 40px;
+  padding: 18px 0;
+  border-bottom: 1px solid #eee;
+  font-family: 'DM Sans', sans-serif;
+}
+
+.category-link {
+  font-size: 13px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #1a1a1a;
+  text-decoration: none;
+  padding-bottom: 4px;
+  border-bottom: 2px solid transparent;
+  transition: border-color 0.2s ease, color 0.2s ease;
+}
+
+.category-link:hover {
+  color: #9a7a4a;
+  border-bottom-color: #9a7a4a;
+}

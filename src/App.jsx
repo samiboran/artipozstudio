@@ -1,4 +1,3 @@
-
 import { useState } from 'react'
 import { Routes, Route } from 'react-router-dom'
 import Navbar from './components/Navbar'
@@ -13,6 +12,9 @@ import NotFound from './pages/NotFound'
 import Favorites from './pages/Favorites'
 import About from './pages/About'
 import Legal from './pages/Legal'
+import FineArtBaski from './pages/FineArtBaski'
+import Cerceve from './pages/Cerceve'
+import FotografBaski from './pages/FotografBaski'
 import WhatsAppButton from './components/WhatsAppButton'
 
 function App() {
@@ -30,6 +32,9 @@ function App() {
         <Route path="/favoriler" element={<Favorites />} />
         <Route path="/hakkimizda" element={<About />} />
         <Route path="/yasal/:page" element={<Legal />} />
+        <Route path="/fine-art-baski" element={<FineArtBaski />} />
+        <Route path="/cerceve" element={<Cerceve />} />
+        <Route path="/fotograf-baski" element={<FotografBaski />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
       <CartSidebar open={cartOpen} onClose={() => setCartOpen(false)} />

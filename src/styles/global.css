@@ -8,7 +8,7 @@
 
 :root {
   --ink: #111111;         /* Black */
-  --bg: #F8F7F3;          /* Paper White */
+  --bg: #FAF7F1;          /* Paper White — sıcak beyaz */
   --surface: #efeee9;
   --warm: #eceae4;
   --border: #e0ded6;
@@ -25,7 +25,9 @@ html {
 }
 
 body {
-  background: var(--bg);
+  background-color: var(--bg);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cg stroke='%23c9bfa8' stroke-width='0.5' stroke-opacity='0.35'%3E%3Cline x1='10' y1='20' x2='34' y2='23'/%3E%3Cline x1='70' y1='55' x2='95' y2='51'/%3E%3Cline x1='25' y1='90' x2='48' y2='94'/%3E%3Cline x1='85' y1='15' x2='108' y2='18'/%3E%3C/g%3E%3Cg fill='%23c9bfa8' fill-opacity='0.3'%3E%3Ccircle cx='55' cy='40' r='0.8'/%3E%3Ccircle cx='15' cy='75' r='0.8'/%3E%3Ccircle cx='100' cy='90' r='0.8'/%3E%3Ccircle cx='60' cy='105' r='0.8'/%3E%3C/g%3E%3C/svg%3E");
+  background-repeat: repeat;
   color: var(--ink);
   font-family: 'Archivo', sans-serif;
   font-weight: 400;
