@@ -38,7 +38,7 @@ serve(async (req) => {
 
   try {
     const body = await req.json()
-    const { items, name, email, phone, address } = body
+    const { items, name, email, phone, address, session_id } = body
 
     // --- Girdi doğrulama ---
     if (!Array.isArray(items) || items.length === 0) return badRequest('Sepet boş.')
@@ -92,7 +92,7 @@ serve(async (req) => {
     // --- Siparişi kaydet (service role ile — RLS'i bypass eder, client bunu yapamaz) ---
     const { data: order, error: insertError } = await supabase
       .from('orders')
-      .insert({ name, email, phone, address, items: validatedItems, total })
+      .insert({ name, email, phone, address, items: validatedItems, total, session_id: session_id || null })
       .select()
       .single()
 

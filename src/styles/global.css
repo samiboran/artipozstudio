@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600&family=Archivo+Black&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600&family=Archivo+Black&family=Playfair+Display:wght@500;600&display=swap');
 
 *, *::before, *::after {
   margin: 0;
@@ -7,16 +7,21 @@
 }
 
 :root {
-  --ink: #111111;         /* Black */
-  --bg: #FAF7F1;          /* Paper White — sıcak beyaz */
+  --ink: #111111; /* Black */
+  --bg: #FAF7F1; /* Paper White — sıcak beyaz */
   --surface: #efeee9;
   --warm: #eceae4;
   --border: #e0ded6;
-  --accent: #122A96;      /* Artı Poz Blue */
-  --gold: #122A96;        /* eski accent değişkeni — artık Artı Poz Blue */
+  --accent: #122A96; /* Artı Poz Blue */
+  --gold: #122A96; /* eski accent değişkeni — artık Artı Poz Blue */
   --blue: #122A96;
   --muted: #77756e;
   --red: #b03020;
+
+  /* Admin panelden ("Site Ayarları" sekmesi) seçilen fonta göre JS tarafından
+     runtime'da güncellenir — src/lib/siteFonts.js. Varsayılan: Archivo. */
+  --font-body: 'Archivo', sans-serif;
+  --font-heading: 'Archivo Black', sans-serif;
 }
 
 html {
@@ -29,7 +34,7 @@ body {
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cg stroke='%23c9bfa8' stroke-width='0.5' stroke-opacity='0.35'%3E%3Cline x1='10' y1='20' x2='34' y2='23'/%3E%3Cline x1='70' y1='55' x2='95' y2='51'/%3E%3Cline x1='25' y1='90' x2='48' y2='94'/%3E%3Cline x1='85' y1='15' x2='108' y2='18'/%3E%3C/g%3E%3Cg fill='%23c9bfa8' fill-opacity='0.3'%3E%3Ccircle cx='55' cy='40' r='0.8'/%3E%3Ccircle cx='15' cy='75' r='0.8'/%3E%3Ccircle cx='100' cy='90' r='0.8'/%3E%3Ccircle cx='60' cy='105' r='0.8'/%3E%3C/g%3E%3C/svg%3E");
   background-repeat: repeat;
   color: var(--ink);
-  font-family: 'Archivo', sans-serif;
+  font-family: var(--font-body);
   font-weight: 400;
 }
 
@@ -40,10 +45,10 @@ a {
 
 button {
   cursor: pointer;
-  font-family: 'Archivo', sans-serif;
+  font-family: var(--font-body);
 }
 
 @keyframes fadeUp {
   from { opacity: 0; transform: translateY(14px); }
-  to   { opacity: 1; transform: translateY(0); }
+  to { opacity: 1; transform: translateY(0); }
 }

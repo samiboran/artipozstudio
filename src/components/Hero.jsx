@@ -1,90 +1,66 @@
-import { useRef, useEffect } from 'react'
-import './Hero.css'
-
-import baskiSureciImg from '../assets/process/baski-sureci.jpg'
-import kagitDetayiImg from '../assets/process/kagit-detayi.jpg'
-import studyoImg from '../assets/process/studyo.jpg'
-// TODO: paketleme fotoğrafını ekleyince buraya import et ve slides
-// dizisindeki 'Paketleme' item'ına src ekle.
-
-const slides = [
-  { label: 'Baskı süreci', src: baskiSureciImg, alt: 'Canon yazıcıdan çıkan fine art baskı' },
-  { label: 'Kağıt detayı', src: kagitDetayiImg, alt: 'Hahnemühle kağıt numuneleri' },
-  { label: 'Paketleme' }, // görsel eklenene kadar placeholder
-  { label: 'Stüdyo', src: studyoImg, alt: 'Baskı stüdyosunda çalışma anı' },
-]
+import { useState, useEffect } from 'react'
+import { Link } from 'react-router-dom'
+import { supabase } from '../lib/supabase'
 
 export default function Hero() {
-  const viewportRef = useRef(null)
-
-  function scrollByOne(direction) {
-    const el = viewportRef.current
-    if (!el) return
-    const amount = el.clientWidth * 0.82 + 16
-    el.scrollBy({ left: direction * amount, behavior: 'smooth' })
-  }
+  const [heroUrl, setHeroUrl] = useState(null)
 
   useEffect(() => {
-    const el = viewportRef.current
-    if (!el) return
-    const timer = setInterval(() => {
-      const atEnd = el.scrollLeft + el.clientWidth >= el.scrollWidth - 4
-      if (atEnd) {
-        el.scrollTo({ left: 0, behavior: 'smooth' })
-      } else {
-        scrollByOne(1)
-      }
-    }, 4000)
-    return () => clearInterval(timer)
+    supabase
+      .from('page_images')
+      .select('image_url')
+      .eq('page', 'gallery')
+      .eq('section', 'hero')
+      .order('sort_order')
+      .limit(1)
+      .then(({ data }) => { if (data?.[0]) setHeroUrl(data[0].image_url) })
   }, [])
 
   return (
-    <section className="hero">
-      <div className="hero-text">
-        <p className="hero-eyebrow">İstanbul'da, elle basılıyor</p>
-        <h1 className="hero-title">
-          Gördüğünüz baskı,<br />
-          gördüğünüz ellerden çıkıyor.
+    <section style={{
+      position: 'relative', height: '100vh', minHeight: 520,
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+      textAlign: 'center', overflow: 'hidden', background: '#2b2f28',
+    }}>
+      {heroUrl ? (
+        <img
+          src={heroUrl}
+          alt="Artı Poz"
+          style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }}
+        />
+      ) : (
+        <div style={{
+          position: 'absolute', inset: 0,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          color: 'rgba(255,255,255,.35)', fontFamily: "'Archivo', sans-serif",
+          fontSize: '.75rem', letterSpacing: '.1em', textTransform: 'uppercase',
+        }}>
+          Hero görseli — Admin → Görseller'den yükle
+        </div>
+      )}
+
+      <div style={{
+        position: 'absolute', inset: 0,
+        background: 'linear-gradient(180deg, rgba(0,0,0,.25), rgba(0,0,0,.4))'
+      }} />
+
+      <div style={{ position: 'relative', zIndex: 1 }}>
+        <h1 style={{
+          fontFamily: "'Archivo', sans-serif", fontWeight: 300,
+          fontSize: 'clamp(3.5rem, 11vw, 8rem)', letterSpacing: '.14em',
+          textTransform: 'lowercase', color: '#fff', margin: 0,
+        }}>
+          artı poz
         </h1>
-        <p className="hero-sub">
-          Her eser Canon PROGRAF ile arşivsel pigment mürekkeple,
-          asitsiz fine art kağıda tek tek basılıyor. Yorum değil,
-          süreci gösteriyoruz.
-        </p>
-        <div className="hero-actions">
-          <a href="/gallery" className="btn-primary">Koleksiyona Göz At</a>
-          <a href="/custom" className="btn-secondary">Kendi Fotoğrafını Bastır</a>
-        </div>
-      </div>
 
-      <div className="hero-carousel">
-        <button
-          className="carousel-arrow carousel-arrow-left"
-          onClick={() => scrollByOne(-1)}
-          aria-label="Önceki görsel"
-        >
-          ‹
-        </button>
-
-        <div className="carousel-viewport" ref={viewportRef}>
-          {slides.map((s, i) => (
-            s.src ? (
-              <img key={i} src={s.src} alt={s.alt} className="carousel-slide" />
-            ) : (
-              <div key={i} className="carousel-slide carousel-slide-placeholder">
-                {s.label}
-              </div>
-            )
-          ))}
-        </div>
-
-        <button
-          className="carousel-arrow carousel-arrow-right"
-          onClick={() => scrollByOne(1)}
-          aria-label="Sonraki görsel"
-        >
-          ›
-        </button>
+        <Link to="/fine-art-baski" style={{
+          display: 'inline-block', marginTop: '2.5rem',
+          padding: '.85rem 2.2rem', border: '1px solid rgba(255,255,255,.7)',
+          color: '#fff', fontFamily: "'Archivo', sans-serif",
+          fontSize: '.72rem', letterSpacing: '.22em', textTransform: 'uppercase',
+        }}>
+          Sipariş
+        </Link>
       </div>
     </section>
   )

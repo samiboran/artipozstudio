@@ -1,5 +1,6 @@
-
 import { useState } from 'react'
+import { supabase } from '../lib/supabase'
+import { getSessionId } from '../lib/session'
 
 let listeners = []
 let cartState = []
@@ -7,6 +8,25 @@ let cartState = []
 function setCart(newCart) {
   cartState = newCart
   listeners.forEach(l => l([...newCart]))
+}
+
+// Sepete ekleme olayını arka planda kaydeder — sepetin kendi çalışmasını
+// engellemez, hata olursa sessizce yutulur.
+async function logCartEvent(artwork, size, price) {
+  try {
+    const { data: { user } } = await supabase.auth.getUser()
+    await supabase.from('cart_events').insert({
+      session_id: getSessionId(),
+      user_id: user?.id || null,
+      user_email: user?.email || null,
+      artwork_title: artwork?.title || null,
+      size,
+      price,
+      qty: 1,
+    })
+  } catch {
+    // sepet takibi başarısız olsa bile kullanıcı deneyimini etkilemesin
+  }
 }
 
 export function useCart() {
@@ -24,6 +44,7 @@ export function useCart() {
     } else {
       setCart([...cartState, { key, artwork, size, price, qty: 1 }])
     }
+    logCartEvent(artwork, size, price)
   }
 
   function removeItem(key) {

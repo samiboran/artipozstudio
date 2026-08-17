@@ -1,9 +1,11 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Routes, Route } from 'react-router-dom'
 import Navbar from './components/Navbar'
 import Footer from './components/Footer'
 import CartSidebar from './components/CartSidebar'
 import { useCart } from './hooks/useCart'
+import { supabase } from './lib/supabase'
+import { applySiteFont } from './lib/siteFonts'
 import Gallery from './pages/Gallery'
 import ProductDetail from './pages/ProductDetail'
 import Admin from './pages/Admin'
@@ -20,6 +22,10 @@ import WhatsAppButton from './components/WhatsAppButton'
 function App() {
   const { count } = useCart()
   const [cartOpen, setCartOpen] = useState(false)
+
+  useEffect(() => {
+    applySiteFont(supabase)
+  }, [])
 
   return (
     <>

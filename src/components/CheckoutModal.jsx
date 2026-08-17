@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { getSessionId } from '../lib/session'
 
 export default function CheckoutModal({ open, onClose, items, total, onSuccess }) {
   const [form, setForm] = useState({ name: '', email: '', phone: '', address: '' })
@@ -31,6 +32,7 @@ export default function CheckoutModal({ open, onClose, items, total, onSuccess }
       email: form.email,
       phone: form.phone,
       address: form.address,
+      session_id: getSessionId(),
       items: items.map(i => ({
         artwork_id: i.artwork.id,
         size: i.size,

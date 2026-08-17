@@ -1,42 +1,24 @@
-import { useState } from 'react'
-import heroImg from '../assets/cerceve/hero.jpg'
-import renkSecenekleriImg from '../assets/cerceve/renk-secenekleri.jpg'
-import renkDetayImg from '../assets/cerceve/renk-secenekleri-detay.jpg'
-import ornekSiyahImg from '../assets/cerceve/ornek-siyah-cerceve.jpg'
-import ornekAhsapImg from '../assets/cerceve/ornek-ahsap-cerceve.jpg'
+import { useState, useEffect } from 'react'
+import { supabase } from '../lib/supabase'
+import heroImgDefault from '../assets/cerceve/hero.jpg'
+import renkSecenekleriImgDefault from '../assets/cerceve/renk-secenekleri.jpg'
+import renkDetayImgDefault from '../assets/cerceve/renk-secenekleri-detay.jpg'
+import ornekSiyahImgDefault from '../assets/cerceve/ornek-siyah-cerceve.jpg'
+import ornekAhsapImgDefault from '../assets/cerceve/ornek-ahsap-cerceve.jpg'
 
 // TODO: form şu an sadece arayüz — gönderim henüz bir backend'e bağlı değil.
 // Checkout'ta yaptığımız gibi (Supabase edge function + Resend) bağlamamız gerekiyor.
 
-const SIZES = [
-  {
-    size: '13×18 cm',
-    note: 'Küçük boy, masa üstü veya kolaj için ideal',
-    prices: { Siyah: 280, Beyaz: 260, 'Doğal Ahşap': 320 },
-  },
-  {
-    size: '21×30 cm',
-    note: 'A4 formatı, en çok tercih edilen boyut',
-    prices: { Siyah: 380, Beyaz: 360, 'Doğal Ahşap': 420 },
-  },
-  {
-    size: '30×50 cm',
-    note: 'Dikey panoramik, uzun kompozisyonlar için',
-    prices: { Siyah: 580, Beyaz: 550, 'Doğal Ahşap': 640 },
-  },
-  {
-    size: '40×50 cm',
-    note: 'Orta boy, duvar dekorasyonu için mükemmel',
-    prices: { Siyah: 680, Beyaz: 650, 'Doğal Ahşap': 750 },
-  },
-  {
-    size: '50×70 cm',
-    note: 'Büyük format, etkileyici duvar sunumu',
-    prices: { Siyah: 980, Beyaz: 940, 'Doğal Ahşap': 1100 },
-  },
+// Supabase'e hiç bağlanamazsa veya frame_options boşsa gösterilecek yedek veri —
+// admin panel açılana kadar site hep bu haliyle doğru görünsün diye duruyor.
+const FALLBACK_SIZES = [
+  { size: '13×18 cm', note: 'Küçük boy, masa üstü veya kolaj için ideal', prices: { Siyah: 280, Beyaz: 260, 'Doğal Ahşap': 320 } },
+  { size: '21×30 cm', note: 'A4 formatı, en çok tercih edilen boyut', prices: { Siyah: 380, Beyaz: 360, 'Doğal Ahşap': 420 } },
+  { size: '30×50 cm', note: 'Dikey panoramik, uzun kompozisyonlar için', prices: { Siyah: 580, Beyaz: 550, 'Doğal Ahşap': 640 } },
+  { size: '40×50 cm', note: 'Orta boy, duvar dekorasyonu için mükemmel', prices: { Siyah: 680, Beyaz: 650, 'Doğal Ahşap': 750 } },
+  { size: '50×70 cm', note: 'Büyük format, etkileyici duvar sunumu', prices: { Siyah: 980, Beyaz: 940, 'Doğal Ahşap': 1100 } },
 ]
-
-const COLOR_SWATCH = { Siyah: '#1a1a1a', Beyaz: '#f5f4f0', 'Doğal Ahşap': '#a97c50' }
+const FALLBACK_SWATCH = { Siyah: '#1a1a1a', Beyaz: '#f5f4f0', 'Doğal Ahşap': '#a97c50' }
 
 const FEATURES = [
   {
@@ -78,25 +60,71 @@ const FEATURES = [
   },
 ]
 
-const heading = { fontFamily: "'Archivo Black', sans-serif", fontWeight: 400, color: 'var(--ink)' }
+const heading = { fontFamily: 'var(--font-heading)', fontWeight: 400, color: 'var(--ink)' }
 const eyebrow = {
-  fontFamily: "'Archivo', sans-serif", fontSize: '.72rem', fontWeight: 500,
+  fontFamily: 'var(--font-body)', fontSize: '.72rem', fontWeight: 500,
   letterSpacing: '.18em', textTransform: 'uppercase', color: 'var(--accent)',
 }
-const body = { fontFamily: "'Archivo', sans-serif", fontSize: '.9rem', lineHeight: 1.7, color: 'var(--muted)' }
-const label = { fontFamily: "'Archivo', sans-serif", fontSize: '.72rem', fontWeight: 500, letterSpacing: '.08em', textTransform: 'uppercase', color: 'var(--ink)' }
+const body = { fontFamily: 'var(--font-body)', fontSize: '.9rem', lineHeight: 1.7, color: 'var(--muted)' }
+const label = { fontFamily: 'var(--font-body)', fontSize: '.72rem', fontWeight: 500, letterSpacing: '.08em', textTransform: 'uppercase', color: 'var(--ink)' }
 
 const inputStyle = {
   width: '100%', padding: '.65rem .85rem', border: '1px solid var(--border)',
-  fontFamily: "'Archivo', sans-serif", fontSize: '.85rem', color: 'var(--ink)',
+  fontFamily: 'var(--font-body)', fontSize: '.85rem', color: 'var(--ink)',
   outline: 'none', boxSizing: 'border-box', background: '#fff',
 }
 
 export default function Cerceve() {
-  const [form, setForm] = useState({
-    name: '', email: '', phone: '', qty: '', size: '', color: '',
-  })
+  const [form, setForm] = useState({ name: '', email: '', phone: '', qty: '', size: '', color: '' })
   const [status, setStatus] = useState('idle') // idle | submitting | sent
+
+  const [sizes, setSizes] = useState(FALLBACK_SIZES)
+  const [colorSwatch, setColorSwatch] = useState(FALLBACK_SWATCH)
+  const [images, setImages] = useState({
+    hero: heroImgDefault,
+    'renk-secenekleri': renkSecenekleriImgDefault,
+    'renk-detay': renkDetayImgDefault,
+    ornekler: [
+      { image_url: ornekSiyahImgDefault, alt: 'Siyah çerçeveli örnek eser' },
+      { image_url: ornekAhsapImgDefault, alt: 'Koyu ahşap çerçeveli örnek eser' },
+    ],
+  })
+
+  useEffect(() => { loadData() }, [])
+
+  async function loadData() {
+    const [{ data: options }, { data: imgs }] = await Promise.all([
+      supabase.from('frame_options').select('id, size, note, sort_order, frame_option_prices(color, price, swatch_hex, sort_order)').order('sort_order'),
+      supabase.from('page_images').select('*').eq('page', 'cerceve').order('sort_order'),
+    ])
+
+    if (options && options.length) {
+      const swatch = {}
+      const mapped = options.map(o => {
+        const prices = {}
+        ;[...(o.frame_option_prices || [])].sort((a, b) => a.sort_order - b.sort_order).forEach(p => {
+          prices[p.color] = p.price
+          swatch[p.color] = p.swatch_hex
+        })
+        return { size: o.size, note: o.note, prices }
+      })
+      setSizes(mapped)
+      setColorSwatch(swatch)
+    }
+
+    if (imgs && imgs.length) {
+      setImages(prev => {
+        const next = { ...prev }
+        const bySection = {}
+        imgs.forEach(row => { (bySection[row.section] ||= []).push(row) })
+        if (bySection.hero?.[0]) next.hero = bySection.hero[0].image_url
+        if (bySection['renk-secenekleri']?.[0]) next['renk-secenekleri'] = bySection['renk-secenekleri'][0].image_url
+        if (bySection['renk-detay']?.[0]) next['renk-detay'] = bySection['renk-detay'][0].image_url
+        if (bySection.ornekler?.length) next.ornekler = bySection.ornekler
+        return next
+      })
+    }
+  }
 
   function handleChange(e) {
     const { name, value } = e.target
@@ -120,7 +148,7 @@ export default function Cerceve() {
         textAlign: 'center', overflow: 'hidden', background: 'var(--surface)',
       }}>
         <img
-          src={heroImg}
+          src={images.hero}
           alt="Çerçeveli fotoğraflardan oluşan galeri duvarı"
           style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }}
         />
@@ -158,12 +186,12 @@ export default function Cerceve() {
       {/* Renk seçenekleri */}
       <section style={{ maxWidth: 900, margin: '0 auto', padding: '0 2rem 1rem' }}>
         <img
-          src={renkSecenekleriImg}
+          src={images['renk-secenekleri']}
           alt="Siyah, beyaz ve doğal ahşap çerçeve renk seçenekleri"
           style={{ width: '100%', height: 'auto', display: 'block', marginBottom: '1rem' }}
         />
         <img
-          src={renkDetayImg}
+          src={images['renk-detay']}
           alt="Ahşap çerçeve köşe detayı"
           style={{ width: '100%', height: 'auto', display: 'block' }}
         />
@@ -172,9 +200,16 @@ export default function Cerceve() {
       {/* Örnek çerçeveli işler */}
       <section style={{ maxWidth: 900, margin: '0 auto', padding: '2rem 2rem 1rem' }}>
         <p style={{ ...eyebrow, textAlign: 'center', marginBottom: '1.5rem' }}>Örnek Çerçeveli İşler</p>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
-          <img src={ornekSiyahImg} alt="Siyah çerçeveli örnek eser" style={{ width: '100%', height: 'auto', display: 'block' }} />
-          <img src={ornekAhsapImg} alt="Koyu ahşap çerçeveli örnek eser" style={{ width: '100%', height: 'auto', display: 'block' }} />
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '1.5rem' }}>
+          {images.ornekler.map((img, i) => (
+            <div key={i} style={{ aspectRatio: '4 / 5', overflow: 'hidden' }}>
+              <img
+                src={img.image_url}
+                alt={img.alt || 'Örnek çerçeveli eser'}
+                style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+              />
+            </div>
+          ))}
         </div>
       </section>
 
@@ -184,7 +219,7 @@ export default function Cerceve() {
           Tüm çerçeveler UV korumalı cam ve hazır asma aparatıyla teslim edilir.
         </p>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '1.5rem' }}>
-          {SIZES.map(s => (
+          {sizes.map(s => (
             <div key={s.size} style={{ border: '1px solid var(--border)', padding: '1.5rem' }}>
               <h3 style={{ ...heading, fontSize: '1.1rem', margin: '0 0 .3rem' }}>{s.size}</h3>
               <p style={{ ...body, fontSize: '.78rem', marginBottom: '1rem' }}>{s.note}</p>
@@ -194,7 +229,7 @@ export default function Cerceve() {
                     <span style={{ display: 'flex', alignItems: 'center', gap: '.5rem', ...body, fontSize: '.85rem' }}>
                       <span style={{
                         width: 14, height: 14, borderRadius: '50%',
-                        background: COLOR_SWATCH[color],
+                        background: colorSwatch[color] || '#ccc',
                         border: color === 'Beyaz' ? '1px solid var(--border)' : 'none',
                         display: 'inline-block',
                       }} />
@@ -209,7 +244,7 @@ export default function Cerceve() {
                 style={{
                   width: '100%', padding: '.8rem', background: 'none',
                   border: '1px solid var(--ink)', color: 'var(--ink)',
-                  fontFamily: "'Archivo', sans-serif", fontSize: '.72rem',
+                  fontFamily: 'var(--font-body)', fontSize: '.72rem',
                   letterSpacing: '.14em', textTransform: 'uppercase', cursor: 'pointer',
                 }}
               >
@@ -262,14 +297,14 @@ export default function Cerceve() {
                   <label style={{ ...label, display: 'block', marginBottom: '.4rem' }}>Çerçeve Boyutu *</label>
                   <select name="size" required value={form.size} onChange={handleChange} style={inputStyle}>
                     <option value="">Boyut seçin</option>
-                    {SIZES.map(s => <option key={s.size} value={s.size}>{s.size}</option>)}
+                    {sizes.map(s => <option key={s.size} value={s.size}>{s.size}</option>)}
                   </select>
                 </div>
                 <div>
                   <label style={{ ...label, display: 'block', marginBottom: '.4rem' }}>Çerçeve Rengi *</label>
                   <select name="color" required value={form.color} onChange={handleChange} style={inputStyle}>
                     <option value="">Renk seçin</option>
-                    {Object.keys(COLOR_SWATCH).map(c => <option key={c} value={c}>{c}</option>)}
+                    {Object.keys(colorSwatch).map(c => <option key={c} value={c}>{c}</option>)}
                   </select>
                 </div>
               </div>
@@ -286,7 +321,7 @@ export default function Cerceve() {
                 type="submit"
                 style={{
                   marginTop: '.5rem', padding: '.9rem', background: 'var(--accent)',
-                  color: '#fff', border: 'none', fontFamily: "'Archivo', sans-serif",
+                  color: '#fff', border: 'none', fontFamily: 'var(--font-body)',
                   fontSize: '.75rem', letterSpacing: '.14em', textTransform: 'uppercase',
                   cursor: 'pointer',
                 }}
