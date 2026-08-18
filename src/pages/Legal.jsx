@@ -9,7 +9,7 @@ import { useParams, Link } from 'react-router-dom'
 const SELLER = {
   name: '[AD SOYAD / ŞİRKET ÜNVANI]',
   address: '[AÇIK ADRES]',
-  email: 'info@fossilgarden.com',
+  email: 'info@artipozstudio.com',
   phone: '[TELEFON]',
 }
 
@@ -17,7 +17,7 @@ const PAGES = {
   'mesafeli-satis': {
     title: 'Mesafeli Satış Sözleşmesi',
     sections: [
-      ['1. Taraflar', `SATICI: ${SELLER.name}, ${SELLER.address}, ${SELLER.email}. ALICI: Sipariş formunda bilgileri yer alan kişi. İşbu sözleşme, ALICI'nın fossilgarden üzerinden sipariş verdiği ürünlerin satışı ve teslimi ile ilgili olarak 6502 sayılı Tüketicinin Korunması Hakkında Kanun ve Mesafeli Sözleşmeler Yönetmeliği hükümleri gereğince tarafların hak ve yükümlülüklerini düzenler.`],
+      ['1. Taraflar', `SATICI: ${SELLER.name}, ${SELLER.address}, ${SELLER.email}. ALICI: Sipariş formunda bilgileri yer alan kişi. İşbu sözleşme, ALICI'nın Artı Poz üzerinden sipariş verdiği ürünlerin satışı ve teslimi ile ilgili olarak 6502 sayılı Tüketicinin Korunması Hakkında Kanun ve Mesafeli Sözleşmeler Yönetmeliği hükümleri gereğince tarafların hak ve yükümlülüklerini düzenler.`],
       ['2. Sözleşme Konusu Ürün', `Ürünün türü, adedi, ebadı ve satış bedeli sipariş özetinde belirtildiği gibidir. Eserler fine art baskı veya orijinal eser niteliğindedir; her eser orijinallik sertifikası ile gönderilir.`],
       ['3. Teslimat', `Ürünler, sipariş onayını takiben en geç 30 gün içinde, taahhüt edilen sürede (olağan koşullarda 3–5 iş günü) ALICI'nın bildirdiği adrese sigortalı kargo ile teslim edilir. Kargo ücreti sipariş özetinde belirtilir.`],
       ['4. Cayma Hakkı', `ALICI, ürünü teslim aldığı tarihten itibaren 14 gün içinde hiçbir gerekçe göstermeksizin cayma hakkını kullanabilir. Cayma bildirimi ${SELLER.email} adresine yazılı olarak yapılmalıdır. İade edilen ürünün, teslim edildiği haliyle, hasarsız ve orijinal ambalajında gönderilmesi gerekir. Kişiye özel üretilen (özel ölçü, özel çerçeve vb.) ürünlerde cayma hakkı bulunmamaktadır.`],

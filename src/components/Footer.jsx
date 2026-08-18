@@ -71,7 +71,7 @@ function Footer() {
           İletişim
         </div>
         <div style={{ fontSize: '.75rem', color: 'var(--muted)', lineHeight: 2 }}>
-          <div>info@fossilgarden.com</div>
+          <div>info@artipozstudio.com</div>
           <div>İstanbul, Türkiye</div>
         </div>
         <div style={{ display: 'flex', gap: '.8rem', marginTop: '1rem' }}>

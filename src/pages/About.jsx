@@ -53,7 +53,7 @@ function About() {
 
         <h2 style={h2}>İletişim</h2>
         <p style={p}>
-          Sorularınız için <a href="mailto:info@fossilgarden.com" style={{ color: 'var(--gold)' }}>info@fossilgarden.com</a> adresinden
+          Sorularınız için <a href="mailto:info@artipozstudio.com" style={{ color: 'var(--gold)' }}>info@artipozstudio.com</a> adresinden
           ya da ürün sayfalarındaki WhatsApp hattından bize ulaşabilirsiniz.
         </p>
       </div>
