@@ -9,7 +9,7 @@
       // sunucu bu path'i bulamayıp buraya düşer. Path'i query string'e
       // kodlayıp index.html'e geri yönlendiriyoruz; index.html'deki script
       // bunu geri çözüp React Router'a doğru path'i veriyor.
-      var pathSegmentsToKeep = 1; // '/fossilgarden' kısmını koru
+      var pathSegmentsToKeep = 0; // custom domain kökten sunuluyor, korunacak alt klasör yok
       var l = window.location;
       l.replace(
         l.protocol + '//' + l.hostname + (l.port ? ':' + l.port : '') +
