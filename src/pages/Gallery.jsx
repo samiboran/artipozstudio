@@ -344,7 +344,7 @@ function Gallery() {
           </div>
         ) : (
           <form onSubmit={submitContact} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: '1rem' }}>
               <div>
                 <label style={contactLabel}>İsim *</label>
                 <input name="isim" required value={contact.isim} onChange={updateContact} style={contactInput} placeholder="İsim" />
@@ -360,7 +360,7 @@ function Gallery() {
               <input name="adres" required value={contact.adres} onChange={updateContact} style={contactInput} placeholder="Adres" />
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: '1rem' }}>
               <div>
                 <label style={contactLabel}>E-posta *</label>
                 <input name="email" type="email" required value={contact.email} onChange={updateContact} style={contactInput} placeholder="E-posta" />
@@ -371,7 +371,7 @@ function Gallery() {
               </div>
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: '1rem' }}>
               <div>
                 <label style={contactLabel}>Ödeme Yöntemi</label>
                 <select name="odemeYontemi" value={contact.odemeYontemi} onChange={updateContact} style={contactInput}>

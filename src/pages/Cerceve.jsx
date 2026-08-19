@@ -272,7 +272,7 @@ export default function Cerceve() {
             </div>
           ) : (
             <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: '1rem' }}>
                 <div>
                   <label style={{ ...label, display: 'block', marginBottom: '.4rem' }}>Ad Soyad *</label>
                   <input name="name" required value={form.name} onChange={handleChange} style={inputStyle} placeholder="Adınız ve soyadınız" />
@@ -282,7 +282,7 @@ export default function Cerceve() {
                   <input name="email" type="email" required value={form.email} onChange={handleChange} style={inputStyle} placeholder="E-posta adresiniz" />
                 </div>
               </div>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: '1rem' }}>
                 <div>
                   <label style={{ ...label, display: 'block', marginBottom: '.4rem' }}>Telefon *</label>
                   <input name="phone" type="tel" required value={form.phone} onChange={handleChange} style={inputStyle} placeholder="Telefon numaranız" />
@@ -292,7 +292,7 @@ export default function Cerceve() {
                   <input name="qty" type="number" min="1" required value={form.qty} onChange={handleChange} style={inputStyle} placeholder="Adet" />
                 </div>
               </div>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: '1rem' }}>
                 <div>
                   <label style={{ ...label, display: 'block', marginBottom: '.4rem' }}>Çerçeve Boyutu *</label>
                   <select name="size" required value={form.size} onChange={handleChange} style={inputStyle}>

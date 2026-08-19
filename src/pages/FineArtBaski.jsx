@@ -216,7 +216,7 @@ export default function FineArtBaski() {
                   </p>
                 </div>
               </div>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1.2rem' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: '1rem', marginBottom: '1.2rem' }}>
                 <div style={{ aspectRatio: '4/3' }}>
                   {p.texturePhoto
                     ? <img src={p.texturePhoto} alt={`${p.name} kağıt dokusu`} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />

@@ -520,7 +520,7 @@ function Admin() {
                     <strong>Kargo takip no:</strong> {o.tracking_number}
                   </div>
                 )}
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1.5rem' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: '1rem', marginBottom: '1.5rem' }}>
                   {[['Ad Soyad', o.name], ['E-posta', o.email || '—'], ['Telefon', o.phone], ['Adres', o.address]].map(([k, v]) => (
                     <div key={k}>
                       <div style={{ fontSize: '.6rem', letterSpacing: '.12em', textTransform: 'uppercase', color: '#aaa', marginBottom: '.3rem' }}>{k}</div>
@@ -600,7 +600,7 @@ function Admin() {
                   onChange={e => e.target.files[0] && uploadImage(e.target.files[0])} />
               </div>
 
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1rem' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: '1rem', marginBottom: '1rem' }}>
                 <div><span style={label}>Başlık</span><input style={inp} value={form.title} onChange={e => handleTitle(e.target.value)} placeholder="Kırağı Botanik I" /></div>
                 <div><span style={label}>Slug (otomatik)</span><input style={{ ...inp, color: '#aaa' }} value={form.slug} onChange={e => setForm(f => ({ ...f, slug: e.target.value }))} /></div>
               </div>
@@ -657,7 +657,7 @@ function Admin() {
                 {selectedFrame && <button onClick={deleteFrame} style={btnDanger}>Sil</button>}
               </div>
 
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1rem' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: '1rem', marginBottom: '1rem' }}>
                 <div><span style={label}>Boy (ör. 21×30 cm)</span><input style={inp} value={frameForm.size} onChange={e => setFrameForm(f => ({ ...f, size: e.target.value }))} /></div>
                 <div><span style={label}>Açıklama</span><input style={inp} value={frameForm.note} onChange={e => setFrameForm(f => ({ ...f, note: e.target.value }))} placeholder="A4 formatı, en çok tercih edilen boyut" /></div>
               </div>
@@ -691,7 +691,7 @@ function Admin() {
                 {selectedPaper && <button onClick={deletePaper} style={btnDanger}>Sil</button>}
               </div>
 
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1rem' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: '1rem', marginBottom: '1rem' }}>
                 <div style={{ gridColumn: '1 / -1' }}><span style={label}>Kağıt Adı</span><input style={inp} value={paperForm.name} onChange={e => setPaperForm(f => ({ ...f, name: e.target.value }))} placeholder="Bamboo" /></div>
                 <div><span style={label}>Yüzey (Mat / Parlak)</span><input style={inp} value={paperForm.surface} onChange={e => setPaperForm(f => ({ ...f, surface: e.target.value }))} /></div>
                 <div><span style={label}>Gramaj</span><input style={inp} value={paperForm.gsm} onChange={e => setPaperForm(f => ({ ...f, gsm: e.target.value }))} placeholder="290gsm" /></div>
@@ -705,7 +705,7 @@ function Admin() {
                 <textarea style={{ ...inp, minHeight: 80, resize: 'vertical' }} value={paperForm.description} onChange={e => setPaperForm(f => ({ ...f, description: e.target.value }))} />
               </div>
 
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '2rem' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: '1rem', marginBottom: '2rem' }}>
                 {[['texture_photo_url', 'Kağıt Dokusu Yakın Çekim'], ['preview_photo_url', 'Baskı Önizlemesi']].map(([field, lbl]) => (
                   <div key={field}>
                     <span style={label}>{lbl}</span>
