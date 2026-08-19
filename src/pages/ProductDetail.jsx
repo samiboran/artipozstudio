@@ -242,7 +242,7 @@ setTimeout(() => setAdded(false), 1800)
             <span style={{ fontSize: '1.1rem' }}>🛡</span>
             <div style={{ fontSize: '.64rem', lineHeight: 1.7 }}>
               <strong style={{ display: 'block', fontSize: '.68rem' }}>14 Gün İade Garantisi</strong>
-              Ücretsiz iade · Orijinallik sertifikası · Güvenli ödeme
+              Ücretsiz iade · Arşiv kalitesinde baskı · Güvenli ödeme
             </div>
           </div>
 
