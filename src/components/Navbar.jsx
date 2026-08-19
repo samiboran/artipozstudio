@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react'
 
 const SOCIAL_LINKS = [
   {
-    label: 'Instagram', href: 'https://instagram.com/artipoz', icon: (
+    label: 'Instagram', href: 'https://www.instagram.com/artipozstudio/', icon: (
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6">
         <rect x="3" y="3" width="18" height="18" rx="5" />
         <circle cx="12" cy="12" r="4" />
@@ -12,9 +12,11 @@ const SOCIAL_LINKS = [
     )
   },
   {
-    label: 'X', href: 'https://x.com/artipoz', icon: (
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
-        <path d="M18.9 2H22l-7.6 8.7L23 22h-6.9l-5.4-6.9L4.5 22H1.4l8.1-9.3L1 2h7.1l4.9 6.3L18.9 2zm-1.2 18h1.9L7.4 4H5.4l12.3 16z" />
+    label: 'Etsy', href: 'https://www.etsy.com/shop/ArtiPozStudioShop', icon: (
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6">
+        <path d="M6 3h11.5a1 1 0 0 1 1 1.15l-.8 5.35" strokeLinecap="round" strokeLinejoin="round" />
+        <path d="M4.5 9h13.7a1 1 0 0 1 .99 1.14l-1.36 9.5A1 1 0 0 1 16.85 20.5H6.15a1 1 0 0 1-.99-.86l-1.36-9.5A1 1 0 0 1 4.79 9z" strokeLinejoin="round" />
+        <path d="M9 9V6.5a3 3 0 0 1 6 0V9" />
       </svg>
     )
   },
