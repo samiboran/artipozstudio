@@ -27,22 +27,8 @@ function Footer() {
           Artı Poz
         </div>
         <p style={{ fontSize: '.72rem', lineHeight: 1.8, color: 'var(--muted)', maxWidth: 220 }}>
-          Hahnemühle sertifikalı fine art baskı ve özgün eserler. İstanbul.
+          Fine art baskılarımız için Hahnemühle ve Awagami kağıtları kullanıyoruz. İstanbul.
         </p>
-      </div>
-
-      {/* Koleksiyon */}
-      <div>
-        <div style={{ fontSize: '.6rem', letterSpacing: '.18em', textTransform: 'uppercase', marginBottom: '1rem', color: 'var(--ink)' }}>
-          Koleksiyon
-        </div>
-        {['Fotoğraf', 'Resim', 'Baskı', 'Heykel'].map(item => (
-          <div key={item} style={{ marginBottom: '.5rem' }}>
-            <Link to={`/isler?category=${item.toLowerCase()}`} style={{ fontSize: '.75rem', color: 'var(--muted)' }}>
-              {item}
-            </Link>
-          </div>
-        ))}
       </div>
 
       {/* Bilgi */}

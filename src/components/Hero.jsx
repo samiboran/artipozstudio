@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
-import heroImgDefault from '../assets/hero.png'
+import heroImgDefault from '../assets/fine-art/hero.jpg'
 
 export default function Hero() {
   const [heroUrl, setHeroUrl] = useState(heroImgDefault)

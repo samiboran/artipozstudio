@@ -32,16 +32,9 @@ function About() {
 
         <h2 style={h2}>Baskı Kalitesi</h2>
         <p style={p}>
-          Tüm baskılarımız Hahnemühle sertifikalı fine art kâğıtlara,
-          arşivsel pigment mürekkeplerle yapılır. Doğru saklama koşullarında
+          Fine art baskılarımız için Hahnemühle ve Awagami kağıtları, arşivsel
+          pigment mürekkeplerle kullanıyoruz. Doğru saklama koşullarında
           solmadan nesiller boyu dayanacak şekilde üretilir.
-        </p>
-
-        <h2 style={h2}>Orijinallik Sertifikası</h2>
-        <p style={p}>
-          Her eser, sanatçı imzalı ve numaralı orijinallik sertifikası ile
-          gönderilir. Sınırlı edisyonlarda edisyon numarası sertifika üzerinde
-          belirtilir.
         </p>
 
         <h2 style={h2}>Güvenli Teslimat</h2>
