@@ -252,7 +252,7 @@ setTimeout(() => setAdded(false), 1800)
               <div style={{ fontSize: '.58rem', letterSpacing: '.18em', textTransform: 'uppercase', color: 'var(--muted)', marginBottom: '.65rem' }}>Etiketler</div>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: '.4rem', marginBottom: '1.4rem' }}>
                 {artwork.tags.map(tag => (
-                  <span key={tag} onClick={() => navigate(`/?category=${tag}`)} style={{
+                  <span key={tag} onClick={() => navigate(`/isler?category=${tag}`)} style={{
                     fontSize: '.6rem', letterSpacing: '.1em', textTransform: 'uppercase',
                     color: 'var(--gold)', padding: '.25rem .65rem',
                     border: '1px solid rgba(18,42,150,.28)', cursor: 'pointer'

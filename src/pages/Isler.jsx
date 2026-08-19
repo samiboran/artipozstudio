@@ -12,14 +12,15 @@ function Isler() {
   const [searchParams] = useSearchParams()
   const navigate = useNavigate()
   const search = searchParams.get('search') || ''
+  const category = searchParams.get('category') || ''
 
   useEffect(() => {
     setLoading(true)
     setPage(0)
-    fetchArtworks({ search })
+    fetchArtworks({ search, tag: category })
       .then(setArtworks)
       .finally(() => setLoading(false))
-  }, [search])
+  }, [search, category])
 
   const pageCount = Math.ceil(artworks.length / PER_PAGE)
 
@@ -36,6 +37,11 @@ function Isler() {
         {search && (
           <p style={{ fontFamily: "'Archivo', sans-serif", fontSize: '.82rem', color: 'var(--muted)' }}>
             "{search}" için {artworks.length} sonuç
+          </p>
+        )}
+        {!search && category && (
+          <p style={{ fontFamily: "'Archivo', sans-serif", fontSize: '.82rem', color: 'var(--muted)' }}>
+            "{category}" kategorisinde {artworks.length} sonuç
           </p>
         )}
       </div>

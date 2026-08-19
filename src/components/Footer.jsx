@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom'
 
-const INSTAGRAM_URL = 'https://instagram.com/HESAP_ADIN'
-const PINTEREST_URL = 'https://pinterest.com/HESAP_ADIN'
+const INSTAGRAM_URL = 'https://www.instagram.com/artipozstudio/'
+const ETSY_URL = 'https://www.etsy.com/shop/ArtiPozStudioShop'
 
 function Footer() {
   return (
@@ -38,7 +38,7 @@ function Footer() {
         </div>
         {['Fotoğraf', 'Resim', 'Baskı', 'Heykel'].map(item => (
           <div key={item} style={{ marginBottom: '.5rem' }}>
-            <Link to={`/?category=${item.toLowerCase()}`} style={{ fontSize: '.75rem', color: 'var(--muted)' }}>
+            <Link to={`/isler?category=${item.toLowerCase()}`} style={{ fontSize: '.75rem', color: 'var(--muted)' }}>
               {item}
             </Link>
           </div>
@@ -75,7 +75,7 @@ function Footer() {
           <div>İstanbul, Türkiye</div>
         </div>
         <div style={{ display: 'flex', gap: '.8rem', marginTop: '1rem' }}>
-          {[['Instagram', INSTAGRAM_URL], ['Pinterest', PINTEREST_URL]].map(([name, url]) => (
+          {[['Instagram', INSTAGRAM_URL], ['Etsy', ETSY_URL]].map(([name, url]) => (
             <a key={name} href={url} target="_blank" rel="noopener noreferrer" style={{
               fontSize: '.6rem', letterSpacing: '.12em', textTransform: 'uppercase',
               color: 'var(--gold)',
