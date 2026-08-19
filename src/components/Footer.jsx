@@ -15,22 +15,6 @@ function Footer() {
       background: 'var(--bg)'
     }}>
 
-      {/* Marka */}
-      <div>
-        <div style={{
-          fontFamily: "'Archivo Black', sans-serif",
-          fontSize: '1.1rem',
-          letterSpacing: '.2em',
-          textTransform: 'uppercase',
-          marginBottom: '.8rem'
-        }}>
-          Artı Poz
-        </div>
-        <p style={{ fontSize: '.72rem', lineHeight: 1.8, color: 'var(--muted)', maxWidth: 220 }}>
-          Fine art baskılarımız için Hahnemühle ve Awagami kağıtları kullanıyoruz. İstanbul.
-        </p>
-      </div>
-
       {/* Bilgi */}
       <div>
         <div style={{ fontSize: '.6rem', letterSpacing: '.18em', textTransform: 'uppercase', marginBottom: '1rem', color: 'var(--ink)' }}>
