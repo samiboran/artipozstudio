@@ -420,10 +420,10 @@ function Gallery() {
           borderTop: '1px solid var(--border)',
         }}>
           <p style={{ ...eyebrow, marginBottom: '.6rem' }}>İstanbul, Taksim Meydanı</p>
-          <a href="mailto:info@fossilgarden.com" style={{
+          <a href="mailto:info@artipozstudio.com" style={{
             fontFamily: "'Archivo', sans-serif", fontSize: '.82rem', color: 'var(--muted)',
           }}>
-            info@fossilgarden.com
+            info@artipozstudio.com
           </a>
         </div>
       </section>

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Routes, Route } from 'react-router-dom'
+import { Routes, Route, useLocation } from 'react-router-dom'
 import Navbar from './components/Navbar'
 import Footer from './components/Footer'
 import CartSidebar from './components/CartSidebar'
@@ -7,9 +7,11 @@ import { useCart } from './hooks/useCart'
 import { supabase } from './lib/supabase'
 import { applySiteFont } from './lib/siteFonts'
 import Gallery from './pages/Gallery'
+import Isler from './pages/Isler'
 import ProductDetail from './pages/ProductDetail'
 import Admin from './pages/Admin'
 import Login from './pages/Login'
+import Signup from './pages/Signup'
 import NotFound from './pages/NotFound'
 import Favorites from './pages/Favorites'
 import About from './pages/About'
@@ -18,6 +20,17 @@ import FineArtBaski from './pages/FineArtBaski'
 import Cerceve from './pages/Cerceve'
 import FotografBaski from './pages/FotografBaski'
 import WhatsAppButton from './components/WhatsAppButton'
+
+// React Router sayfa değiştirince scroll pozisyonunu KORUYOR, sıfırlamıyor —
+// bu yüzden "İncele"ye veya navbar linkine tıklayınca yeni sayfa ortadan/en alttan
+// açılıyordu. Her rota değişiminde en üste sarıyoruz.
+function ScrollToTop() {
+  const { pathname } = useLocation()
+  useEffect(() => {
+    window.scrollTo(0, 0)
+  }, [pathname])
+  return null
+}
 
 function App() {
   const { count } = useCart()
@@ -29,12 +42,15 @@ function App() {
 
   return (
     <>
+      <ScrollToTop />
       <Navbar cartCount={count} onCartClick={() => setCartOpen(true)} />
       <Routes>
         <Route path="/" element={<Gallery />} />
+        <Route path="/isler" element={<Isler />} />
         <Route path="/product/:slug" element={<ProductDetail />} />
         <Route path="/admin" element={<Admin />} />
         <Route path="/login" element={<Login />} />
+        <Route path="/kayit" element={<Signup />} />
         <Route path="/favoriler" element={<Favorites />} />
         <Route path="/hakkimizda" element={<About />} />
         <Route path="/yasal/:page" element={<Legal />} />
