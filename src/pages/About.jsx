@@ -28,9 +28,8 @@ function About() {
           Fotoğraf bölümünden mezun oldum ve uzun yıllar müzelerde, çağdaş sanat
           galerilerinde çalıştım. O süreçte, asıl yapmam gerekenin kendi işimi
           ve kendi markamı kurmak olduğuna inanmaya başladım. Fotoğrafa ve baskı
-          sürecine duyduğum ilgiyle bu yola çıktım — bugün kendi portföyümden,
-          Türkiye'de ve yurt dışında sergilenmiş eserler dahil, müze kalitesinde
-          baskılar sunuyorum.
+          sürecine duyduğum ilgiyle bu yola çıktım — bugün kendi portföyümden
+          müze kalitesinde baskılar sunuyorum.
         </p>
 
         <h2 style={h2}>Baskı Kalitesi</h2>
