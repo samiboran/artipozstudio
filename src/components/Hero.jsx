@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
+import heroImgDefault from '../assets/hero.png'
 
 export default function Hero() {
-  const [heroUrl, setHeroUrl] = useState(null)
+  const [heroUrl, setHeroUrl] = useState(heroImgDefault)
 
   useEffect(() => {
     supabase
@@ -22,22 +23,11 @@ export default function Hero() {
       display: 'flex', alignItems: 'center', justifyContent: 'center',
       textAlign: 'center', overflow: 'hidden', background: '#2b2f28',
     }}>
-      {heroUrl ? (
-        <img
-          src={heroUrl}
-          alt="Artı Poz"
-          style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }}
-        />
-      ) : (
-        <div style={{
-          position: 'absolute', inset: 0,
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          color: 'rgba(255,255,255,.35)', fontFamily: "'Archivo', sans-serif",
-          fontSize: '.75rem', letterSpacing: '.1em', textTransform: 'uppercase',
-        }}>
-          Hero görseli — Admin → Görseller'den yükle
-        </div>
-      )}
+      <img
+        src={heroUrl}
+        alt="Artı Poz"
+        style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }}
+      />
 
       <div style={{
         position: 'absolute', inset: 0,
