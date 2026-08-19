@@ -29,7 +29,7 @@ function About() {
           galerilerinde çalıştım. O süreçte, asıl yapmam gerekenin kendi işimi
           ve kendi markamı kurmak olduğuna inanmaya başladım. Fotoğrafa ve baskı
           sürecine duyduğum ilgiyle bu yola çıktım — bugün kendi portföyümden
-          müze kalitesinde baskılar sunuyorum.
+          ve sizlerden gelen eserlerle müze kalitesinde baskılar üretiyorum.
         </p>
 
         <h2 style={h2}>Baskı Kalitesi</h2>
