@@ -1,5 +1,6 @@
 import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { useState, useEffect } from 'react'
+import { supabase } from '../lib/supabase'
 
 const SOCIAL_LINKS = [
   {
@@ -14,9 +15,7 @@ const SOCIAL_LINKS = [
   {
     label: 'Etsy', href: 'https://www.etsy.com/shop/ArtiPozStudioShop', icon: (
       <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6">
-        <path d="M6 3h11.5a1 1 0 0 1 1 1.15l-.8 5.35" strokeLinecap="round" strokeLinejoin="round" />
-        <path d="M4.5 9h13.7a1 1 0 0 1 .99 1.14l-1.36 9.5A1 1 0 0 1 16.85 20.5H6.15a1 1 0 0 1-.99-.86l-1.36-9.5A1 1 0 0 1 4.79 9z" strokeLinejoin="round" />
-        <path d="M9 9V6.5a3 3 0 0 1 6 0V9" />
+        <path d="M6 3h9l-1 4H8v5h5.5l-1 4H8v3.5h6.5L15 21H6z" strokeLinejoin="round" />
       </svg>
     )
   },
@@ -35,19 +34,38 @@ const NAV_LINKS = [
   { label: 'Fotoğraf Baskı', to: '/fotograf-baski' },
   { label: 'Fine Art Baskı', to: '/fine-art-baski' },
   { label: 'Çerçeve', to: '/cerceve' },
-  { label: 'İşler', to: '/isler' }, // TODO: /isler sayfası henüz yok, netleşince eklenecek
+  { label: 'İşler', to: '/isler' },
 ]
 
 function Navbar({ cartCount = 0, onCartClick }) {
   const [search, setSearch] = useState('')
   const [menuOpen, setMenuOpen] = useState(false)
   const [scrolled, setScrolled] = useState(false)
+  const [customerName, setCustomerName] = useState(null)
   const navigate = useNavigate()
   const location = useLocation()
 
   const isHome = location.pathname === '/'
   // Ana sayfada hero'nun üzerinde şeffaf, aşağı inince beyaz; diğer sayfalarda her zaman beyaz.
   const transparent = isHome && !scrolled
+
+  useEffect(() => {
+    async function loadCustomer(session) {
+      if (!session) { setCustomerName(null); return }
+      const { data: profile } = await supabase.from('profiles').select('full_name, role').eq('id', session.user.id).single()
+      // Admin hesabı navbar'da müşteri gibi görünmesin — Admin panelinde zaten kendi girişini görüyor.
+      setCustomerName(profile?.role === 'admin' ? null : (profile?.full_name || session.user.email))
+    }
+    supabase.auth.getSession().then(({ data: { session } }) => loadCustomer(session))
+    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => loadCustomer(session))
+    return () => listener.subscription.unsubscribe()
+  }, [])
+
+  async function handleLogout() {
+    await supabase.auth.signOut()
+    setCustomerName(null)
+    navigate('/')
+  }
 
   useEffect(() => {
     if (!isHome) { setScrolled(false); return }
@@ -59,7 +77,7 @@ function Navbar({ cartCount = 0, onCartClick }) {
 
   const handleSearch = (e) => {
     if (e.key === 'Enter' && search.trim()) {
-      navigate(`/?search=${search}`)
+      navigate(`/isler?search=${search}`)
       setMenuOpen(false)
     }
   }
@@ -157,20 +175,37 @@ function Navbar({ cartCount = 0, onCartClick }) {
 
             <span style={{ width: 1, height: 16, background: 'var(--border)' }} />
 
-            <Link to="/login" style={{
-              fontSize: '.68rem', letterSpacing: '.14em',
-              textTransform: 'uppercase', color: 'var(--muted)'
-            }}>
-              Log in
-            </Link>
+            {customerName ? (
+              <>
+                <span style={{ fontSize: '.72rem', color: 'var(--ink)' }}>
+                  Merhaba, {customerName.split(' ')[0]}
+                </span>
+                <button onClick={handleLogout} style={{
+                  background: 'none', border: 'none', cursor: 'pointer',
+                  fontSize: '.68rem', letterSpacing: '.14em',
+                  textTransform: 'uppercase', color: 'var(--muted)',
+                }}>
+                  Çıkış
+                </button>
+              </>
+            ) : (
+              <>
+                <Link to="/login" style={{
+                  fontSize: '.68rem', letterSpacing: '.14em',
+                  textTransform: 'uppercase', color: 'var(--muted)'
+                }}>
+                  Log in
+                </Link>
 
-            <Link to="/login" style={{
-              fontSize: '.68rem', letterSpacing: '.14em',
-              textTransform: 'uppercase', color: 'var(--bg)',
-              background: 'var(--accent)', padding: '.5rem 1rem'
-            }}>
-              Sign up
-            </Link>
+                <Link to="/kayit" style={{
+                  fontSize: '.68rem', letterSpacing: '.14em',
+                  textTransform: 'uppercase', color: 'var(--bg)',
+                  background: 'var(--accent)', padding: '.5rem 1rem'
+                }}>
+                  Sign up
+                </Link>
+              </>
+            )}
           </div>
         )}
 
@@ -260,21 +295,42 @@ function Navbar({ cartCount = 0, onCartClick }) {
             Sepet ({cartCount})
           </button>
 
-          <Link to="/login" onClick={() => setMenuOpen(false)} style={{
-            fontSize: '.8rem', letterSpacing: '.16em',
-            textTransform: 'uppercase', color: 'var(--ink)',
-            borderBottom: '1px solid var(--border)', paddingBottom: '.8rem'
-          }}>
-            Log in
-          </Link>
+          {customerName ? (
+            <>
+              <div style={{
+                fontSize: '.8rem', letterSpacing: '.02em', color: 'var(--ink)',
+                borderBottom: '1px solid var(--border)', paddingBottom: '.8rem'
+              }}>
+                Merhaba, {customerName.split(' ')[0]}
+              </div>
+              <button onClick={() => { handleLogout(); setMenuOpen(false) }} style={{
+                background: 'none', border: 'none', textAlign: 'left', cursor: 'pointer',
+                fontSize: '.8rem', letterSpacing: '.16em',
+                textTransform: 'uppercase', color: 'var(--ink)',
+                borderBottom: '1px solid var(--border)', paddingBottom: '.8rem'
+              }}>
+                Çıkış
+              </button>
+            </>
+          ) : (
+            <>
+              <Link to="/login" onClick={() => setMenuOpen(false)} style={{
+                fontSize: '.8rem', letterSpacing: '.16em',
+                textTransform: 'uppercase', color: 'var(--ink)',
+                borderBottom: '1px solid var(--border)', paddingBottom: '.8rem'
+              }}>
+                Log in
+              </Link>
 
-          <Link to="/login" onClick={() => setMenuOpen(false)} style={{
-            fontSize: '.8rem', letterSpacing: '.16em',
-            textTransform: 'uppercase', color: 'var(--bg)',
-            background: 'var(--accent)', padding: '.7rem 1rem', textAlign: 'center'
-          }}>
-            Sign up
-          </Link>
+              <Link to="/kayit" onClick={() => setMenuOpen(false)} style={{
+                fontSize: '.8rem', letterSpacing: '.16em',
+                textTransform: 'uppercase', color: 'var(--bg)',
+                background: 'var(--accent)', padding: '.7rem 1rem', textAlign: 'center'
+              }}>
+                Sign up
+              </Link>
+            </>
+          )}
 
           <div style={{ display: 'flex', gap: '1.2rem', marginTop: '.5rem' }}>
             {SOCIAL_LINKS.map(s => (
