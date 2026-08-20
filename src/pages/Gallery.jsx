@@ -60,6 +60,7 @@ const contactInput = {
 
 function Gallery() {
   const [images, setImages] = useState({})
+  const [content, setContent] = useState({})
   const [papers, setPapers] = useState([])
   const [contact, setContact] = useState({
     isim: '', postaKodu: '', adres: '', email: '', telefon: '',
@@ -95,6 +96,17 @@ function Gallery() {
         data.forEach(row => { if (!map[row.section]) map[row.section] = row.image_url })
         setImages(map)
       })
+
+    supabase
+      .from('page_content')
+      .select('section, content')
+      .eq('page', 'gallery')
+      .then(({ data }) => {
+        if (!data) return
+        const map = {}
+        data.forEach(row => { if (row.content) map[row.section] = row.content })
+        setContent(map)
+      })
   }, [])
 
   return (
@@ -111,19 +123,22 @@ function Gallery() {
         </h2>
 
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '2.5rem' }}>
-          {HIZMETLER.map(h => (
+          {HIZMETLER.map(h => {
+            const title = content[`${h.key}-baslik`] || h.title
+            const desc = content[`${h.key}-aciklama`] || h.desc
+            return (
             <div key={h.key}>
               <img
                 src={images[h.key] || h.defaultImg}
-                alt={h.title}
+                alt={title}
                 style={{ width: '100%', aspectRatio: '4 / 3', objectFit: 'cover', display: 'block', marginBottom: '1.2rem' }}
               />
-              <p style={{ ...eyebrow, marginBottom: '.5rem' }}>{h.title.toUpperCase()}</p>
+              <p style={{ ...eyebrow, marginBottom: '.5rem' }}>{title.toUpperCase()}</p>
               <p style={{
                 fontFamily: "'Archivo', sans-serif", fontSize: '.88rem', lineHeight: 1.7,
                 color: 'var(--muted)', textAlign: 'left', margin: '0 0 1.2rem',
               }}>
-                {h.desc}
+                {desc}
               </p>
               <Link to={h.to} style={{
                 display: 'inline-block', padding: '.6rem 1.3rem',
@@ -134,7 +149,8 @@ function Gallery() {
                 İncele
               </Link>
             </div>
-          ))}
+            )
+          })}
         </div>
       </section>
 
@@ -148,9 +164,9 @@ function Gallery() {
           fontFamily: "'Archivo', sans-serif", fontSize: '.92rem', lineHeight: 1.8,
           color: 'var(--muted)', maxWidth: 640, margin: '0 auto 3rem',
         }}>
-          Hahnemühle'nin arşivsel kalitedeki fine art kağıtlarıyla, eserlerinizde üstün renk
+          {content['sertifikali-kagit-aciklama'] || `Hahnemühle'nin arşivsel kalitedeki fine art kağıtlarıyla, eserlerinizde üstün renk
           doğruluğu, derin tonlar ve yüksek detay elde edilir. Her baskı, uzun yıllar boyunca
-          ilk günkü etkisini koruyacak kalıcılık ve premium sunum anlayışıyla üretilir.
+          ilk günkü etkisini koruyacak kalıcılık ve premium sunum anlayışıyla üretilir.`}
         </p>
         <div style={{ width: '100%', aspectRatio: '16 / 9', overflow: 'hidden' }}>
           <img
@@ -250,10 +266,14 @@ function Gallery() {
         </div>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: '2.2rem' }}>
-          {FILE_PREP.map(item => (
+          {FILE_PREP.map((item, i) => {
+            const n = i + 1
+            const title = content[`dosya-hazirlik-${n}-baslik`] || item.title
+            const desc = content[`dosya-hazirlik-${n}-aciklama`]
+            return (
             <div key={item.title} style={{ textAlign: 'left', borderTop: '1px solid var(--border)', paddingTop: '2.2rem' }}>
               <h3 style={{ fontFamily: "'Archivo', sans-serif", fontSize: '.95rem', fontWeight: 600, color: 'var(--ink)', margin: '0 0 .9rem' }}>
-                {item.title}
+                {title}
               </h3>
               {item.badges.length > 0 && (
                 <div style={{ display: 'flex', gap: '.6rem', marginBottom: '.9rem' }}>
@@ -269,10 +289,11 @@ function Gallery() {
                 </div>
               )}
               <p style={{ fontFamily: "'Archivo', sans-serif", fontSize: '.85rem', lineHeight: 1.8, color: 'var(--muted)', margin: 0 }}>
-                {item.text}
+                {desc || item.text}
               </p>
             </div>
-          ))}
+            )
+          })}
         </div>
       </section>
 

@@ -87,6 +87,7 @@ export default function Cerceve() {
 
   const [sizes, setSizes] = useState(FALLBACK_SIZES)
   const [colorSwatch, setColorSwatch] = useState(FALLBACK_SWATCH)
+  const [content, setContent] = useState({})
   const [images, setImages] = useState({
     hero: heroImgDefault,
     'renk-secenekleri': renkSecenekleriImgDefault,
@@ -100,10 +101,17 @@ export default function Cerceve() {
   useEffect(() => { loadData() }, [])
 
   async function loadData() {
-    const [{ data: options }, { data: imgs }] = await Promise.all([
+    const [{ data: options }, { data: imgs }, { data: contentRows }] = await Promise.all([
       supabase.from('frame_options').select('id, size, note, sort_order, frame_option_prices(color, price, swatch_hex, sort_order)').order('sort_order'),
       supabase.from('page_images').select('*').eq('page', 'cerceve').order('sort_order'),
+      supabase.from('page_content').select('section, content').eq('page', 'cerceve'),
     ])
+
+    if (contentRows && contentRows.length) {
+      const map = {}
+      contentRows.forEach(row => { if (row.content) map[row.section] = row.content })
+      setContent(map)
+    }
 
     if (options && options.length) {
       const swatch = {}
@@ -218,8 +226,7 @@ export default function Cerceve() {
             Çerçeve
           </h1>
           <p style={{ ...body, color: 'rgba(255,255,255,.9)', maxWidth: 520, margin: '0 auto' }}>
-            Fotoğraflarınızı kalıcı kılın. Siyah, beyaz ve doğal ahşap çerçeve
-            seçenekleriyle anılarınızı sanat eserine dönüştürün.
+            {content['hero-aciklama'] || 'Fotoğraflarınızı kalıcı kılın. Siyah, beyaz ve doğal ahşap çerçeve seçenekleriyle anılarınızı sanat eserine dönüştürün.'}
           </p>
         </div>
       </section>

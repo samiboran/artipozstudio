@@ -38,6 +38,7 @@ const placeholderBox = (label) => (
 
 export default function FineArtBaski() {
   const [papers, setPapers] = useState(FALLBACK_PAPERS)
+  const [content, setContent] = useState({})
   const [images, setImages] = useState({
     hero: heroImgDefault,
     'kagit-secenekleri': kagitSecenekleriImgDefault,
@@ -52,10 +53,17 @@ export default function FineArtBaski() {
   useEffect(() => { loadData() }, [])
 
   async function loadData() {
-    const [{ data: paperRows }, { data: imgs }] = await Promise.all([
+    const [{ data: paperRows }, { data: imgs }, { data: contentRows }] = await Promise.all([
       supabase.from('papers').select('*').order('sort_order'),
       supabase.from('page_images').select('*').eq('page', 'fine-art-baski').order('sort_order'),
+      supabase.from('page_content').select('section, content').eq('page', 'fine-art-baski'),
     ])
+
+    if (contentRows && contentRows.length) {
+      const map = {}
+      contentRows.forEach(row => { if (row.content) map[row.section] = row.content })
+      setContent(map)
+    }
 
     if (paperRows && paperRows.length) {
       setPapers(paperRows.map((p, i) => ({
@@ -105,8 +113,7 @@ export default function FineArtBaski() {
             Fine Art Baskı
           </h1>
           <p style={{ ...body, color: 'rgba(255,255,255,.85)', maxWidth: 520, margin: '0 auto' }}>
-            Müze ve galeri standartlarında, arşiv kalitesinde baskı.
-            Sanatınızı nesiller boyu yaşatın.
+            {content['hero-aciklama'] || 'Müze ve galeri standartlarında, arşiv kalitesinde baskı. Sanatınızı nesiller boyu yaşatın.'}
           </p>
         </div>
       </section>

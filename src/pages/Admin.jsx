@@ -42,9 +42,41 @@ const IMAGE_SLOTS = [
   { page: 'fotograf-baski', section: 'parlak-2', label: 'Fotoğraf Baskı — Parlak Örnek (üzerine gelince, 2. görsel)', multiple: false, aspect: '4 / 3' },
 ]
 
+// page_content tablosunda yönetilen düzenlenebilir metin alanları — page_images ile
+// aynı desen: her satır page+section ile anahtarlı, admin hiç dokunmadıysa (satır
+// yok) sayfa kendi hardcoded metnini fallback olarak gösterir. placeholder, o
+// fallback'in aynısı — admin boş kutuya bakınca sitede şu an ne yazdığını görsün diye.
+const PAGE_TEXT_FIELDS = {
+  gallery: [
+    { section: 'hizmet-fotograf-baslik', label: 'Hizmetlerimiz — Fotoğraf Baskı Kart Başlığı', placeholder: 'Fotoğraf Baskı' },
+    { section: 'hizmet-fotograf-aciklama', label: 'Hizmetlerimiz — Fotoğraf Baskı Kart Açıklaması', placeholder: 'Mat, yarı mat, parlak ve saten yüzey seçenekli fotoğraf kağıtlarına, yüksek çözünürlükte profesyonel dijital fotoğraf baskıları üretiyoruz.', tall: true },
+    { section: 'hizmet-fine-art-baslik', label: 'Hizmetlerimiz — Fine Art Baskı Kart Başlığı', placeholder: 'Fine Art Baskı' },
+    { section: 'hizmet-fine-art-aciklama', label: 'Hizmetlerimiz — Fine Art Baskı Kart Açıklaması', placeholder: 'Fine art baskı hizmetimizle, arşivlik pigment mürekkepler ve özel sanat kağıtları kullanarak eserlerinizi yüksek kalite, doğru renk ve uzun ömürle sunuyoruz.', tall: true },
+    { section: 'hizmet-cerceve-baslik', label: 'Hizmetlerimiz — Çerçeveler Kart Başlığı', placeholder: 'Çerçeveler' },
+    { section: 'hizmet-cerceve-aciklama', label: 'Hizmetlerimiz — Çerçeveler Kart Açıklaması', placeholder: 'Eserlerinizi tamamlayan estetik ve koruyucu çerçeve çözümlerini, farklı ölçü ve tarz seçenekleriyle sunarak baskılarımızı sergilemeye hazır hale getiriyoruz.', tall: true },
+    { section: 'sertifikali-kagit-aciklama', label: 'Sertifikalı Fine Art Kağıtları — Açıklama', placeholder: "Hahnemühle'nin arşivsel kalitedeki fine art kağıtlarıyla, eserlerinizde üstün renk doğruluğu, derin tonlar ve yüksek detay elde edilir. Her baskı, uzun yıllar boyunca ilk günkü etkisini koruyacak kalıcılık ve premium sunum anlayışıyla üretilir.", tall: true },
+    { section: 'dosya-hazirlik-1-baslik', label: 'Dosya Hazırlığı — 1. Madde Başlığı', placeholder: 'Dosya Formatı' },
+    { section: 'dosya-hazirlik-1-aciklama', label: 'Dosya Hazırlığı — 1. Madde Açıklaması', placeholder: 'Önerilen formatlar: TIFF, PSD, JPG ve PDF. RGB dosyalarda gömülü renk profili bulunması önerilir.', tall: true },
+    { section: 'dosya-hazirlik-2-baslik', label: 'Dosya Hazırlığı — 2. Madde Başlığı', placeholder: 'Renk Profili' },
+    { section: 'dosya-hazirlik-2-aciklama', label: 'Dosya Hazırlığı — 2. Madde Açıklaması', placeholder: 'RGB çalışma alanında sRGB veya Adobe RGB tercih edilebilir. Renk profili gömülmemiş dosyalar, varsayılan profil ile değerlendirilerek baskıya alınabilir.', tall: true },
+    { section: 'dosya-hazirlik-3-baslik', label: 'Dosya Hazırlığı — 3. Madde Başlığı', placeholder: 'Taşma Payı ve Kesim' },
+    { section: 'dosya-hazirlik-3-aciklama', label: 'Dosya Hazırlığı — 3. Madde Açıklaması', placeholder: 'Kenara kadar baskı istenen çalışmalarda, dosyanıza her kenardan 3 mm taşma payı eklenmelidir. Taşma payı bulunmayan dosyalarda kesim sırasında görselde çok küçük kayıplar oluşabilir. Beyaz kenarlıklı işler için net ölçü ve boşlukların dosyada doğru tanımlanması önemlidir.', tall: true },
+  ],
+  'fotograf-baski': [
+    { section: 'hero-aciklama', label: 'Hero — Alt Açıklama', placeholder: 'Yüksek çözünürlükte, profesyonel fotoğraf kağıtlarına baskı.' },
+    { section: 'yuzey-aciklama', label: 'Mat/Parlak Karşılaştırma Açıklaması', placeholder: 'Seçtiğiniz yüzeye göre baskı hazırlıyoruz — mat yüzey yumuşak, yansımasız bir görünüm, parlak yüzey ise derin renkler ve yüksek kontrast sunar. Kartların üzerine gelerek yakın çekim detayını görebilirsiniz.', tall: true },
+  ],
+  'fine-art-baski': [
+    { section: 'hero-aciklama', label: 'Hero — Alt Açıklama', placeholder: 'Müze ve galeri standartlarında, arşiv kalitesinde baskı. Sanatınızı nesiller boyu yaşatın.', tall: true },
+  ],
+  cerceve: [
+    { section: 'hero-aciklama', label: 'Hero — Alt Açıklama', placeholder: 'Fotoğraflarınızı kalıcı kılın. Siyah, beyaz ve doğal ahşap çerçeve seçenekleriyle anılarınızı sanat eserine dönüştürün.', tall: true },
+  ],
+}
+
 function Admin() {
   const navigate = useNavigate()
-  const [tab, setTab] = useState('eserler')
+  const [tab, setTab] = useState('gorseller')
   const [artworks, setArtworks] = useState([])
   const [orders, setOrders] = useState([])
   const [selected, setSelected] = useState(null)
@@ -73,6 +105,8 @@ function Admin() {
 
   // --- Görseller (genel dosya yükleme) ---
   const [pageImages, setPageImages] = useState({}) // "page:section" -> [rows]
+  const [pageContent, setPageContent] = useState({}) // "page:section" -> content metni
+  const [contentSaving, setContentSaving] = useState({}) // "page:section" -> bool
   const [uploadTarget, setUploadTarget] = useState(null)
   const genericFileRef = useRef()
 
@@ -109,11 +143,14 @@ function Admin() {
   }, [])
 
   useEffect(() => { loadArtworks() }, [])
+  // Sanatçı Hakkında editörü İşler sekmesine taşındı ama font ayarları hâlâ
+  // Site Ayarları'nda — ikisi de aynı site_settings satırını paylaştığı için
+  // hangi sekme önce açılırsa açılsın veriler hazır olsun diye koşulsuz yükleniyor.
+  useEffect(() => { loadSiteSettings() }, [])
   useEffect(() => { if (tab === 'siparisler') loadOrders() }, [tab])
   useEffect(() => { if (tab === 'cerceve') { loadFrames(); loadFrameOrders() } }, [tab])
   useEffect(() => { if (tab === 'kagitlar') loadPapers() }, [tab])
-  useEffect(() => { if (['gorseller', 'cerceve', 'kagitlar', 'fotofiyat'].includes(tab)) loadPageImages() }, [tab])
-  useEffect(() => { if (tab === 'site') loadSiteSettings() }, [tab])
+  useEffect(() => { if (['gorseller', 'cerceve', 'kagitlar', 'fotofiyat'].includes(tab)) { loadPageImages(); loadPageContent() } }, [tab])
   useEffect(() => { if (tab === 'kullanicilar') loadProfiles() }, [tab])
   useEffect(() => { if (tab === 'sepetler') loadCartEvents() }, [tab])
   useEffect(() => { if (tab === 'istatistikler') loadPageViews() }, [tab])
@@ -460,6 +497,54 @@ function Admin() {
               ))}
             </div>
           )}
+        </div>
+      )
+    })
+  }
+
+  async function loadPageContent() {
+    const { data } = await supabase.from('page_content').select('*')
+    const map = {}
+    ;(data || []).forEach(row => { map[`${row.page}:${row.section}`] = row.content })
+    setPageContent(map)
+  }
+
+  function updatePageContentDraft(page, section, value) {
+    setPageContent(prev => ({ ...prev, [`${page}:${section}`]: value }))
+  }
+
+  async function savePageContentField(page, section) {
+    const key = `${page}:${section}`
+    setContentSaving(s => ({ ...s, [key]: true }))
+    await supabase.from('page_content').upsert(
+      { page, section, content: pageContent[key] || '', updated_at: new Date().toISOString() },
+      { onConflict: 'page,section' }
+    )
+    setContentSaving(s => ({ ...s, [key]: false }))
+  }
+
+  // Bir sayfaya ait tüm düzenlenebilir metin alanlarını render eder — page_content
+  // satırı yoksa textarea boş görünür ama placeholder'da sitedeki mevcut (hardcoded)
+  // metin gösterilir, admin neyi değiştirdiğini/değiştirmediğini görebilsin diye.
+  function renderPageTextFields(pageKey, fields) {
+    return fields.map(f => {
+      const key = `${pageKey}:${f.section}`
+      const value = pageContent[key] ?? ''
+      return (
+        <div key={key} style={{ marginBottom: '1.5rem' }}>
+          <span style={{ ...label, display: 'block', marginBottom: '.4rem' }}>{f.label}</span>
+          <textarea
+            value={value}
+            onChange={e => updatePageContentDraft(pageKey, f.section, e.target.value)}
+            placeholder={f.placeholder}
+            style={{ ...inp, minHeight: f.tall ? 90 : 46, resize: 'vertical' }}
+          />
+          <div style={{ display: 'flex', alignItems: 'center', gap: '.6rem', marginTop: '.4rem' }}>
+            <button onClick={() => savePageContentField(pageKey, f.section)} disabled={contentSaving[key]} style={btnGhost}>
+              {contentSaving[key] ? 'Kaydediliyor…' : 'Kaydet'}
+            </button>
+            {!value && <span style={{ fontSize: '.62rem', color: '#bbb' }}>Boş bırakılırsa sitede yukarıdaki varsayılan metin gösterilir.</span>}
+          </div>
         </div>
       )
     })
@@ -932,6 +1017,40 @@ function Admin() {
                 </button>
                 {msg && <span style={{ fontSize: '.8rem', color: msg.includes('Hata') ? '#cc4444' : '#4a9a6a' }}>{msg}</span>}
               </div>
+
+              <div style={{ marginTop: '3rem', borderTop: '1px solid #eee', paddingTop: '2rem' }}>
+                <h2 style={{ ...sectionHeading, fontSize: '1.4rem', marginBottom: '.5rem' }}>Sanatçı Hakkında</h2>
+                <p style={{ fontSize: '.72rem', color: '#aaa', margin: '0 0 1rem' }}>
+                  Ürün detay sayfalarının altında gösterilir.
+                </p>
+                <div style={{ display: 'grid', gridTemplateColumns: '160px 1fr', gap: '1.2rem', alignItems: 'start' }}>
+                  <div
+                    onClick={() => document.getElementById('artist-photo-input').click()}
+                    style={{
+                      width: 160, aspectRatio: '1 / 1', border: '2px dashed #ddd', cursor: 'pointer',
+                      background: '#fafafa', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      overflow: 'hidden',
+                    }}
+                  >
+                    {artistPhotoUrl
+                      ? <img src={artistPhotoUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                      : <span style={{ color: '#bbb', fontSize: '.7rem', textAlign: 'center', padding: '.5rem' }}>Fotoğraf seç</span>}
+                  </div>
+                  <input id="artist-photo-input" type="file" accept="image/*" style={{ display: 'none' }}
+                    onChange={e => e.target.files[0] && uploadArtistPhoto(e.target.files[0])} />
+                  <textarea
+                    value={artistBio} onChange={e => setArtistBio(e.target.value)}
+                    style={{ ...inp, minHeight: 140, resize: 'vertical' }}
+                    placeholder="Sanatçı biyografisi…"
+                  />
+                </div>
+                <div style={{ display: 'flex', gap: '1rem', alignItems: 'center', marginTop: '1rem' }}>
+                  <button onClick={saveSiteSettings} disabled={fontSaving} style={btnPrimary}>
+                    {fontSaving ? 'Kaydediliyor…' : 'Kaydet'}
+                  </button>
+                  {fontMsg && <span style={{ fontSize: '.8rem', color: fontMsg.includes('Hata') ? '#cc4444' : '#4a9a6a' }}>{fontMsg}</span>}
+                </div>
+              </div>
             </>
           )}
 
@@ -970,6 +1089,11 @@ function Admin() {
               <div style={{ marginTop: '3rem', borderTop: '1px solid #eee', paddingTop: '2rem' }}>
                 <h2 style={{ ...sectionHeading, fontSize: '1.4rem', marginBottom: '1.5rem' }}>Çerçeve Sayfası Görselleri</h2>
                 {renderPageImageSlots('cerceve')}
+              </div>
+
+              <div style={{ marginTop: '3rem', borderTop: '1px solid #eee', paddingTop: '2rem' }}>
+                <h2 style={{ ...sectionHeading, fontSize: '1.4rem', marginBottom: '1.5rem' }}>Çerçeve Sayfası Metinleri</h2>
+                {renderPageTextFields('cerceve', PAGE_TEXT_FIELDS.cerceve)}
               </div>
 
               <div style={{ marginTop: '3rem', borderTop: '1px solid #eee', paddingTop: '2rem' }}>
@@ -1070,6 +1194,11 @@ function Admin() {
                 <h2 style={{ ...sectionHeading, fontSize: '1.4rem', marginBottom: '1.5rem' }}>Fine Art Baskı Sayfası Görselleri</h2>
                 {renderPageImageSlots('fine-art-baski')}
               </div>
+
+              <div style={{ marginTop: '3rem', borderTop: '1px solid #eee', paddingTop: '2rem' }}>
+                <h2 style={{ ...sectionHeading, fontSize: '1.4rem', marginBottom: '1.5rem' }}>Fine Art Baskı Sayfası Metinleri</h2>
+                {renderPageTextFields('fine-art-baski', PAGE_TEXT_FIELDS['fine-art-baski'])}
+              </div>
             </>
           )}
 
@@ -1081,6 +1210,11 @@ function Admin() {
                 kendi sekmelerinde — bu sekme yalnızca ana sayfada (/) kullanılan görselleri yönetir.
               </p>
               {renderPageImageSlots('gallery')}
+
+              <div style={{ marginTop: '1rem', borderTop: '1px solid #eee', paddingTop: '2rem' }}>
+                <h2 style={{ ...sectionHeading, fontSize: '1.4rem', marginBottom: '1.5rem' }}>Ana Sayfa Metinleri</h2>
+                {renderPageTextFields('gallery', PAGE_TEXT_FIELDS.gallery)}
+              </div>
             </>
           )}
 
@@ -1106,34 +1240,6 @@ function Admin() {
                 </div>
               </div>
 
-              <div style={{ marginBottom: '2rem', borderTop: '1px solid #eee', paddingTop: '2rem' }}>
-                <span style={label}>Sanatçı Hakkında</span>
-                <p style={{ fontSize: '.72rem', color: '#aaa', margin: '.4rem 0 1rem' }}>
-                  Ürün detay sayfalarının altında gösterilir.
-                </p>
-                <div style={{ display: 'grid', gridTemplateColumns: '160px 1fr', gap: '1.2rem', alignItems: 'start' }}>
-                  <div
-                    onClick={() => document.getElementById('artist-photo-input').click()}
-                    style={{
-                      width: 160, aspectRatio: '1 / 1', border: '2px dashed #ddd', cursor: 'pointer',
-                      background: '#fafafa', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      overflow: 'hidden',
-                    }}
-                  >
-                    {artistPhotoUrl
-                      ? <img src={artistPhotoUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                      : <span style={{ color: '#bbb', fontSize: '.7rem', textAlign: 'center', padding: '.5rem' }}>Fotoğraf seç</span>}
-                  </div>
-                  <input id="artist-photo-input" type="file" accept="image/*" style={{ display: 'none' }}
-                    onChange={e => e.target.files[0] && uploadArtistPhoto(e.target.files[0])} />
-                  <textarea
-                    value={artistBio} onChange={e => setArtistBio(e.target.value)}
-                    style={{ ...inp, minHeight: 140, resize: 'vertical' }}
-                    placeholder="Sanatçı biyografisi…"
-                  />
-                </div>
-              </div>
-
               <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
                 <button onClick={saveSiteSettings} disabled={fontSaving} style={btnPrimary}>
                   {fontSaving ? 'Kaydediliyor…' : 'Kaydet'}
@@ -1142,7 +1248,8 @@ function Admin() {
               </div>
               <p style={{ fontSize: '.72rem', color: '#aaa', marginTop: '1rem', lineHeight: 1.6 }}>
                 Not: font seçimi sitenin geneline (yazı tipi) ve Çerçeve / Fine Art Baskı sayfalarına uygulanıyor.
-                Diğer sayfaları da aynı sisteme bağlamamız gerekiyor — sırada o var.
+                Diğer sayfaları da aynı sisteme bağlamamız gerekiyor — sırada o var. Sanatçı Hakkında
+                editörü İşler sekmesine taşındı.
               </p>
             </>
           )}
@@ -1315,6 +1422,11 @@ function Admin() {
               <div style={{ marginTop: '3rem', borderTop: '1px solid #eee', paddingTop: '2rem' }}>
                 <h2 style={{ ...sectionHeading, fontSize: '1.4rem', marginBottom: '1.5rem' }}>Fotoğraf Baskı Sayfası Görselleri</h2>
                 {renderPageImageSlots('fotograf-baski')}
+              </div>
+
+              <div style={{ marginTop: '3rem', borderTop: '1px solid #eee', paddingTop: '2rem' }}>
+                <h2 style={{ ...sectionHeading, fontSize: '1.4rem', marginBottom: '1.5rem' }}>Fotoğraf Baskı Sayfası Metinleri</h2>
+                {renderPageTextFields('fotograf-baski', PAGE_TEXT_FIELDS['fotograf-baski'])}
               </div>
             </>
           )}

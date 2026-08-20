@@ -67,6 +67,7 @@ export default function FotografBaski() {
     hero: heroImgDefault,
     'mat-1': null, 'mat-2': null, 'parlak-1': null, 'parlak-2': null,
   })
+  const [content, setContent] = useState({})
   const [prices, setPrices] = useState(FALLBACK_PRICES)
 
   // --- Sipariş satırı formu ---
@@ -92,10 +93,17 @@ export default function FotografBaski() {
   useEffect(() => { loadData() }, [])
 
   async function loadData() {
-    const [{ data: imgs }, { data: priceRows }] = await Promise.all([
+    const [{ data: imgs }, { data: priceRows }, { data: contentRows }] = await Promise.all([
       supabase.from('page_images').select('*').eq('page', 'fotograf-baski').order('sort_order'),
       supabase.from('photo_print_prices').select('*'),
+      supabase.from('page_content').select('section, content').eq('page', 'fotograf-baski'),
     ])
+
+    if (contentRows && contentRows.length) {
+      const map = {}
+      contentRows.forEach(row => { if (row.content) map[row.section] = row.content })
+      setContent(map)
+    }
 
     if (imgs && imgs.length) {
       setImages(prev => {
@@ -253,7 +261,7 @@ export default function FotografBaski() {
             Fotoğraf Baskı
           </h1>
           <p style={{ ...body, color: 'rgba(255,255,255,.85)', maxWidth: 480, margin: '0 auto' }}>
-            Yüksek çözünürlükte, profesyonel fotoğraf kağıtlarına baskı.
+            {content['hero-aciklama'] || 'Yüksek çözünürlükte, profesyonel fotoğraf kağıtlarına baskı.'}
           </p>
         </div>
       </section>
@@ -265,9 +273,9 @@ export default function FotografBaski() {
           <FinishCard label="Parlak" img1={images['parlak-1']} img2={images['parlak-2']} onClick={() => setFinish('Parlak')} />
         </div>
         <p style={{ ...body, textAlign: 'center', marginTop: '2rem', maxWidth: 560, marginLeft: 'auto', marginRight: 'auto' }}>
-          Seçtiğiniz yüzeye göre baskı hazırlıyoruz — mat yüzey yumuşak, yansımasız bir görünüm,
+          {content['yuzey-aciklama'] || `Seçtiğiniz yüzeye göre baskı hazırlıyoruz — mat yüzey yumuşak, yansımasız bir görünüm,
           parlak yüzey ise derin renkler ve yüksek kontrast sunar. Kartların üzerine gelerek
-          yakın çekim detayını görebilirsiniz.
+          yakın çekim detayını görebilirsiniz.`}
         </p>
       </section>
 
