@@ -22,3 +22,9 @@ enabled = true
 verify_jwt = true
 import_map = "./functions/create-photo-print-order/deno.json"
 entrypoint = "./functions/create-photo-print-order/index.ts"
+
+[functions.create-frame-order]
+enabled = true
+verify_jwt = true
+import_map = "./functions/create-frame-order/deno.json"
+entrypoint = "./functions/create-frame-order/index.ts"

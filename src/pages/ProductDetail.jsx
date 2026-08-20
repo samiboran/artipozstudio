@@ -4,6 +4,7 @@ import { fetchArtworkBySlug } from '../lib/artworks'
 import { makeSVG } from '../lib/makeSVG'
 import { useCart } from '../hooks/useCart'
 import { useFavorites } from '../hooks/useFavorites'
+import { supabase } from '../lib/supabase'
 
 function ProductDetail() {
   const { slug } = useParams()
@@ -16,6 +17,7 @@ function ProductDetail() {
   const [loading, setLoading] = useState(true)
   const [activeSize, setActiveSize] = useState(null)
   const [openAcc, setOpenAcc] = useState('desc')
+  const [artistInfo, setArtistInfo] = useState(null)
 
   useEffect(() => {
     fetchArtworkBySlug(slug)
@@ -27,6 +29,11 @@ function ProductDetail() {
       .finally(() => setLoading(false))
     return () => { document.title = 'Artı Poz — Fine Art Baskı & Özgün Eserler' }
   }, [slug])
+
+  useEffect(() => {
+    supabase.from('site_settings').select('artist_bio, artist_photo_url').eq('id', 'default').single()
+      .then(({ data }) => { if (data?.artist_bio) setArtistInfo(data) })
+  }, [])
 
   if (loading) return (
     <div style={{ paddingTop: '8rem', textAlign: 'center', fontFamily: "'Archivo Black', sans-serif", fontSize: '1.5rem', color: 'var(--muted)', fontStyle: 'italic' }}>
@@ -45,7 +52,7 @@ function ProductDetail() {
     { key: 'desc', label: 'Eser Hakkında', content: artwork.description },
     { key: 'specs', label: 'Teknik Detaylar', content: `${artwork.medium || '—'} · ${artwork.year || '—'}` },
     { key: 'ship', label: 'Kargo & İade', content: 'Yurt içi kargo ücretsiz, 3–5 iş günü. Eserler özel ambalajla gönderilir. 14 gün içinde iade edilebilir.' },
-    { key: 'cert', label: 'Sertifika', content: 'Her eser sanatçı imzalı, numaralı orijinallik sertifikası ile gelir.' },
+    { key: 'cert', label: 'Baskı Kalitesi', content: 'Fine art baskılarımız için Hahnemühle ve Awagami kağıtları, arşivsel pigment mürekkeplerle kullanılır.' },
   ]
 
   return (
@@ -290,6 +297,30 @@ setTimeout(() => setAdded(false), 1800)
 
         </div>
       </div>
+
+      {/* Sanatçı Hakkında */}
+      {artistInfo && (
+        <section style={{
+          maxWidth: 900, margin: '0 auto', padding: '2rem 2rem 5rem',
+          display: 'flex', gap: '2rem', alignItems: 'center', flexWrap: 'wrap',
+          borderTop: '1px solid var(--border)',
+        }}>
+          {artistInfo.artist_photo_url && (
+            <img
+              src={artistInfo.artist_photo_url} alt={artwork.artist}
+              style={{ width: 120, height: 120, borderRadius: '50%', objectFit: 'cover', flexShrink: 0, marginTop: '2rem' }}
+            />
+          )}
+          <div style={{ flex: 1, minWidth: 260, marginTop: '2rem' }}>
+            <div style={{ fontSize: '.58rem', letterSpacing: '.18em', textTransform: 'uppercase', color: 'var(--muted)', marginBottom: '.65rem' }}>
+              Sanatçı Hakkında
+            </div>
+            <p style={{ fontSize: '.85rem', lineHeight: 1.9, color: '#444', margin: 0 }}>
+              {artistInfo.artist_bio}
+            </p>
+          </div>
+        </section>
+      )}
     </div>
   )
 }

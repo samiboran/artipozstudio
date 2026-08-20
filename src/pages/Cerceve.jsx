@@ -1,13 +1,14 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { supabase } from '../lib/supabase'
+import { getSessionId } from '../lib/session'
 import heroImgDefault from '../assets/cerceve/hero.jpg'
+
+// Supabase Storage'ta tek dosya için pratik üst sınır.
+const MAX_FILE_SIZE_MB = 10
 import renkSecenekleriImgDefault from '../assets/cerceve/renk-secenekleri.jpg'
 import renkDetayImgDefault from '../assets/cerceve/renk-secenekleri-detay.jpg'
 import ornekSiyahImgDefault from '../assets/cerceve/ornek-siyah-cerceve.jpg'
 import ornekAhsapImgDefault from '../assets/cerceve/ornek-ahsap-cerceve.jpg'
-
-// TODO: form şu an sadece arayüz — gönderim henüz bir backend'e bağlı değil.
-// Checkout'ta yaptığımız gibi (Supabase edge function + Resend) bağlamamız gerekiyor.
 
 // Supabase'e hiç bağlanamazsa veya frame_options boşsa gösterilecek yedek veri —
 // admin panel açılana kadar site hep bu haliyle doğru görünsün diye duruyor.
@@ -75,8 +76,14 @@ const inputStyle = {
 }
 
 export default function Cerceve() {
-  const [form, setForm] = useState({ name: '', email: '', phone: '', qty: '', size: '', color: '' })
+  const [form, setForm] = useState({ name: '', email: '', phone: '', address: '', qty: '', size: '', color: '' })
   const [status, setStatus] = useState('idle') // idle | submitting | sent
+  const [formError, setFormError] = useState('')
+
+  const [uploadedUrl, setUploadedUrl] = useState('')
+  const [uploading, setUploading] = useState(false)
+  const [uploadError, setUploadError] = useState('')
+  const fileRef = useRef()
 
   const [sizes, setSizes] = useState(FALLBACK_SIZES)
   const [colorSwatch, setColorSwatch] = useState(FALLBACK_SWATCH)
@@ -131,10 +138,60 @@ export default function Cerceve() {
     setForm(f => ({ ...f, [name]: value }))
   }
 
-  function handleSubmit(e) {
+  async function handleFileSelect(file) {
+    if (!file) return
+    setUploadError('')
+    if (!file.type.startsWith('image/')) {
+      setUploadError('Lütfen bir görsel dosyası seçin.')
+      return
+    }
+    if (file.size > MAX_FILE_SIZE_MB * 1024 * 1024) {
+      setUploadError(`Dosya çok büyük — maksimum ${MAX_FILE_SIZE_MB} MB.`)
+      return
+    }
+    setUploading(true)
+    const ext = file.name.split('.').pop()
+    const path = `frame-order/${Date.now()}-${Math.random().toString(36).slice(2, 7)}.${ext}`
+    const { error } = await supabase.storage.from('site-images').upload(path, file)
+    if (error) {
+      setUploadError('Yüklenemedi: ' + error.message)
+      setUploading(false)
+      return
+    }
+    const { data } = supabase.storage.from('site-images').getPublicUrl(path)
+    setUploadedUrl(data.publicUrl)
+    setUploading(false)
+  }
+
+  async function handleSubmit(e) {
     e.preventDefault()
-    // TODO: gerçek gönderim henüz bağlı değil — checkout'taki create-order
-    // fonksiyonuna benzer bir edge function kuralım
+    setFormError('')
+
+    if (!uploadedUrl) { setFormError('Lütfen önce bir fotoğraf yükleyin.'); return }
+    if (!form.address?.trim() || form.address.trim().length < 10) { setFormError('Geçerli bir teslimat adresi giriniz.'); return }
+
+    setStatus('submitting')
+
+    const payload = {
+      name: form.name, email: form.email, phone: form.phone, address: form.address,
+      size: form.size, color: form.color, quantity: form.qty,
+      image_url: uploadedUrl, session_id: getSessionId(),
+    }
+
+    try {
+      const res = await fetch('https://qrbkzjosorimiwdbwyyl.supabase.co/functions/v1/create-frame-order', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}` },
+        body: JSON.stringify(payload),
+      })
+      const data = await res.json()
+      if (!res.ok) { setStatus('idle'); setFormError(data.error || 'Sipariş gönderilemedi.'); return }
+    } catch {
+      setStatus('idle')
+      setFormError('Sipariş gönderilemedi: bağlantı hatası.')
+      return
+    }
+
     setStatus('sent')
   }
 
@@ -292,6 +349,10 @@ export default function Cerceve() {
                   <input name="qty" type="number" min="1" required value={form.qty} onChange={handleChange} style={inputStyle} placeholder="Adet" />
                 </div>
               </div>
+              <div>
+                <label style={{ ...label, display: 'block', marginBottom: '.4rem' }}>Teslimat Adresi *</label>
+                <textarea name="address" required value={form.address} onChange={handleChange} style={{ ...inputStyle, minHeight: 80, resize: 'vertical' }} placeholder="Açık adresiniz" />
+              </div>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: '1rem' }}>
                 <div>
                   <label style={{ ...label, display: 'block', marginBottom: '.4rem' }}>Çerçeve Boyutu *</label>
@@ -309,24 +370,44 @@ export default function Cerceve() {
                 </div>
               </div>
               <div>
-                <label style={{ ...label, display: 'block', marginBottom: '.4rem' }}>Fotoğraf Yükle * (JPG, PNG, WEBP — maks. 10 MB)</label>
-                <div style={{
-                  border: '1px dashed var(--border)', padding: '2.5rem 1rem',
-                  textAlign: 'center', ...body, fontSize: '.8rem',
-                }}>
-                  Fotoğrafınızı buraya sürükleyin<br />veya tıklayarak dosya seçin
+                <label style={{ ...label, display: 'block', marginBottom: '.4rem' }}>Fotoğraf Yükle * (maks. {MAX_FILE_SIZE_MB} MB)</label>
+                <div
+                  onClick={() => fileRef.current?.click()}
+                  onDragOver={e => e.preventDefault()}
+                  onDrop={e => { e.preventDefault(); handleFileSelect(e.dataTransfer.files[0]) }}
+                  style={{
+                    border: '1px dashed var(--border)', padding: uploadedUrl ? '1rem' : '2.5rem 1rem',
+                    textAlign: 'center', ...body, fontSize: '.8rem', cursor: 'pointer',
+                    minHeight: 100, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  }}
+                >
+                  {uploading ? (
+                    <span>Yükleniyor…</span>
+                  ) : uploadedUrl ? (
+                    <img src={uploadedUrl} alt="Yüklenen fotoğraf önizlemesi" style={{ maxWidth: '100%', maxHeight: 160, objectFit: 'contain', display: 'block' }} />
+                  ) : (
+                    <span>Fotoğrafınızı buraya sürükleyin<br />veya tıklayarak dosya seçin</span>
+                  )}
                 </div>
+                <input ref={fileRef} type="file" accept="image/*" style={{ display: 'none' }}
+                  onChange={e => handleFileSelect(e.target.files[0])} />
+                {uploadError && <p style={{ color: '#c33', fontSize: '.78rem', marginTop: '.5rem' }}>{uploadError}</p>}
               </div>
+
+              {formError && <div style={{ color: '#c33', fontSize: '.78rem' }}>{formError}</div>}
+
               <button
                 type="submit"
+                disabled={status === 'submitting'}
                 style={{
                   marginTop: '.5rem', padding: '.9rem', background: 'var(--accent)',
                   color: '#fff', border: 'none', fontFamily: 'var(--font-body)',
                   fontSize: '.75rem', letterSpacing: '.14em', textTransform: 'uppercase',
-                  cursor: 'pointer',
+                  cursor: status === 'submitting' ? 'not-allowed' : 'pointer',
+                  opacity: status === 'submitting' ? .7 : 1,
                 }}
               >
-                Sipariş Gönder
+                {status === 'submitting' ? 'Gönderiliyor…' : 'Sipariş Gönder'}
               </button>
             </form>
           )}

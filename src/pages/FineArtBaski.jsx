@@ -99,7 +99,7 @@ export default function FineArtBaski() {
         }} />
         <div style={{ position: 'relative', zIndex: 1, padding: '0 1.5rem' }}>
           <p style={{ ...eyebrow, color: '#fff', opacity: .85, marginBottom: '1rem' }}>
-            Meltems Arı
+            Meltem Sarı
           </p>
           <h1 style={{ ...heading, fontSize: 'clamp(2rem, 5vw, 3.2rem)', color: '#fff', margin: '0 0 1rem' }}>
             Fine Art Baskı

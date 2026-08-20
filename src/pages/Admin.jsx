@@ -58,6 +58,9 @@ function Admin() {
   const [frameForm, setFrameForm] = useState(EMPTY_FRAME)
   const [frameSaving, setFrameSaving] = useState(false)
 
+  // --- Çerçeve Siparişleri ---
+  const [frameOrders, setFrameOrders] = useState([])
+
   // --- Kağıtlar ---
   const [papers, setPapers] = useState([])
   const [selectedPaper, setSelectedPaper] = useState(null)
@@ -73,6 +76,8 @@ function Admin() {
   const [fontPair, setFontPairState] = useState('archivo')
   const [fontSaving, setFontSaving] = useState(false)
   const [fontMsg, setFontMsg] = useState('')
+  const [artistBio, setArtistBio] = useState('')
+  const [artistPhotoUrl, setArtistPhotoUrl] = useState('')
 
   // --- Kullanıcılar ---
   const [profiles, setProfiles] = useState([])
@@ -101,7 +106,7 @@ function Admin() {
 
   useEffect(() => { loadArtworks() }, [])
   useEffect(() => { if (tab === 'siparisler') loadOrders() }, [tab])
-  useEffect(() => { if (tab === 'cerceve') loadFrames() }, [tab])
+  useEffect(() => { if (tab === 'cerceve') { loadFrames(); loadFrameOrders() } }, [tab])
   useEffect(() => { if (tab === 'kagitlar') loadPapers() }, [tab])
   useEffect(() => { if (tab === 'gorseller') loadPageImages() }, [tab])
   useEffect(() => { if (tab === 'site') loadSiteSettings() }, [tab])
@@ -271,6 +276,16 @@ function Admin() {
     newFrame(); loadFrames()
   }
 
+  async function loadFrameOrders() {
+    const { data } = await supabase.from('frame_orders').select('*').order('created_at', { ascending: false })
+    setFrameOrders(data || [])
+  }
+
+  async function updateFrameOrderStatus(id, status) {
+    await supabase.from('frame_orders').update({ status }).eq('id', id)
+    setFrameOrders(rows => rows.map(o => o.id === id ? { ...o, status } : o))
+  }
+
   // ============================================================
   // KAĞITLAR
   // ============================================================
@@ -363,20 +378,31 @@ function Admin() {
   // SİTE AYARLARI — font seçimi
   // ============================================================
   async function loadSiteSettings() {
-    const { data } = await supabase.from('site_settings').select('font_pair').eq('id', 'default').single()
+    const { data } = await supabase.from('site_settings').select('font_pair, artist_bio, artist_photo_url').eq('id', 'default').single()
     if (data?.font_pair) setFontPairState(data.font_pair)
+    setArtistBio(data?.artist_bio || '')
+    setArtistPhotoUrl(data?.artist_photo_url || '')
   }
 
   function previewFontPair(key) { setFontPairState(key); setFont(key) }
 
   async function saveSiteSettings() {
     setFontSaving(true)
-    const { error } = await supabase.from('site_settings').upsert({ id: 'default', font_pair: fontPair, updated_at: new Date().toISOString() })
+    const { error } = await supabase.from('site_settings').upsert({
+      id: 'default', font_pair: fontPair,
+      artist_bio: artistBio, artist_photo_url: artistPhotoUrl,
+      updated_at: new Date().toISOString(),
+    })
     setFontSaving(false)
     if (error) { setFontMsg('Hata: ' + error.message); return }
     setFont(fontPair)
     setFontMsg('Kaydedildi ✓')
     setTimeout(() => setFontMsg(''), 2000)
+  }
+
+  async function uploadArtistPhoto(file) {
+    const url = await uploadToStorage(file)
+    if (url) setArtistPhotoUrl(url)
   }
 
   // ============================================================
@@ -788,6 +814,40 @@ function Admin() {
               <button onClick={saveFrame} disabled={frameSaving} style={btnPrimary}>
                 {frameSaving ? 'Kaydediliyor…' : selectedFrame ? 'Güncelle' : 'Kaydet'}
               </button>
+
+              <div style={{ marginTop: '3rem', borderTop: '1px solid #eee', paddingTop: '2rem' }}>
+                <h2 style={{ ...sectionHeading, fontSize: '1.4rem', marginBottom: '1.5rem' }}>
+                  Gelen Çerçeve Siparişleri {frameOrders.length > 0 ? `(${frameOrders.length})` : ''}
+                </h2>
+                {frameOrders.length === 0 ? (
+                  <p style={{ color: '#aaa', fontSize: '.85rem' }}>Henüz çerçeve siparişi yok.</p>
+                ) : (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                    {frameOrders.map(o => (
+                      <div key={o.id} style={{ border: '1px solid #eee', padding: '1rem', display: 'flex', gap: '1rem', alignItems: 'center', flexWrap: 'wrap' }}>
+                        <img src={o.image_url} alt="" style={{ width: 70, height: 70, objectFit: 'cover', flexShrink: 0 }} />
+                        <div style={{ flex: 1, minWidth: 200 }}>
+                          <div style={{ fontSize: '.85rem', fontWeight: 600 }}>{o.customer_name}</div>
+                          <div style={{ fontSize: '.72rem', color: '#888' }}>{o.email} · {o.phone}</div>
+                          <div style={{ fontSize: '.72rem', color: '#888' }}>{o.address}</div>
+                          <div style={{ fontSize: '.72rem', color: '#666', marginTop: '.2rem' }}>{o.size} · {o.color} · {o.quantity} adet</div>
+                          <div style={{ fontSize: '.68rem', color: '#aaa', marginTop: '.2rem' }}>{new Date(o.created_at).toLocaleString('tr-TR')}</div>
+                        </div>
+                        <div style={{ textAlign: 'right' }}>
+                          <div style={{ fontSize: '1rem', fontWeight: 600, marginBottom: '.4rem' }}>₺{Number(o.total_price).toLocaleString('tr-TR')}</div>
+                          <select
+                            value={o.status}
+                            onChange={e => updateFrameOrderStatus(o.id, e.target.value)}
+                            style={{ ...inp, width: 'auto', fontSize: '.72rem', padding: '.35rem .6rem' }}
+                          >
+                            {Object.entries(STATUS_LABELS).map(([k, lbl]) => <option key={k} value={k}>{lbl}</option>)}
+                          </select>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
             </>
           )}
 
@@ -917,6 +977,35 @@ function Admin() {
                   ))}
                 </div>
               </div>
+
+              <div style={{ marginBottom: '2rem', borderTop: '1px solid #eee', paddingTop: '2rem' }}>
+                <span style={label}>Sanatçı Hakkında</span>
+                <p style={{ fontSize: '.72rem', color: '#aaa', margin: '.4rem 0 1rem' }}>
+                  Ürün detay sayfalarının altında gösterilir.
+                </p>
+                <div style={{ display: 'grid', gridTemplateColumns: '160px 1fr', gap: '1.2rem', alignItems: 'start' }}>
+                  <div
+                    onClick={() => document.getElementById('artist-photo-input').click()}
+                    style={{
+                      width: 160, aspectRatio: '1 / 1', border: '2px dashed #ddd', cursor: 'pointer',
+                      background: '#fafafa', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      overflow: 'hidden',
+                    }}
+                  >
+                    {artistPhotoUrl
+                      ? <img src={artistPhotoUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                      : <span style={{ color: '#bbb', fontSize: '.7rem', textAlign: 'center', padding: '.5rem' }}>Fotoğraf seç</span>}
+                  </div>
+                  <input id="artist-photo-input" type="file" accept="image/*" style={{ display: 'none' }}
+                    onChange={e => e.target.files[0] && uploadArtistPhoto(e.target.files[0])} />
+                  <textarea
+                    value={artistBio} onChange={e => setArtistBio(e.target.value)}
+                    style={{ ...inp, minHeight: 140, resize: 'vertical' }}
+                    placeholder="Sanatçı biyografisi…"
+                  />
+                </div>
+              </div>
+
               <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
                 <button onClick={saveSiteSettings} disabled={fontSaving} style={btnPrimary}>
                   {fontSaving ? 'Kaydediliyor…' : 'Kaydet'}
@@ -924,7 +1013,7 @@ function Admin() {
                 {fontMsg && <span style={{ fontSize: '.8rem', color: fontMsg.includes('Hata') ? '#cc4444' : '#4a9a6a' }}>{fontMsg}</span>}
               </div>
               <p style={{ fontSize: '.72rem', color: '#aaa', marginTop: '1rem', lineHeight: 1.6 }}>
-                Not: şu an bu seçim sitenin geneline (yazı tipi) ve Çerçeve / Fine Art Baskı sayfalarına uygulanıyor.
+                Not: font seçimi sitenin geneline (yazı tipi) ve Çerçeve / Fine Art Baskı sayfalarına uygulanıyor.
                 Diğer sayfaları da aynı sisteme bağlamamız gerekiyor — sırada o var.
               </p>
             </>
