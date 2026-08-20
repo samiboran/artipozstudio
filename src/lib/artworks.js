@@ -32,9 +32,10 @@ if (s) query = query.or(`title.ilike.%${s}%,artist.ilike.%${s}%`)
 export async function fetchArtworkBySlug(slug) {
   const { data, error } = await supabase
     .from('artworks')
-    .select('*')
+    .select('*, artwork_images(id, image_url, sort_order)')
     .eq('slug', slug)
     .single()
   if (error) { console.error('Slug hatası:', error.message); return null }
+  if (data?.artwork_images) data.artwork_images.sort((a, b) => a.sort_order - b.sort_order)
   return data
 }

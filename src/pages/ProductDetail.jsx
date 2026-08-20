@@ -18,6 +18,7 @@ function ProductDetail() {
   const [activeSize, setActiveSize] = useState(null)
   const [openAcc, setOpenAcc] = useState('desc')
   const [artistInfo, setArtistInfo] = useState(null)
+  const [activeImage, setActiveImage] = useState(null)
 
   useEffect(() => {
     fetchArtworkBySlug(slug)
@@ -25,6 +26,7 @@ function ProductDetail() {
         setArtwork(data)
         if (data?.sizes?.length) setActiveSize(data.sizes[0].label)
         if (data?.title) document.title = `${data.title} — Artı Poz`
+        setActiveImage(data?.image_url || null)
       })
       .finally(() => setLoading(false))
     return () => { document.title = 'Artı Poz — Fine Art Baskı & Özgün Eserler' }
@@ -118,8 +120,8 @@ function ProductDetail() {
             )}
 
             {view === 'print' ? (
-              artwork.image_url
-                ? <img src={artwork.image_url} alt={artwork.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+              activeImage
+                ? <img src={activeImage} alt={artwork.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                 : <div dangerouslySetInnerHTML={{ __html: makeSVG(0) }} style={{ width: '100%', height: '100%' }} />
             ) : (
               /* Duvar mockup sahnesi */
@@ -138,8 +140,8 @@ function ProductDetail() {
                 }}>
                   {/* Paspartu */}
                   <div style={{ width: '100%', height: '100%', background: '#fbfaf7', padding: '9%', boxSizing: 'border-box' }}>
-                    {artwork.image_url
-                      ? <img src={artwork.image_url} alt={artwork.title} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+                    {activeImage
+                      ? <img src={activeImage} alt={artwork.title} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
                       : <div dangerouslySetInnerHTML={{ __html: makeSVG(0) }} style={{ width: '100%', height: '100%' }} />
                     }
                   </div>
@@ -147,6 +149,24 @@ function ProductDetail() {
               </div>
             )}
           </div>
+
+          {artwork.artwork_images?.length > 0 && (
+            <div style={{ display: 'flex', gap: '.6rem', marginTop: '.8rem', flexWrap: 'wrap' }}>
+              {[{ id: 'cover', image_url: artwork.image_url }, ...artwork.artwork_images].map(img => (
+                <button
+                  key={img.id}
+                  onClick={() => setActiveImage(img.image_url)}
+                  style={{
+                    width: 56, height: 56, padding: 0, cursor: 'pointer',
+                    border: `2px solid ${activeImage === img.image_url ? 'var(--ink)' : 'transparent'}`,
+                    background: 'none', flexShrink: 0,
+                  }}
+                >
+                  <img src={img.image_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+                </button>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* Sağ — bilgi */}

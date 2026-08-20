@@ -106,6 +106,15 @@ function Navbar({ cartCount = 0, onCartClick }) {
             ))}
           </div>
 
+          <Link to="/kagit-rehberi" style={{
+            background: 'var(--ink)', color: '#fff',
+            fontFamily: "'Archivo', sans-serif", fontSize: '.56rem',
+            letterSpacing: '.12em', textTransform: 'uppercase',
+            padding: '.32rem .6rem', whiteSpace: 'nowrap',
+          }}>
+            Kağıt Rehberi
+          </Link>
+
           {!transparent && (
             <Link to="/" style={{ display: 'flex', flexDirection: 'column', lineHeight: 1 }}>
               <span style={{
@@ -332,13 +341,21 @@ function Navbar({ cartCount = 0, onCartClick }) {
             </>
           )}
 
-          <div style={{ display: 'flex', gap: '1.2rem', marginTop: '.5rem' }}>
+          <div style={{ display: 'flex', gap: '1.2rem', marginTop: '.5rem', alignItems: 'center' }}>
             {SOCIAL_LINKS.map(s => (
               <a key={s.label} href={s.href} target="_blank" rel="noopener noreferrer"
                 aria-label={s.label} style={{ color: 'var(--muted)', display: 'flex' }}>
                 {s.icon}
               </a>
             ))}
+            <Link to="/kagit-rehberi" onClick={() => setMenuOpen(false)} style={{
+              background: 'var(--ink)', color: '#fff',
+              fontFamily: "'Archivo', sans-serif", fontSize: '.56rem',
+              letterSpacing: '.12em', textTransform: 'uppercase',
+              padding: '.32rem .6rem', whiteSpace: 'nowrap',
+            }}>
+              Kağıt Rehberi
+            </Link>
           </div>
         </div>
       )}

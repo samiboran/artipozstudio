@@ -11,7 +11,10 @@ const EMPTY_FORM = {
 }
 
 const EMPTY_FRAME = { size: '', note: '', prices: [{ color: '', price: '', swatch_hex: '#111111' }] }
-const EMPTY_PAPER = { name: '', surface: '', gsm: '', texture: '', color: '', composition: '', description: '', texture_photo_url: '', preview_photo_url: '' }
+const EMPTY_PAPER = {
+  name: '', surface: '', gsm: '', texture: '', color: '', composition: '', description: '',
+  texture_photo_url: '', preview_photo_url: '', guide_category: '', featured_in_guide: false,
+}
 
 // Fotoğraf Baskı sayfasındaki boy/yüzey fiyat matrisi — sabit 5×2 ızgara.
 const PHOTO_SIZES = ['A2', 'A3', 'A4', 'A5', 'A6']
@@ -46,11 +49,13 @@ function Admin() {
   const [artworks, setArtworks] = useState([])
   const [orders, setOrders] = useState([])
   const [selected, setSelected] = useState(null)
+  const [artworkImages, setArtworkImages] = useState([])
   const [form, setForm] = useState(EMPTY_FORM)
   const [uploading, setUploading] = useState(false)
   const [saving, setSaving] = useState(false)
   const [msg, setMsg] = useState('')
   const fileRef = useRef()
+  const galleryFileRef = useRef()
 
   // --- Çerçeve ---
   const [frames, setFrames] = useState([])
@@ -158,9 +163,32 @@ function Admin() {
     setSelected(aw.id)
     setForm({ ...aw, tags: (aw.tags || []).join(', '), sizes: aw.sizes?.length ? aw.sizes : [{ label: 'A4', price: '' }] })
     setMsg('')
+    loadArtworkImages(aw.id)
   }
 
-  function newArtwork() { setSelected(null); setForm(EMPTY_FORM); setMsg('') }
+  function newArtwork() { setSelected(null); setForm(EMPTY_FORM); setMsg(''); setArtworkImages([]) }
+
+  async function loadArtworkImages(artworkId) {
+    const { data } = await supabase.from('artwork_images').select('*').eq('artwork_id', artworkId).order('sort_order')
+    setArtworkImages(data || [])
+  }
+
+  async function uploadArtworkImage(file) {
+    if (!selected) return
+    const ext = file.name.split('.').pop()
+    const path = `gallery-${Date.now()}-${Math.random().toString(36).slice(2, 7)}.${ext}`
+    const { error } = await supabase.storage.from('artwork-images').upload(path, file)
+    if (error) { alert('Görsel yüklenemedi: ' + error.message); return }
+    const { data } = supabase.storage.from('artwork-images').getPublicUrl(path)
+    const nextOrder = artworkImages.length ? Math.max(...artworkImages.map(i => i.sort_order)) + 1 : 0
+    await supabase.from('artwork_images').insert({ artwork_id: selected, image_url: data.publicUrl, sort_order: nextOrder })
+    loadArtworkImages(selected)
+  }
+
+  async function deleteArtworkImage(id) {
+    await supabase.from('artwork_images').delete().eq('id', id)
+    loadArtworkImages(selected)
+  }
 
   function autoSlug(title) {
     return title.toLowerCase()
@@ -733,6 +761,39 @@ function Admin() {
                   onChange={e => e.target.files[0] && uploadImage(e.target.files[0])} />
               </div>
 
+              <div style={{ marginBottom: '1.5rem' }}>
+                <span style={label}>Ek Görseller (Galeri)</span>
+                {!selected ? (
+                  <p style={{ fontSize: '.72rem', color: '#aaa', marginTop: '.4rem' }}>
+                    Önce eseri kaydet, sonra galeri görsellerini ekleyebilirsin.
+                  </p>
+                ) : (
+                  <>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '.7rem', marginTop: '.6rem' }}>
+                      {artworkImages.map(img => (
+                        <div key={img.id} style={{ position: 'relative', width: 90, height: 90 }}>
+                          <img src={img.image_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', border: '1px solid #eee' }} />
+                          <button
+                            onClick={() => deleteArtworkImage(img.id)}
+                            style={{ position: 'absolute', top: -6, right: -6, background: '#cc4444', color: '#fff', border: 'none', borderRadius: '50%', width: 20, height: 20, cursor: 'pointer', fontSize: '.72rem', lineHeight: 1 }}
+                          >×</button>
+                        </div>
+                      ))}
+                      <div
+                        onClick={() => galleryFileRef.current.click()}
+                        style={{
+                          width: 90, height: 90, border: '2px dashed #ddd', cursor: 'pointer',
+                          display: 'flex', alignItems: 'center', justifyContent: 'center',
+                          color: '#bbb', fontSize: '1.4rem', background: '#fafafa',
+                        }}
+                      >+</div>
+                    </div>
+                    <input ref={galleryFileRef} type="file" accept="image/*" style={{ display: 'none' }}
+                      onChange={e => e.target.files[0] && uploadArtworkImage(e.target.files[0])} />
+                  </>
+                )}
+              </div>
+
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: '1rem', marginBottom: '1rem' }}>
                 <div><span style={label}>Başlık</span><input style={inp} value={form.title} onChange={e => handleTitle(e.target.value)} placeholder="Kırağı Botanik I" /></div>
                 <div><span style={label}>Slug (otomatik)</span><input style={{ ...inp, color: '#aaa' }} value={form.slug} onChange={e => setForm(f => ({ ...f, slug: e.target.value }))} /></div>
@@ -870,6 +931,21 @@ function Admin() {
               <div style={{ marginBottom: '1.5rem' }}>
                 <span style={label}>Açıklama</span>
                 <textarea style={{ ...inp, minHeight: 80, resize: 'vertical' }} value={paperForm.description} onChange={e => setPaperForm(f => ({ ...f, description: e.target.value }))} />
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: '1rem', marginBottom: '1.5rem' }}>
+                <div>
+                  <span style={label}>Kağıt Rehberi Bölümü</span>
+                  <select style={inp} value={paperForm.guide_category || ''} onChange={e => setPaperForm(f => ({ ...f, guide_category: e.target.value || null }))}>
+                    <option value="">Rehber'de gösterme</option>
+                    <option value="sanat-baskisi">Sanat Baskısı Kağıtlar</option>
+                    <option value="giclee">Giclee Kağıtlar</option>
+                  </select>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '.6rem', paddingTop: '1.4rem' }}>
+                  <input type="checkbox" id="featured-in-guide" checked={paperForm.featured_in_guide} onChange={e => setPaperForm(f => ({ ...f, featured_in_guide: e.target.checked }))} />
+                  <label htmlFor="featured-in-guide" style={{ fontSize: '.82rem', cursor: 'pointer' }}>"En Popüler" galerisinde göster</label>
+                </div>
               </div>
 
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: '1rem', marginBottom: '2rem' }}>
