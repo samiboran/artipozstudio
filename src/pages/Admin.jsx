@@ -13,6 +13,10 @@ const EMPTY_FORM = {
 const EMPTY_FRAME = { size: '', note: '', prices: [{ color: '', price: '', swatch_hex: '#111111' }] }
 const EMPTY_PAPER = { name: '', surface: '', gsm: '', texture: '', color: '', composition: '', description: '', texture_photo_url: '', preview_photo_url: '' }
 
+// Fotoğraf Baskı sayfasındaki boy/yüzey fiyat matrisi — sabit 5×2 ızgara.
+const PHOTO_SIZES = ['A2', 'A3', 'A4', 'A5', 'A6']
+const PHOTO_FINISHES = ['Mat', 'Parlak']
+
 // Görseller sekmesinde yönetilen sabit alanlar. multiple:false => tek görsel (yeni yükleme
 // eskisinin yerine geçer). multiple:true => istenildiği kadar görsel eklenip silinebilir.
 const IMAGE_SLOTS = [
@@ -29,6 +33,11 @@ const IMAGE_SLOTS = [
   { page: 'fine-art-baski', section: 'hero', label: 'Fine Art Baskı — Hero Görseli', multiple: false, aspect: '21 / 9' },
   { page: 'fine-art-baski', section: 'kagit-secenekleri', label: 'Fine Art Baskı — Kağıt Seçenekleri', multiple: false, aspect: '4 / 3' },
   { page: 'fine-art-baski', section: 'ornekler', label: 'Fine Art Baskı — Örnek Baskılarımız', multiple: true, aspect: '4 / 5' },
+  { page: 'fotograf-baski', section: 'mat-1', label: 'Fotoğraf Baskı — Mat Örnek (1. görsel)', multiple: false, aspect: '4 / 3' },
+  { page: 'fotograf-baski', section: 'mat-2', label: 'Fotoğraf Baskı — Mat Örnek (üzerine gelince, 2. görsel)', multiple: false, aspect: '4 / 3' },
+  { page: 'fotograf-baski', section: 'parlak-1', label: 'Fotoğraf Baskı — Parlak Örnek (1. görsel)', multiple: false, aspect: '4 / 3' },
+  { page: 'fotograf-baski', section: 'parlak-2', label: 'Fotoğraf Baskı — Parlak Örnek (üzerine gelince, 2. görsel)', multiple: false, aspect: '4 / 3' },
+  { page: 'fotograf-baski', section: 'yukleme-rehberi', label: 'Fotoğraf Baskı — Yükleme Rehberi Görseli', multiple: false, aspect: '4 / 3' },
 ]
 
 function Admin() {
@@ -75,6 +84,15 @@ function Admin() {
   // --- İstatistikler ---
   const [pageViews, setPageViews] = useState([])
 
+  // --- Fotoğraf Baskı Fiyatları ---
+  const [photoPrices, setPhotoPrices] = useState({}) // "size:finish" -> price
+  const [photoPriceSaving, setPhotoPriceSaving] = useState(false)
+  const [photoPriceMsg, setPhotoPriceMsg] = useState('')
+
+  // --- Fotoğraf Siparişleri ---
+  const [photoOrders, setPhotoOrders] = useState([])
+  const [photoOrderItems, setPhotoOrderItems] = useState({}) // order_id -> [items]
+
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (!session) navigate('/login')
@@ -90,6 +108,8 @@ function Admin() {
   useEffect(() => { if (tab === 'kullanicilar') loadProfiles() }, [tab])
   useEffect(() => { if (tab === 'sepetler') loadCartEvents() }, [tab])
   useEffect(() => { if (tab === 'istatistikler') loadPageViews() }, [tab])
+  useEffect(() => { if (tab === 'fotofiyat') loadPhotoPrices() }, [tab])
+  useEffect(() => { if (tab === 'fotosiparis') loadPhotoOrders() }, [tab])
 
   async function loadArtworks() {
     const { data } = await supabase.from('artworks').select('*').order('created_at', { ascending: false })
@@ -388,6 +408,51 @@ function Admin() {
     setPageViews(data || [])
   }
 
+  // ============================================================
+  // FOTOĞRAF BASKI FİYATLARI
+  // ============================================================
+  async function loadPhotoPrices() {
+    const { data } = await supabase.from('photo_print_prices').select('*')
+    const map = {}
+    ;(data || []).forEach(row => { map[`${row.size}:${row.finish}`] = row.price })
+    setPhotoPrices(map)
+  }
+
+  function updatePhotoPrice(size, finish, value) {
+    setPhotoPrices(p => ({ ...p, [`${size}:${finish}`]: value }))
+  }
+
+  async function savePhotoPrices() {
+    setPhotoPriceSaving(true)
+    const rows = []
+    PHOTO_SIZES.forEach(size => PHOTO_FINISHES.forEach(finish => {
+      rows.push({ size, finish, price: Number(photoPrices[`${size}:${finish}`]) || 0 })
+    }))
+    const { error } = await supabase.from('photo_print_prices').upsert(rows, { onConflict: 'size,finish' })
+    setPhotoPriceSaving(false)
+    setPhotoPriceMsg(error ? 'Hata: ' + error.message : 'Kaydedildi ✓')
+    setTimeout(() => setPhotoPriceMsg(''), 2000)
+  }
+
+  // ============================================================
+  // FOTOĞRAF SİPARİŞLERİ
+  // ============================================================
+  async function loadPhotoOrders() {
+    const [{ data: orders }, { data: items }] = await Promise.all([
+      supabase.from('photo_print_orders').select('*').order('created_at', { ascending: false }),
+      supabase.from('photo_print_order_items').select('*'),
+    ])
+    const byOrder = {}
+    ;(items || []).forEach(row => { (byOrder[row.order_id] ||= []).push(row) })
+    setPhotoOrders(orders || [])
+    setPhotoOrderItems(byOrder)
+  }
+
+  async function updatePhotoOrderStatus(id, status) {
+    await supabase.from('photo_print_orders').update({ status }).eq('id', id)
+    setPhotoOrders(rows => rows.map(o => o.id === id ? { ...o, status } : o))
+  }
+
   const inp ={ width: '100%', padding: '.6rem .8rem', border: '1px solid #ddd', fontSize: '.85rem', fontFamily: 'inherit', outline: 'none', boxSizing: 'border-box' }
   const label = { fontSize: '.62rem', letterSpacing: '.12em', textTransform: 'uppercase', color: '#888', marginBottom: '.3rem', display: 'block' }
   const sectionHeading = { fontFamily: "'Archivo Black', sans-serif", fontSize: '1.8rem', fontWeight: 300, margin: 0 }
@@ -412,6 +477,8 @@ function Admin() {
     kullanicilar: 'Kullanıcılar',
     sepetler: 'Sepet Etkinliği',
     istatistikler: 'İstatistikler',
+    fotofiyat: 'Foto Baskı Fiyatları',
+    fotosiparis: `Foto Baskı Siparişleri ${photoOrders.length > 0 ? `(${photoOrders.length})` : ''}`,
   }
 
   const now = Date.now()
@@ -526,13 +593,15 @@ function Admin() {
           </>
         )}
 
-        {(tab === 'gorseller' || tab === 'site' || tab === 'kullanicilar' || tab === 'sepetler' || tab === 'istatistikler') && (
+        {(tab === 'gorseller' || tab === 'site' || tab === 'kullanicilar' || tab === 'sepetler' || tab === 'istatistikler' || tab === 'fotofiyat' || tab === 'fotosiparis') && (
           <div style={{ padding: '1.5rem 1rem', fontSize: '.78rem', color: '#aaa', lineHeight: 1.6 }}>
-            {tab === 'gorseller' && 'Çerçeve ve Fine Art Baskı sayfalarındaki tüm görseller sağda listeleniyor. Değiştirmek istediğin alana tıkla.'}
+            {tab === 'gorseller' && 'Çerçeve, Fine Art Baskı ve Fotoğraf Baskı sayfalarındaki tüm görseller sağda listeleniyor. Değiştirmek istediğin alana tıkla.'}
             {tab === 'site' && 'Sitenin tamamında kullanılan font çiftini buradan değiştirebilirsin.'}
             {tab === 'kullanicilar' && 'Siteye kayıt olan tüm kullanıcılar burada listeleniyor.'}
             {tab === 'sepetler' && 'Sepete eklenen ürünler burada listeleniyor. "Sipariş oldu" işaretli olmayanlar, sepete ekleyip almayanlardır.'}
             {tab === 'istatistikler' && 'Son 30 günlük ziyaretçi özeti. Admin panelinin kendi gezinmesi bu sayıma dahil değil.'}
+            {tab === 'fotofiyat' && 'Fotoğraf Baskı sayfasındaki boy/yüzey fiyat matrisi. Değiştirip Kaydet\'e bas.'}
+            {tab === 'fotosiparis' && 'Fotoğraf Baskı sayfasından gelen siparişler ve içindeki fotoğraf/boy/yüzey satırları.'}
           </div>
         )}
       </div>
@@ -986,6 +1055,88 @@ function Admin() {
                     Tek sayfa görüp ayrılanlarda süre 0 görünür, bu ortalamayı aşağı çeker — kesin değil, fikir vermesi içindir.
                   </p>
                 </>
+              )}
+            </>
+          )}
+
+          {tab === 'fotofiyat' && (
+            <>
+              <h2 style={{ ...sectionHeading, marginBottom: '2rem' }}>Fotoğraf Baskı Fiyatları</h2>
+              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '.85rem', marginBottom: '1.5rem' }}>
+                <thead>
+                  <tr style={{ borderBottom: '2px solid #eee' }}>
+                    <th style={{ textAlign: 'left', padding: '.6rem' }}>Boy</th>
+                    {PHOTO_FINISHES.map(f => (
+                      <th key={f} style={{ textAlign: 'left', padding: '.6rem' }}>{f} (₺)</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {PHOTO_SIZES.map(size => (
+                    <tr key={size} style={{ borderBottom: '1px solid #f5f5f5' }}>
+                      <td style={{ padding: '.6rem', fontWeight: 500 }}>{size}</td>
+                      {PHOTO_FINISHES.map(finish => (
+                        <td key={finish} style={{ padding: '.6rem' }}>
+                          <input
+                            type="number" min="0" style={{ ...inp, width: 110 }}
+                            value={photoPrices[`${size}:${finish}`] ?? ''}
+                            onChange={e => updatePhotoPrice(size, finish, e.target.value)}
+                          />
+                        </td>
+                      ))}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+              <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+                <button onClick={savePhotoPrices} disabled={photoPriceSaving} style={btnPrimary}>
+                  {photoPriceSaving ? 'Kaydediliyor…' : 'Kaydet'}
+                </button>
+                {photoPriceMsg && <span style={{ fontSize: '.8rem', color: photoPriceMsg.includes('Hata') ? '#cc4444' : '#4a9a6a' }}>{photoPriceMsg}</span>}
+              </div>
+            </>
+          )}
+
+          {tab === 'fotosiparis' && (
+            <>
+              <h2 style={{ ...sectionHeading, marginBottom: '2rem' }}>Fotoğraf Baskı Siparişleri</h2>
+              {photoOrders.length === 0 ? (
+                <p style={{ color: '#aaa', fontSize: '.85rem' }}>Henüz fotoğraf baskı siparişi yok.</p>
+              ) : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+                  {photoOrders.map(o => (
+                    <div key={o.id} style={{ border: '1px solid #eee', padding: '1.2rem' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '.8rem', marginBottom: '.8rem' }}>
+                        <div>
+                          <div style={{ fontSize: '.85rem', fontWeight: 600 }}>{o.customer_name}</div>
+                          <div style={{ fontSize: '.72rem', color: '#888' }}>{o.email} · {o.phone}</div>
+                          <div style={{ fontSize: '.72rem', color: '#888' }}>{o.address}</div>
+                          {o.note && <div style={{ fontSize: '.72rem', color: '#888', marginTop: '.3rem' }}>Not: {o.note}</div>}
+                          <div style={{ fontSize: '.68rem', color: '#aaa', marginTop: '.3rem' }}>{new Date(o.created_at).toLocaleString('tr-TR')}</div>
+                        </div>
+                        <div style={{ textAlign: 'right' }}>
+                          <div style={{ fontSize: '1.1rem', fontWeight: 600, marginBottom: '.4rem' }}>₺{Number(o.total_price).toLocaleString('tr-TR')}</div>
+                          <select
+                            value={o.status}
+                            onChange={e => updatePhotoOrderStatus(o.id, e.target.value)}
+                            style={{ ...inp, width: 'auto', fontSize: '.72rem', padding: '.35rem .6rem' }}
+                          >
+                            {Object.entries(STATUS_LABELS).map(([k, lbl]) => <option key={k} value={k}>{lbl}</option>)}
+                          </select>
+                        </div>
+                      </div>
+                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '.8rem' }}>
+                        {(photoOrderItems[o.id] || []).map(item => (
+                          <div key={item.id} style={{ width: 110, fontSize: '.7rem', color: '#666' }}>
+                            <img src={item.image_url} alt="" style={{ width: '100%', aspectRatio: '4 / 3', objectFit: 'cover', display: 'block', border: '1px solid #eee', marginBottom: '.3rem' }} />
+                            {item.size} · {item.finish}<br />
+                            {item.quantity} adet · ₺{Number(item.unit_price).toLocaleString('tr-TR')}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
               )}
             </>
           )}
