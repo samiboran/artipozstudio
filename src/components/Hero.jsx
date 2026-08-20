@@ -31,14 +31,14 @@ export default function Hero() {
 
       <div style={{
         position: 'absolute', inset: 0,
-        background: 'linear-gradient(180deg, rgba(0,0,0,.25), rgba(0,0,0,.4))'
+        background: 'linear-gradient(180deg, rgba(0,0,0,.4), rgba(0,0,0,.6))'
       }} />
 
       <div style={{ position: 'relative', zIndex: 1 }}>
         <h1 style={{
           fontFamily: "'Archivo', sans-serif", fontWeight: 300,
           fontSize: 'clamp(3.5rem, 11vw, 8rem)', letterSpacing: '.14em',
-          textTransform: 'lowercase', color: '#fff', margin: 0,
+          textTransform: 'lowercase', color: 'var(--blue)', margin: 0,
         }}>
           artı poz
         </h1>
