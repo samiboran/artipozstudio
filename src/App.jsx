@@ -6,6 +6,7 @@ import CartSidebar from './components/CartSidebar'
 import { useCart } from './hooks/useCart'
 import { supabase } from './lib/supabase'
 import { applySiteFont } from './lib/siteFonts'
+import { getSessionId } from './lib/session'
 import Gallery from './pages/Gallery'
 import Isler from './pages/Isler'
 import ProductDetail from './pages/ProductDetail'
@@ -32,6 +33,21 @@ function ScrollToTop() {
   return null
 }
 
+// Basit ziyaretçi istatistiği için her rota değişiminde page_views'e bir satır ekler.
+// Admin panelinin kendi gezinmesi istatistikleri kirletmesin diye /admin hariç tutulur.
+function PageViewTracker() {
+  const { pathname } = useLocation()
+  useEffect(() => {
+    if (pathname.startsWith('/admin')) return
+    supabase.from('page_views').insert({
+      session_id: getSessionId(),
+      path: pathname,
+      referrer: document.referrer || null,
+    })
+  }, [pathname])
+  return null
+}
+
 function App() {
   const { count } = useCart()
   const [cartOpen, setCartOpen] = useState(false)
@@ -43,6 +59,7 @@ function App() {
   return (
     <>
       <ScrollToTop />
+      <PageViewTracker />
       <Navbar cartCount={count} onCartClick={() => setCartOpen(true)} />
       <Routes>
         <Route path="/" element={<Gallery />} />

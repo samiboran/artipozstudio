@@ -104,7 +104,7 @@ function Gallery() {
       {/* Hizmetlerimiz */}
       <section style={{ maxWidth: 1200, margin: '0 auto', padding: '5rem 2rem' }}>
         <h2 style={{
-          fontFamily: "'Archivo Black', sans-serif", fontWeight: 300,
+          ...displayHeading,
           fontSize: '2.2rem', margin: '0 0 3rem', textAlign: 'left',
         }}>
           Hizmetlerimiz

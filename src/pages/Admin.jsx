@@ -72,6 +72,9 @@ function Admin() {
   const [cartEvents, setCartEvents] = useState([])
   const [orderSessionIds, setOrderSessionIds] = useState(new Set())
 
+  // --- İstatistikler ---
+  const [pageViews, setPageViews] = useState([])
+
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (!session) navigate('/login')
@@ -86,6 +89,7 @@ function Admin() {
   useEffect(() => { if (tab === 'site') loadSiteSettings() }, [tab])
   useEffect(() => { if (tab === 'kullanicilar') loadProfiles() }, [tab])
   useEffect(() => { if (tab === 'sepetler') loadCartEvents() }, [tab])
+  useEffect(() => { if (tab === 'istatistikler') loadPageViews() }, [tab])
 
   async function loadArtworks() {
     const { data } = await supabase.from('artworks').select('*').order('created_at', { ascending: false })
@@ -375,7 +379,16 @@ function Admin() {
     setOrderSessionIds(new Set((orderRows || []).map(o => o.session_id)))
   }
 
-  const inp = { width: '100%', padding: '.6rem .8rem', border: '1px solid #ddd', fontSize: '.85rem', fontFamily: 'inherit', outline: 'none', boxSizing: 'border-box' }
+  // ============================================================
+  // İSTATİSTİKLER
+  // ============================================================
+  async function loadPageViews() {
+    const since = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString()
+    const { data } = await supabase.from('page_views').select('*').gte('created_at', since).order('created_at', { ascending: false })
+    setPageViews(data || [])
+  }
+
+  const inp ={ width: '100%', padding: '.6rem .8rem', border: '1px solid #ddd', fontSize: '.85rem', fontFamily: 'inherit', outline: 'none', boxSizing: 'border-box' }
   const label = { fontSize: '.62rem', letterSpacing: '.12em', textTransform: 'uppercase', color: '#888', marginBottom: '.3rem', display: 'block' }
   const sectionHeading = { fontFamily: "'Archivo Black', sans-serif", fontSize: '1.8rem', fontWeight: 300, margin: 0 }
   const listItem = (active) => ({
@@ -398,6 +411,30 @@ function Admin() {
     site: 'Site Ayarları',
     kullanicilar: 'Kullanıcılar',
     sepetler: 'Sepet Etkinliği',
+    istatistikler: 'İstatistikler',
+  }
+
+  const now = Date.now()
+  const views7d = pageViews.filter(v => now - new Date(v.created_at).getTime() <= 7 * 24 * 60 * 60 * 1000)
+  const uniqueSessions30d = new Set(pageViews.map(v => v.session_id))
+  const uniqueSessions7d = new Set(views7d.map(v => v.session_id))
+
+  const pathCounts = {}
+  pageViews.forEach(v => { pathCounts[v.path] = (pathCounts[v.path] || 0) + 1 })
+  const topPaths = Object.entries(pathCounts).sort((a, b) => b[1] - a[1]).slice(0, 10)
+
+  const sessionSpans = {}
+  pageViews.forEach(v => {
+    const t = new Date(v.created_at).getTime()
+    const s = sessionSpans[v.session_id]
+    if (!s) sessionSpans[v.session_id] = { min: t, max: t }
+    else { s.min = Math.min(s.min, t); s.max = Math.max(s.max, t) }
+  })
+  const durationsSec = Object.values(sessionSpans).map(s => (s.max - s.min) / 1000)
+  const avgDurationSec = durationsSec.length ? durationsSec.reduce((a, b) => a + b, 0) / durationsSec.length : 0
+  const formatDuration = sec => {
+    if (sec < 60) return `${Math.round(sec)} sn`
+    return `${Math.floor(sec / 60)} dk ${Math.round(sec % 60)} sn`
   }
 
   return (
@@ -489,12 +526,13 @@ function Admin() {
           </>
         )}
 
-        {(tab === 'gorseller' || tab === 'site' || tab === 'kullanicilar' || tab === 'sepetler') && (
+        {(tab === 'gorseller' || tab === 'site' || tab === 'kullanicilar' || tab === 'sepetler' || tab === 'istatistikler') && (
           <div style={{ padding: '1.5rem 1rem', fontSize: '.78rem', color: '#aaa', lineHeight: 1.6 }}>
             {tab === 'gorseller' && 'Çerçeve ve Fine Art Baskı sayfalarındaki tüm görseller sağda listeleniyor. Değiştirmek istediğin alana tıkla.'}
             {tab === 'site' && 'Sitenin tamamında kullanılan font çiftini buradan değiştirebilirsin.'}
             {tab === 'kullanicilar' && 'Siteye kayıt olan tüm kullanıcılar burada listeleniyor.'}
             {tab === 'sepetler' && 'Sepete eklenen ürünler burada listeleniyor. "Sipariş oldu" işaretli olmayanlar, sepete ekleyip almayanlardır.'}
+            {tab === 'istatistikler' && 'Son 30 günlük ziyaretçi özeti. Admin panelinin kendi gezinmesi bu sayıma dahil değil.'}
           </div>
         )}
       </div>
@@ -895,6 +933,60 @@ function Admin() {
                 Not: bu takip {new Date().toLocaleDateString('tr-TR')} tarihinden itibaren başladı — geçmişe dönük veri yok.
                 Aynı kişi bir ürünü birden fazla kez sepete eklerse (miktar artırma dahil) her tıklama ayrı bir satır olarak görünür.
               </p>
+            </>
+          )}
+
+          {tab === 'istatistikler' && (
+            <>
+              <h2 style={{ ...sectionHeading, marginBottom: '2rem' }}>İstatistikler</h2>
+
+              {pageViews.length === 0 ? (
+                <p style={{ color: '#aaa', fontSize: '.85rem' }}>
+                  Henüz veri yok. Ziyaretçiler siteyi gezdikçe burada birikmeye başlayacak.
+                </p>
+              ) : (
+                <>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '1rem', marginBottom: '2.5rem' }}>
+                    {[
+                      ['Son 7 Gün Ziyaret', views7d.length],
+                      ['Son 30 Gün Ziyaret', pageViews.length],
+                      ['Tekil Ziyaretçi (7g)', uniqueSessions7d.size],
+                      ['Tekil Ziyaretçi (30g)', uniqueSessions30d.size],
+                      ['Ort. Oturum Süresi', formatDuration(avgDurationSec)],
+                    ].map(([lbl, val]) => (
+                      <div key={lbl} style={{ border: '1px solid #eee', padding: '1rem' }}>
+                        <div style={{ fontSize: '.6rem', letterSpacing: '.12em', textTransform: 'uppercase', color: '#aaa', marginBottom: '.5rem' }}>{lbl}</div>
+                        <div style={{ fontSize: '1.5rem', fontWeight: 600 }}>{val}</div>
+                      </div>
+                    ))}
+                  </div>
+
+                  <h3 style={{ fontSize: '.68rem', letterSpacing: '.12em', textTransform: 'uppercase', color: '#888', marginBottom: '1rem' }}>
+                    En Çok Görüntülenen Sayfalar (son 30 gün)
+                  </h3>
+                  <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '.82rem' }}>
+                    <thead>
+                      <tr style={{ borderBottom: '2px solid #eee' }}>
+                        <th style={{ textAlign: 'left', padding: '.6rem' }}>Sayfa</th>
+                        <th style={{ textAlign: 'left', padding: '.6rem' }}>Görüntülenme</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {topPaths.map(([path, count]) => (
+                        <tr key={path} style={{ borderBottom: '1px solid #f5f5f5' }}>
+                          <td style={{ padding: '.6rem' }}>{path}</td>
+                          <td style={{ padding: '.6rem', color: '#888' }}>{count}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+
+                  <p style={{ fontSize: '.72rem', color: '#aaa', marginTop: '1.5rem', lineHeight: 1.6 }}>
+                    Oturum süresi kabaca hesaplanır: aynı ziyaretçinin ilk ve son sayfa görüntülemesi arasındaki fark.
+                    Tek sayfa görüp ayrılanlarda süre 0 görünür, bu ortalamayı aşağı çeker — kesin değil, fikir vermesi içindir.
+                  </p>
+                </>
+              )}
             </>
           )}
 
