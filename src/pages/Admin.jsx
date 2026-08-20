@@ -40,7 +40,6 @@ const IMAGE_SLOTS = [
   { page: 'fotograf-baski', section: 'mat-2', label: 'Fotoğraf Baskı — Mat Örnek (üzerine gelince, 2. görsel)', multiple: false, aspect: '4 / 3' },
   { page: 'fotograf-baski', section: 'parlak-1', label: 'Fotoğraf Baskı — Parlak Örnek (1. görsel)', multiple: false, aspect: '4 / 3' },
   { page: 'fotograf-baski', section: 'parlak-2', label: 'Fotoğraf Baskı — Parlak Örnek (üzerine gelince, 2. görsel)', multiple: false, aspect: '4 / 3' },
-  { page: 'fotograf-baski', section: 'yukleme-rehberi', label: 'Fotoğraf Baskı — Yükleme Rehberi Görseli', multiple: false, aspect: '4 / 3' },
 ]
 
 function Admin() {
@@ -113,7 +112,7 @@ function Admin() {
   useEffect(() => { if (tab === 'siparisler') loadOrders() }, [tab])
   useEffect(() => { if (tab === 'cerceve') { loadFrames(); loadFrameOrders() } }, [tab])
   useEffect(() => { if (tab === 'kagitlar') loadPapers() }, [tab])
-  useEffect(() => { if (tab === 'gorseller') loadPageImages() }, [tab])
+  useEffect(() => { if (['gorseller', 'cerceve', 'kagitlar', 'fotofiyat'].includes(tab)) loadPageImages() }, [tab])
   useEffect(() => { if (tab === 'site') loadSiteSettings() }, [tab])
   useEffect(() => { if (tab === 'kullanicilar') loadProfiles() }, [tab])
   useEffect(() => { if (tab === 'sepetler') loadCartEvents() }, [tab])
@@ -227,7 +226,12 @@ function Admin() {
     if (selected) {
       ;({ error } = await supabase.from('artworks').update(payload).eq('id', selected))
     } else {
-      ;({ error } = await supabase.from('artworks').insert(payload))
+      // Eklenen satırın id'sini geri alıyoruz — yoksa "selected" hep null kalır,
+      // ek galeri görseli bölümü kaydedildikten sonra da hep kilitli görünür ve
+      // "Kaydet"e ikinci kez basılırsa yeni bir kopya daha eklenir.
+      let data
+      ;({ data, error } = await supabase.from('artworks').insert(payload).select().single())
+      if (!error && data) setSelected(data.id)
     }
     setSaving(false)
     if (error) { setMsg('Hata: ' + error.message); return }
@@ -402,6 +406,65 @@ function Admin() {
     loadPageImages()
   }
 
+  // Bir sayfaya ait tüm görsel slotlarını render eder — Ana Sayfa, Çerçeve,
+  // Fine Art Baskı ve Fotoğraf Baskı sekmelerinde, o sayfanın kendi
+  // içerik/fiyat düzenleyicisinin altında tek bir yerde gösterilsin diye
+  // ortak fonksiyon olarak çıkarıldı.
+  function renderPageImageSlots(pageKey) {
+    return IMAGE_SLOTS.filter(slot => slot.page === pageKey).map(slot => {
+      const key = `${slot.page}:${slot.section}`
+      const rows = pageImages[key] || []
+      const singleImage = !slot.multiple && rows[0]
+      return (
+        <div key={key} style={{ marginBottom: '2.5rem', borderBottom: '1px solid #eee', paddingBottom: '2rem' }}>
+          <span style={{ ...label, display: 'block', marginBottom: '.8rem' }}>{slot.label}</span>
+          <div
+            onClick={() => triggerSlotUpload(slot)}
+            onDragOver={e => e.preventDefault()}
+            onDrop={e => { e.preventDefault(); uploadForSlot(e.dataTransfer.files[0], slot) }}
+            style={{
+              border: '2px dashed #ddd', padding: '1.5rem', textAlign: 'center',
+              cursor: 'pointer', background: '#fafafa',
+              minHeight: 160, display: 'flex', alignItems: 'center', justifyContent: 'center'
+            }}
+          >
+            {singleImage ? (
+              <div style={{ position: 'relative', width: '100%', maxWidth: 360, aspectRatio: slot.aspect, overflow: 'hidden' }}>
+                <img src={rows[0].image_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+                <button
+                  onClick={e => { e.stopPropagation(); deletePageImage(rows[0].id) }}
+                  style={{ position: 'absolute', top: 6, right: 6, background: '#cc4444', color: '#fff', border: 'none', borderRadius: '50%', width: 22, height: 22, cursor: 'pointer', fontSize: '.8rem', lineHeight: 1 }}
+                >×</button>
+              </div>
+            ) : (
+              <span style={{ color: '#bbb', fontSize: '.85rem' }}>
+                {slot.multiple
+                  ? 'Görsel eklemek için sürükle & bırak veya tıkla'
+                  : 'Henüz görsel yok, sitede eski hazır görsel gösteriliyor — sürükle & bırak veya tıkla'}
+              </span>
+            )}
+          </div>
+          <p style={{ fontSize: '.66rem', color: '#bbb', marginTop: '.4rem' }}>
+            Önizleme, sitede gerçekte nasıl kırpılacağını (oran: {slot.aspect}) gösteriyor.
+          </p>
+          {slot.multiple && rows.length > 0 && (
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '.8rem', marginTop: '.8rem' }}>
+              {rows.map(row => (
+                <div key={row.id} style={{ position: 'relative', width: 130, aspectRatio: slot.aspect, overflow: 'hidden' }}>
+                  <img src={row.image_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block', border: '1px solid #eee' }} />
+                  <button
+                    onClick={() => deletePageImage(row.id)}
+                    style={{ position: 'absolute', top: 4, right: 4, background: '#cc4444', color: '#fff', border: 'none', borderRadius: '50%', width: 20, height: 20, cursor: 'pointer', fontSize: '.72rem', lineHeight: 1 }}
+                  >×</button>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )
+    })
+  }
+
   // ============================================================
   // SİTE AYARLARI — font seçimi
   // ============================================================
@@ -509,7 +572,10 @@ function Admin() {
 
   const inp ={ width: '100%', padding: '.6rem .8rem', border: '1px solid #ddd', fontSize: '.85rem', fontFamily: 'inherit', outline: 'none', boxSizing: 'border-box' }
   const label = { fontSize: '.62rem', letterSpacing: '.12em', textTransform: 'uppercase', color: '#888', marginBottom: '.3rem', display: 'block' }
-  const sectionHeading = { fontFamily: "'Archivo Black', sans-serif", fontSize: '1.8rem', fontWeight: 300, margin: 0 }
+  // Archivo Black Google Font'ta tek ağırlık (400) olarak yükleniyor — 300 istemek
+  // font takas anında (FOUT) yedek fontla eşleşmediği için başlıkların kesik/yarım
+  // görünmesine sebep oluyordu.
+  const sectionHeading = { fontFamily: "'Archivo Black', sans-serif", fontSize: '1.8rem', fontWeight: 400, margin: 0 }
   const listItem = (active) => ({
     padding: '.8rem 1rem', cursor: 'pointer', borderBottom: '1px solid #f5f5f5',
     background: active ? '#f9f6f1' : 'white',
@@ -522,16 +588,16 @@ function Admin() {
   const STATUS_LABELS = { yeni: 'Yeni', hazirlaniyor: 'Hazırlanıyor', kargoda: 'Kargoda', teslim: 'Teslim Edildi', iptal: 'İptal' }
 
   const TAB_LABELS = {
-    eserler: 'Eserler',
+    eserler: 'İşler',
     siparisler: `Siparişler ${orders.length > 0 ? `(${orders.length})` : ''}`,
     cerceve: 'Çerçeve',
-    kagitlar: 'Kağıtlar',
-    gorseller: 'Görseller',
+    kagitlar: 'Fine Art Baskı',
+    gorseller: 'Ana Sayfa',
     site: 'Site Ayarları',
     kullanicilar: 'Kullanıcılar',
     sepetler: 'Sepet Etkinliği',
     istatistikler: 'İstatistikler',
-    fotofiyat: 'Foto Baskı Fiyatları',
+    fotofiyat: 'Fotoğraf Baskı',
     fotosiparis: `Foto Baskı Siparişleri ${photoOrders.length > 0 ? `(${photoOrders.length})` : ''}`,
   }
 
@@ -674,12 +740,12 @@ function Admin() {
 
         {(tab === 'gorseller' || tab === 'site' || tab === 'kullanicilar' || tab === 'sepetler' || tab === 'istatistikler' || tab === 'fotofiyat' || tab === 'fotosiparis') && (
           <div style={{ padding: '1.5rem 1rem', fontSize: '.78rem', color: '#aaa', lineHeight: 1.6 }}>
-            {tab === 'gorseller' && 'Çerçeve, Fine Art Baskı ve Fotoğraf Baskı sayfalarındaki tüm görseller sağda listeleniyor. Değiştirmek istediğin alana tıkla.'}
+            {tab === 'gorseller' && 'Ana sayfada (/) kullanılan görseller sağda listeleniyor. Değiştirmek istediğin alana tıkla.'}
             {tab === 'site' && 'Sitenin tamamında kullanılan font çiftini buradan değiştirebilirsin.'}
             {tab === 'kullanicilar' && 'Siteye kayıt olan tüm kullanıcılar burada listeleniyor.'}
             {tab === 'sepetler' && 'Sepete eklenen ürünler burada listeleniyor. "Sipariş oldu" işaretli olmayanlar, sepete ekleyip almayanlardır.'}
             {tab === 'istatistikler' && 'Son 30 günlük ziyaretçi özeti. Admin panelinin kendi gezinmesi bu sayıma dahil değil.'}
-            {tab === 'fotofiyat' && 'Fotoğraf Baskı sayfasındaki boy/yüzey fiyat matrisi. Değiştirip Kaydet\'e bas.'}
+            {tab === 'fotofiyat' && 'Fotoğraf Baskı sayfasının fiyat matrisi ve görselleri sağda. Değiştirip Kaydet\'e bas.'}
             {tab === 'fotosiparis' && 'Fotoğraf Baskı sayfasından gelen siparişler ve içindeki fotoğraf/boy/yüzey satırları.'}
           </div>
         )}
@@ -902,6 +968,11 @@ function Admin() {
               </button>
 
               <div style={{ marginTop: '3rem', borderTop: '1px solid #eee', paddingTop: '2rem' }}>
+                <h2 style={{ ...sectionHeading, fontSize: '1.4rem', marginBottom: '1.5rem' }}>Çerçeve Sayfası Görselleri</h2>
+                {renderPageImageSlots('cerceve')}
+              </div>
+
+              <div style={{ marginTop: '3rem', borderTop: '1px solid #eee', paddingTop: '2rem' }}>
                 <h2 style={{ ...sectionHeading, fontSize: '1.4rem', marginBottom: '1.5rem' }}>
                   Gelen Çerçeve Siparişleri {frameOrders.length > 0 ? `(${frameOrders.length})` : ''}
                 </h2>
@@ -994,66 +1065,22 @@ function Admin() {
               <button onClick={savePaper} disabled={paperSaving} style={btnPrimary}>
                 {paperSaving ? 'Kaydediliyor…' : selectedPaper ? 'Güncelle' : 'Kaydet'}
               </button>
+
+              <div style={{ marginTop: '3rem', borderTop: '1px solid #eee', paddingTop: '2rem' }}>
+                <h2 style={{ ...sectionHeading, fontSize: '1.4rem', marginBottom: '1.5rem' }}>Fine Art Baskı Sayfası Görselleri</h2>
+                {renderPageImageSlots('fine-art-baski')}
+              </div>
             </>
           )}
 
           {tab === 'gorseller' && (
             <>
-              <h2 style={{ ...sectionHeading, marginBottom: '2rem' }}>Görseller</h2>
-              {IMAGE_SLOTS.map(slot => {
-                const key = `${slot.page}:${slot.section}`
-                const rows = pageImages[key] || []
-                const singleImage = !slot.multiple && rows[0]
-                return (
-                  <div key={key} style={{ marginBottom: '2.5rem', borderBottom: '1px solid #eee', paddingBottom: '2rem' }}>
-                    <span style={{ ...label, display: 'block', marginBottom: '.8rem' }}>{slot.label}</span>
-
-                    <div
-                      onClick={() => triggerSlotUpload(slot)}
-                      onDragOver={e => e.preventDefault()}
-                      onDrop={e => { e.preventDefault(); uploadForSlot(e.dataTransfer.files[0], slot) }}
-                      style={{
-                        border: '2px dashed #ddd', padding: '1.5rem', textAlign: 'center',
-                        cursor: 'pointer', background: '#fafafa',
-                        minHeight: 160, display: 'flex', alignItems: 'center', justifyContent: 'center'
-                      }}
-                    >
-                      {singleImage ? (
-                        <div style={{ position: 'relative', width: '100%', maxWidth: 360, aspectRatio: slot.aspect, overflow: 'hidden' }}>
-                          <img src={rows[0].image_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
-                          <button
-                            onClick={e => { e.stopPropagation(); deletePageImage(rows[0].id) }}
-                            style={{ position: 'absolute', top: 6, right: 6, background: '#cc4444', color: '#fff', border: 'none', borderRadius: '50%', width: 22, height: 22, cursor: 'pointer', fontSize: '.8rem', lineHeight: 1 }}
-                          >×</button>
-                        </div>
-                      ) : (
-                        <span style={{ color: '#bbb', fontSize: '.85rem' }}>
-                          {slot.multiple
-                            ? 'Görsel eklemek için sürükle & bırak veya tıkla'
-                            : 'Henüz görsel yok, sitede eski hazır görsel gösteriliyor — sürükle & bırak veya tıkla'}
-                        </span>
-                      )}
-                    </div>
-                    <p style={{ fontSize: '.66rem', color: '#bbb', marginTop: '.4rem' }}>
-                      Önizleme, sitede gerçekte nasıl kırpılacağını (oran: {slot.aspect}) gösteriyor.
-                    </p>
-
-                    {slot.multiple && rows.length > 0 && (
-                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '.8rem', marginTop: '.8rem' }}>
-                        {rows.map(row => (
-                          <div key={row.id} style={{ position: 'relative', width: 130, aspectRatio: slot.aspect, overflow: 'hidden' }}>
-                            <img src={row.image_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block', border: '1px solid #eee' }} />
-                            <button
-                              onClick={() => deletePageImage(row.id)}
-                              style={{ position: 'absolute', top: 4, right: 4, background: '#cc4444', color: '#fff', border: 'none', borderRadius: '50%', width: 20, height: 20, cursor: 'pointer', fontSize: '.72rem', lineHeight: 1 }}
-                            >×</button>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                )
-              })}
+              <h2 style={{ ...sectionHeading, marginBottom: '.5rem' }}>Ana Sayfa Görselleri</h2>
+              <p style={{ fontSize: '.78rem', color: '#aaa', marginBottom: '2rem' }}>
+                Çerçeve, Fine Art Baskı ve Fotoğraf Baskı sayfalarının kendi görselleri artık
+                kendi sekmelerinde — bu sekme yalnızca ana sayfada (/) kullanılan görselleri yönetir.
+              </p>
+              {renderPageImageSlots('gallery')}
             </>
           )}
 
@@ -1283,6 +1310,11 @@ function Admin() {
                   {photoPriceSaving ? 'Kaydediliyor…' : 'Kaydet'}
                 </button>
                 {photoPriceMsg && <span style={{ fontSize: '.8rem', color: photoPriceMsg.includes('Hata') ? '#cc4444' : '#4a9a6a' }}>{photoPriceMsg}</span>}
+              </div>
+
+              <div style={{ marginTop: '3rem', borderTop: '1px solid #eee', paddingTop: '2rem' }}>
+                <h2 style={{ ...sectionHeading, fontSize: '1.4rem', marginBottom: '1.5rem' }}>Fotoğraf Baskı Sayfası Görselleri</h2>
+                {renderPageImageSlots('fotograf-baski')}
               </div>
             </>
           )}

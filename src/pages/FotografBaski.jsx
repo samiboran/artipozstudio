@@ -65,7 +65,7 @@ function FinishCard({ label: cardLabel, img1, img2, onClick }) {
 export default function FotografBaski() {
   const [images, setImages] = useState({
     hero: heroImgDefault,
-    'mat-1': null, 'mat-2': null, 'parlak-1': null, 'parlak-2': null, 'yukleme-rehberi': null,
+    'mat-1': null, 'mat-2': null, 'parlak-1': null, 'parlak-2': null,
   })
   const [prices, setPrices] = useState(FALLBACK_PRICES)
 
@@ -77,6 +77,7 @@ export default function FotografBaski() {
   const [finish, setFinish] = useState('Mat')
   const [quantity, setQuantity] = useState(1)
   const [note, setNote] = useState('')
+  const [selectorOpen, setSelectorOpen] = useState(false)
   const fileRef = useRef()
 
   // --- Liste (sepet) ---
@@ -101,7 +102,7 @@ export default function FotografBaski() {
         const next = { ...prev }
         const bySection = {}
         imgs.forEach(row => { (bySection[row.section] ||= []).push(row) })
-        ;['hero', 'mat-1', 'mat-2', 'parlak-1', 'parlak-2', 'yukleme-rehberi'].forEach(section => {
+        ;['hero', 'mat-1', 'mat-2', 'parlak-1', 'parlak-2'].forEach(section => {
           if (bySection[section]?.[0]) next[section] = bySection[section][0].image_url
         })
         return next
@@ -116,7 +117,23 @@ export default function FotografBaski() {
   }
 
   const unitPrice = prices[`${size}:${finish}`] || 0
+  const lineTotal = unitPrice * (Number(quantity) || 0)
   const listTotal = list.reduce((sum, item) => sum + item.unitPrice * item.quantity, 0)
+
+  // Supabase JS client'ının oturum kilidiyle ilgili bilinen bir durum: birden fazla
+  // sekme/istemci aynı anda aynı Supabase session'ına erişmeye çalışınca "lock ...
+  // was released because another request stole it" hatası dönebiliyor. Bu geçici
+  // bir durum olduğu için birkaç kez kısa gecikmeyle otomatik tekrar deniyoruz.
+  async function uploadWithRetry(path, file, attempt = 0) {
+    const { error } = await supabase.storage.from('site-images').upload(path, file)
+    if (!error) return
+    const isLockError = error.message?.toLowerCase().includes('lock')
+    if (isLockError && attempt < 2) {
+      await new Promise(r => setTimeout(r, 600 * (attempt + 1)))
+      return uploadWithRetry(path, file, attempt + 1)
+    }
+    throw error
+  }
 
   async function handleFileSelect(file) {
     if (!file) return
@@ -132,9 +149,11 @@ export default function FotografBaski() {
     setUploading(true)
     const ext = file.name.split('.').pop()
     const path = `photo-print/${Date.now()}-${Math.random().toString(36).slice(2, 7)}.${ext}`
-    const { error } = await supabase.storage.from('site-images').upload(path, file)
-    if (error) {
-      setUploadError('Yüklenemedi: ' + error.message)
+    try {
+      await uploadWithRetry(path, file)
+    } catch (error) {
+      console.error('Fotoğraf yükleme hatası:', error)
+      setUploadError('Yükleme başarısız oldu, lütfen tekrar deneyin.')
       setUploading(false)
       return
     }
@@ -252,92 +271,98 @@ export default function FotografBaski() {
         </p>
       </section>
 
-      {/* Dosya yükleme + rehber */}
-      <section style={{ maxWidth: 1000, margin: '0 auto', padding: '3rem 2rem' }}>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '2rem', alignItems: 'start' }}>
-          <div>
-            <p style={label}>Fotoğrafınızı Yükleyin</p>
-            <div
-              onClick={() => fileRef.current?.click()}
-              onDragOver={e => e.preventDefault()}
-              onDrop={e => { e.preventDefault(); handleFileSelect(e.dataTransfer.files[0]) }}
-              style={{
-                marginTop: '.8rem', border: '1px dashed var(--border)', padding: '2rem 1rem',
-                textAlign: 'center', cursor: 'pointer', minHeight: 200,
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                background: uploadedUrl ? 'transparent' : 'var(--surface)',
-              }}
-            >
-              {uploading ? (
-                <span style={{ ...body, fontSize: '.82rem' }}>Yükleniyor…</span>
-              ) : uploadedUrl ? (
-                <img src={uploadedUrl} alt="Yüklenen fotoğraf önizlemesi" style={{ maxWidth: '100%', maxHeight: 260, objectFit: 'contain', display: 'block' }} />
-              ) : (
-                <span style={{ ...body, fontSize: '.82rem' }}>
-                  Fotoğrafınızı buraya sürükleyin<br />veya tıklayarak dosya seçin
-                </span>
-              )}
-            </div>
-            <input ref={fileRef} type="file" accept="image/*" style={{ display: 'none' }}
-              onChange={e => handleFileSelect(e.target.files[0])} />
-            {uploadError && <p style={{ color: '#c33', fontSize: '.78rem', marginTop: '.5rem' }}>{uploadError}</p>}
-
-            <p style={{ ...body, fontSize: '.76rem', marginTop: '1.2rem', lineHeight: 1.9 }}>
-              Önerilen formatlar: <b>JPEG, PNG, TIFF veya PDF.</b> En iyi sonuç için en az{' '}
-              <b>300 DPI</b> çözünürlük ve <b>RGB renk profili</b> kullanın. Dosya başına
-              en fazla <b>{MAX_FILE_SIZE_MB} MB</b> yükleyebilirsiniz.
-            </p>
-          </div>
-
-          <div style={{ aspectRatio: '4 / 3', overflow: 'hidden' }}>
-            {images['yukleme-rehberi']
-              ? <img src={images['yukleme-rehberi']} alt="Fotoğraf yükleme rehberi" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
-              : placeholderBox("Yükleme Rehberi — Admin'den yükle")}
-          </div>
+      {/* Dosya yükleme */}
+      <section style={{ maxWidth: 640, margin: '0 auto', padding: '3rem 2rem' }}>
+        <p style={label}>Fotoğrafınızı Yükleyin</p>
+        <div
+          onClick={() => fileRef.current?.click()}
+          onDragOver={e => e.preventDefault()}
+          onDrop={e => { e.preventDefault(); handleFileSelect(e.dataTransfer.files[0]) }}
+          style={{
+            marginTop: '.8rem', border: '1px dashed var(--border)', padding: '2rem 1rem',
+            textAlign: 'center', cursor: 'pointer', minHeight: 200,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            background: uploadedUrl ? 'transparent' : 'var(--surface)',
+          }}
+        >
+          {uploading ? (
+            <span style={{ ...body, fontSize: '.82rem' }}>Yükleniyor…</span>
+          ) : uploadedUrl ? (
+            <img src={uploadedUrl} alt="Yüklenen fotoğraf önizlemesi" style={{ maxWidth: '100%', maxHeight: 260, objectFit: 'contain', display: 'block' }} />
+          ) : (
+            <span style={{ ...body, fontSize: '.82rem' }}>
+              Fotoğrafınızı buraya sürükleyin<br />veya tıklayarak dosya seçin
+            </span>
+          )}
         </div>
+        <input ref={fileRef} type="file" accept="image/*" style={{ display: 'none' }}
+          onChange={e => handleFileSelect(e.target.files[0])} />
+        {uploadError && <p style={{ color: '#c33', fontSize: '.78rem', marginTop: '.5rem' }}>{uploadError}</p>}
+
+        <p style={{ ...body, fontSize: '.76rem', marginTop: '1.2rem', lineHeight: 1.9 }}>
+          Önerilen formatlar: <b>JPEG, PNG, TIFF veya PDF.</b> En iyi sonuç için en az{' '}
+          <b>300 DPI</b> çözünürlük ve <b>RGB renk profili</b> kullanın. Dosya başına
+          en fazla <b>{MAX_FILE_SIZE_MB} MB</b> yükleyebilirsiniz.
+        </p>
       </section>
 
       {/* Boy / yüzey / adet / not + listeye ekle */}
       <section style={{ maxWidth: 700, margin: '0 auto', padding: '1rem 2rem 3rem' }}>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: '1rem', marginBottom: '1rem' }}>
-          <div>
-            <label style={{ ...label, display: 'block', marginBottom: '.5rem' }}>Boy</label>
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '.5rem' }}>
-              {PHOTO_SIZES.map(s => (
-                <button key={s} type="button" onClick={() => setSize(s)} style={{
-                  padding: '.5rem 1rem', border: `1px solid ${size === s ? 'var(--ink)' : 'var(--border)'}`,
-                  background: size === s ? 'var(--ink)' : 'none', color: size === s ? '#fff' : 'var(--ink)',
-                  fontFamily: 'var(--font-body)', fontSize: '.78rem', cursor: 'pointer',
-                }}>
-                  {s}
-                </button>
-              ))}
-            </div>
-          </div>
-          <div>
-            <label style={{ ...label, display: 'block', marginBottom: '.5rem' }}>Yüzey</label>
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '.5rem' }}>
-              {PHOTO_FINISHES.map(f => (
-                <button key={f} type="button" onClick={() => setFinish(f)} style={{
-                  padding: '.5rem 1rem', border: `1px solid ${finish === f ? 'var(--ink)' : 'var(--border)'}`,
-                  background: finish === f ? 'var(--ink)' : 'none', color: finish === f ? '#fff' : 'var(--ink)',
-                  fontFamily: 'var(--font-body)', fontSize: '.78rem', cursor: 'pointer',
-                }}>
-                  {f}
-                </button>
-              ))}
-            </div>
-          </div>
-        </div>
+        <div style={{ marginBottom: '1rem' }}>
+          <label style={{ ...label, display: 'block', marginBottom: '.5rem' }}>Boy & Yüzey</label>
+          <button
+            type="button" onClick={() => setSelectorOpen(o => !o)}
+            style={{
+              width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+              padding: '.75rem 1rem', border: '1px solid var(--border)', background: '#fff',
+              fontFamily: 'var(--font-body)', fontSize: '.85rem', color: 'var(--ink)', cursor: 'pointer',
+            }}
+          >
+            <span>{size} · {finish} · {quantity} adet — <b>₺{lineTotal.toLocaleString('tr-TR')}</b></span>
+            <span style={{ fontSize: '.7rem', color: 'var(--muted)' }}>{selectorOpen ? '▲' : '▼'}</span>
+          </button>
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: '1rem', marginBottom: '1rem' }}>
-          <div>
-            <label style={{ ...label, display: 'block', marginBottom: '.4rem' }}>Adet</label>
-            <input type="number" min="1" value={quantity} onChange={e => setQuantity(e.target.value)} style={inputStyle} />
-          </div>
-          <div style={{ display: 'flex', alignItems: 'flex-end', ...body, fontSize: '.9rem', color: 'var(--ink)' }}>
-            Birim fiyat: <b style={{ marginLeft: '.4rem' }}>₺{unitPrice.toLocaleString('tr-TR')}</b>
-          </div>
+          {selectorOpen && (
+            <div style={{ border: '1px solid var(--border)', borderTop: 'none', padding: '1.2rem 1rem' }}>
+              <div style={{ marginBottom: '1rem' }}>
+                <label style={{ ...label, display: 'block', marginBottom: '.5rem', fontSize: '.68rem' }}>Boy</label>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '.5rem' }}>
+                  {PHOTO_SIZES.map(s => (
+                    <button key={s} type="button" onClick={() => setSize(s)} style={{
+                      padding: '.5rem 1rem', border: `1px solid ${size === s ? 'var(--ink)' : 'var(--border)'}`,
+                      background: size === s ? 'var(--ink)' : 'none', color: size === s ? '#fff' : 'var(--ink)',
+                      fontFamily: 'var(--font-body)', fontSize: '.78rem', cursor: 'pointer',
+                    }}>
+                      {s}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <div style={{ marginBottom: '1rem' }}>
+                <label style={{ ...label, display: 'block', marginBottom: '.5rem', fontSize: '.68rem' }}>Yüzey</label>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '.5rem' }}>
+                  {PHOTO_FINISHES.map(f => (
+                    <button key={f} type="button" onClick={() => setFinish(f)} style={{
+                      padding: '.5rem 1rem', border: `1px solid ${finish === f ? 'var(--ink)' : 'var(--border)'}`,
+                      background: finish === f ? 'var(--ink)' : 'none', color: finish === f ? '#fff' : 'var(--ink)',
+                      fontFamily: 'var(--font-body)', fontSize: '.78rem', cursor: 'pointer',
+                    }}>
+                      {f}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <div>
+                <label style={{ ...label, display: 'block', marginBottom: '.4rem', fontSize: '.68rem' }}>Adet</label>
+                <input type="number" min="1" value={quantity} onChange={e => setQuantity(e.target.value)} style={{ ...inputStyle, maxWidth: 140 }} />
+              </div>
+              <div style={{ ...body, fontSize: '.85rem', color: 'var(--ink)', marginTop: '1rem', paddingTop: '.8rem', borderTop: '1px solid var(--border)' }}>
+                Birim fiyat: <b>₺{unitPrice.toLocaleString('tr-TR')}</b>
+                <span style={{ margin: '0 .5rem', color: 'var(--border)' }}>·</span>
+                Satır toplamı: <b>₺{lineTotal.toLocaleString('tr-TR')}</b>
+              </div>
+            </div>
+          )}
         </div>
 
         <div style={{ marginBottom: '1.2rem' }}>
