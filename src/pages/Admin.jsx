@@ -535,6 +535,23 @@ function Admin() {
     fotosiparis: `Foto Baskı Siparişleri ${photoOrders.length > 0 ? `(${photoOrders.length})` : ''}`,
   }
 
+  // Sol panel, sitenin kendi nav sırasını takip edecek şekilde gruplanmış:
+  // Ana Sayfa (Görseller) → Fotoğraf Baskı → Fine Art (Kağıtlar) → Çerçeve → İşler (Eserler).
+  const TAB_GROUPS = [
+    {
+      heading: 'Sayfa İçerikleri',
+      tabs: ['gorseller', 'fotofiyat', 'kagitlar', 'cerceve', 'eserler', 'site'],
+    },
+    {
+      heading: 'Siparişler',
+      tabs: ['siparisler', 'fotosiparis'],
+    },
+    {
+      heading: 'Ziyaretçiler & Kullanıcılar',
+      tabs: ['kullanicilar', 'sepetler', 'istatistikler'],
+    },
+  ]
+
   const now = Date.now()
   const views7d = pageViews.filter(v => now - new Date(v.created_at).getTime() <= 7 * 24 * 60 * 60 * 1000)
   const uniqueSessions30d = new Set(pageViews.map(v => v.session_id))
@@ -565,16 +582,24 @@ function Admin() {
 
       {/* Sol panel */}
       <div style={{ width: 280, borderRight: '1px solid #eee', display: 'flex', flexDirection: 'column', flexShrink: 0 }}>
-        <div style={{ display: 'flex', flexWrap: 'wrap', borderBottom: '1px solid #eee' }}>
-          {Object.keys(TAB_LABELS).map(t => (
-            <button key={t} onClick={() => setTab(t)} style={{
-              flex: '1 1 33%', minWidth: 90, padding: '.6rem .3rem', background: 'none', border: 'none',
-              borderBottom: tab === t ? '2px solid #9a7a4a' : '2px solid transparent',
-              fontSize: '.62rem', letterSpacing: '.1em', textTransform: 'uppercase',
-              cursor: 'pointer', color: tab === t ? '#9a7a4a' : '#aaa', fontWeight: tab === t ? 600 : 400
-            }}>
-              {TAB_LABELS[t]}
-            </button>
+        <div style={{ borderBottom: '1px solid #eee', overflowY: 'auto', flexShrink: 0, maxHeight: '48vh' }}>
+          {TAB_GROUPS.map((group, gi) => (
+            <div key={group.heading} style={{ borderTop: gi > 0 ? '1px solid #f2f2f2' : 'none', padding: '.4rem 0' }}>
+              <div style={{ padding: '.5rem 1rem .3rem', fontSize: '.6rem', letterSpacing: '.12em', textTransform: 'uppercase', color: '#bbb', fontWeight: 600 }}>
+                {group.heading}
+              </div>
+              {group.tabs.map(t => (
+                <button key={t} onClick={() => setTab(t)} style={{
+                  display: 'block', width: '100%', textAlign: 'left', padding: '.5rem 1rem',
+                  background: tab === t ? '#f9f6f1' : 'none', border: 'none',
+                  borderLeft: tab === t ? '3px solid #9a7a4a' : '3px solid transparent',
+                  fontSize: '.72rem', letterSpacing: '.02em',
+                  cursor: 'pointer', color: tab === t ? '#9a7a4a' : '#555', fontWeight: tab === t ? 600 : 400
+                }}>
+                  {TAB_LABELS[t]}
+                </button>
+              ))}
+            </div>
           ))}
         </div>
 
