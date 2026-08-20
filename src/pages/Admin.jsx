@@ -217,12 +217,14 @@ function Admin() {
     if (error) { alert('Görsel yüklenemedi: ' + error.message); return }
     const { data } = supabase.storage.from('artwork-images').getPublicUrl(path)
     const nextOrder = artworkImages.length ? Math.max(...artworkImages.map(i => i.sort_order)) + 1 : 0
-    await supabase.from('artwork_images').insert({ artwork_id: selected, image_url: data.publicUrl, sort_order: nextOrder })
+    const { error: insertError } = await supabase.from('artwork_images').insert({ artwork_id: selected, image_url: data.publicUrl, sort_order: nextOrder })
+    if (insertError) { alert('Görsel kaydedilemedi: ' + insertError.message); return }
     loadArtworkImages(selected)
   }
 
   async function deleteArtworkImage(id) {
-    await supabase.from('artwork_images').delete().eq('id', id)
+    const { error } = await supabase.from('artwork_images').delete().eq('id', id)
+    if (error) { alert('Görsel silinemedi: ' + error.message); return }
     loadArtworkImages(selected)
   }
 
@@ -279,7 +281,8 @@ function Admin() {
   async function deleteArtwork() {
     if (!selected) return
     if (!window.confirm('Bu eseri silmek istediğinden emin misin?')) return
-    await supabase.from('artworks').delete().eq('id', selected)
+    const { error } = await supabase.from('artworks').delete().eq('id', selected)
+    if (error) { alert('Silinemedi: ' + error.message); return }
     newArtwork(); loadArtworks()
   }
 
@@ -321,8 +324,10 @@ function Admin() {
     setFrameSaving(true)
     let frameId = selectedFrame
     if (frameId) {
-      await supabase.from('frame_options').update({ size: frameForm.size, note: frameForm.note }).eq('id', frameId)
-      await supabase.from('frame_option_prices').delete().eq('frame_option_id', frameId)
+      const { error: updateError } = await supabase.from('frame_options').update({ size: frameForm.size, note: frameForm.note }).eq('id', frameId)
+      if (updateError) { setFrameSaving(false); alert('Hata: ' + updateError.message); return }
+      const { error: deleteError } = await supabase.from('frame_option_prices').delete().eq('frame_option_id', frameId)
+      if (deleteError) { setFrameSaving(false); alert('Hata: ' + deleteError.message); return }
     } else {
       const nextOrder = frames.length ? Math.max(...frames.map(f => f.sort_order)) + 1 : 1
       const { data, error } = await supabase.from('frame_options').insert({ size: frameForm.size, note: frameForm.note, sort_order: nextOrder }).select().single()
@@ -332,7 +337,10 @@ function Admin() {
     const rows = frameForm.prices.filter(p => p.color).map((p, i) => ({
       frame_option_id: frameId, color: p.color, price: p.price || 0, swatch_hex: p.swatch_hex || '#111111', sort_order: i,
     }))
-    if (rows.length) await supabase.from('frame_option_prices').insert(rows)
+    if (rows.length) {
+      const { error: pricesError } = await supabase.from('frame_option_prices').insert(rows)
+      if (pricesError) { setFrameSaving(false); alert('Hata: ' + pricesError.message); return }
+    }
     setFrameSaving(false)
     setSelectedFrame(frameId)
     loadFrames()
@@ -341,7 +349,8 @@ function Admin() {
   async function deleteFrame() {
     if (!selectedFrame) return
     if (!window.confirm('Bu boyu silmek istediğinden emin misin? Fiyatları da silinecek.')) return
-    await supabase.from('frame_options').delete().eq('id', selectedFrame)
+    const { error } = await supabase.from('frame_options').delete().eq('id', selectedFrame)
+    if (error) { alert('Silinemedi: ' + error.message); return }
     newFrame(); loadFrames()
   }
 
@@ -351,7 +360,8 @@ function Admin() {
   }
 
   async function updateFrameOrderStatus(id, status) {
-    await supabase.from('frame_orders').update({ status }).eq('id', id)
+    const { error } = await supabase.from('frame_orders').update({ status }).eq('id', id)
+    if (error) { alert('Durum güncellenemedi: ' + error.message); return }
     setFrameOrders(rows => rows.map(o => o.id === id ? { ...o, status } : o))
   }
 
@@ -385,7 +395,8 @@ function Admin() {
   async function deletePaper() {
     if (!selectedPaper) return
     if (!window.confirm('Bu kağıdı silmek istediğinden emin misin?')) return
-    await supabase.from('papers').delete().eq('id', selectedPaper)
+    const { error } = await supabase.from('papers').delete().eq('id', selectedPaper)
+    if (error) { alert('Silinemedi: ' + error.message); return }
     newPaper(); loadPapers()
   }
 
@@ -419,12 +430,15 @@ function Admin() {
     if (!url) return
     const { page, section, multiple } = slot
     if (!multiple) {
-      await supabase.from('page_images').delete().eq('page', page).eq('section', section)
-      await supabase.from('page_images').insert({ page, section, image_url: url, sort_order: 0 })
+      const { error: deleteError } = await supabase.from('page_images').delete().eq('page', page).eq('section', section)
+      if (deleteError) { alert('Görsel kaydedilemedi: ' + deleteError.message); return }
+      const { error: insertError } = await supabase.from('page_images').insert({ page, section, image_url: url, sort_order: 0 })
+      if (insertError) { alert('Görsel kaydedilemedi: ' + insertError.message); return }
     } else {
       const existing = pageImages[`${page}:${section}`] || []
       const nextOrder = existing.length ? Math.max(...existing.map(r => r.sort_order)) + 1 : 0
-      await supabase.from('page_images').insert({ page, section, image_url: url, sort_order: nextOrder })
+      const { error: insertError } = await supabase.from('page_images').insert({ page, section, image_url: url, sort_order: nextOrder })
+      if (insertError) { alert('Görsel kaydedilemedi: ' + insertError.message); return }
     }
     loadPageImages()
   }
@@ -439,7 +453,8 @@ function Admin() {
   }
 
   async function deletePageImage(id) {
-    await supabase.from('page_images').delete().eq('id', id)
+    const { error } = await supabase.from('page_images').delete().eq('id', id)
+    if (error) { alert('Silinemedi: ' + error.message); return }
     loadPageImages()
   }
 
@@ -516,11 +531,12 @@ function Admin() {
   async function savePageContentField(page, section) {
     const key = `${page}:${section}`
     setContentSaving(s => ({ ...s, [key]: true }))
-    await supabase.from('page_content').upsert(
+    const { error } = await supabase.from('page_content').upsert(
       { page, section, content: pageContent[key] || '', updated_at: new Date().toISOString() },
       { onConflict: 'page,section' }
     )
     setContentSaving(s => ({ ...s, [key]: false }))
+    if (error) alert('Kaydedilemedi: ' + error.message)
   }
 
   // Bir sayfaya ait tüm düzenlenebilir metin alanlarını render eder — page_content
@@ -651,7 +667,8 @@ function Admin() {
   }
 
   async function updatePhotoOrderStatus(id, status) {
-    await supabase.from('photo_print_orders').update({ status }).eq('id', id)
+    const { error } = await supabase.from('photo_print_orders').update({ status }).eq('id', id)
+    if (error) { alert('Durum güncellenemedi: ' + error.message); return }
     setPhotoOrders(rows => rows.map(o => o.id === id ? { ...o, status } : o))
   }
 
