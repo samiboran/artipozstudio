@@ -113,7 +113,7 @@ function Navbar({ cartCount = 0, onCartClick }) {
 
         <div style={{ display: 'flex', alignItems: 'center', gap: '1.4rem' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '.9rem' }}>
-            {SOCIAL_LINKS.map(s => (
+            {SOCIAL_LINKS.filter(s => s.label !== 'Etsy').map(s => (
               <a key={s.label} href={s.href} target="_blank" rel="noopener noreferrer"
                 aria-label={s.label} style={{ color: iconColor, display: 'flex' }}>
                 {s.icon}
@@ -349,10 +349,19 @@ function Navbar({ cartCount = 0, onCartClick }) {
 
           <div style={{ display: 'flex', gap: '1.2rem', marginTop: '.5rem', alignItems: 'center' }}>
             {SOCIAL_LINKS.map(s => (
-              <a key={s.label} href={s.href} target="_blank" rel="noopener noreferrer"
-                aria-label={s.label} style={{ color: 'var(--muted)', display: 'flex' }}>
-                {s.icon}
-              </a>
+              s.label === 'Etsy' ? (
+                <a key={s.label} href={s.href} target="_blank" rel="noopener noreferrer" style={{
+                  fontFamily: "'Archivo', sans-serif", fontSize: '.7rem',
+                  letterSpacing: '.08em', textTransform: 'uppercase', color: 'var(--muted)',
+                }}>
+                  Etsy
+                </a>
+              ) : (
+                <a key={s.label} href={s.href} target="_blank" rel="noopener noreferrer"
+                  aria-label={s.label} style={{ color: 'var(--muted)', display: 'flex' }}>
+                  {s.icon}
+                </a>
+              )
             ))}
           </div>
         </div>
