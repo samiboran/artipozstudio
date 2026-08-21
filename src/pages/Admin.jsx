@@ -3,6 +3,29 @@ import { supabase } from '../lib/supabase'
 import { useNavigate } from 'react-router-dom'
 import { FONT_PRESETS, setFont } from '../lib/siteFonts'
 
+// Sami "sitede şu an ne görünüyor onu da görmem lazım" dedi — bir slotta
+// hiç admin görseli yoksa (page_images'ta satır yok) sayfanın kendi
+// dosyasındaki hardcoded fallback görsel sitede gösteriliyor, ama Admin bunu
+// bilmiyordu, sadece düz metin gösteriyordu. Aynı fallback görselleri burada
+// da import edip önizlemede göstermek için.
+import galleryHeroDefault from '../assets/fine-art/hero.jpg'
+import galleryFotografDefault from '../assets/fine-art/ornek-botanik.jpg'
+import galleryFineArtDefault from '../assets/process/baski-sureci.jpg'
+import galleryCerceveDefault from '../assets/cerceve/ornek-ahsap-cerceve.jpg'
+import gallerySertifikaliKagitDefault from '../assets/fine-art/kagit-secenekleri.jpg'
+import cerceveHeroDefault from '../assets/cerceve/hero.jpg'
+import cerceveRenkSecenekleriDefault from '../assets/cerceve/renk-secenekleri.jpg'
+import cerceveRenkDetayDefault from '../assets/cerceve/renk-secenekleri-detay.jpg'
+import cerceveOrnekSiyahDefault from '../assets/cerceve/ornek-siyah-cerceve.jpg'
+import cerceveOrnekAhsapDefault from '../assets/cerceve/ornek-ahsap-cerceve.jpg'
+import fineArtHeroDefault from '../assets/fine-art/hero.jpg'
+import fineArtKagitSecenekleriDefault from '../assets/fine-art/kagit-secenekleri.jpg'
+import fineArtOrnekBotanikDefault from '../assets/fine-art/ornek-botanik.jpg'
+import fineArtOrnekBotanik2Default from '../assets/fine-art/ornek-botanik-2.jpg'
+import fineArtOrnekDoku1Default from '../assets/fine-art/ornek-doku-1.jpg'
+import fineArtOrnekDoku2Default from '../assets/fine-art/ornek-doku-2.jpg'
+import fotografBaskiHeroDefault from '../assets/process/studyo.jpg'
+
 const EMPTY_FORM = {
   title: '', slug: '', artist: 'Sami Boran',
   year: new Date().getFullYear(), medium: '', description: '',
@@ -23,19 +46,20 @@ const PHOTO_FINISHES = ['Mat', 'Parlak']
 // Görseller sekmesinde yönetilen sabit alanlar. multiple:false => tek görsel (yeni yükleme
 // eskisinin yerine geçer). multiple:true => istenildiği kadar görsel eklenip silinebilir.
 const IMAGE_SLOTS = [
-  { page: 'gallery', section: 'hero', label: 'Ana Sayfa — Hero Görseli', multiple: false, aspect: '21 / 9' },
-  { page: 'gallery', section: 'hizmet-fotograf', label: 'Ana Sayfa — Hizmetlerimiz: Fotoğraf Baskı', multiple: false, aspect: '4 / 3' },
-  { page: 'gallery', section: 'hizmet-fine-art', label: 'Ana Sayfa — Hizmetlerimiz: Fine Art Baskı', multiple: false, aspect: '4 / 3' },
-  { page: 'gallery', section: 'hizmet-cerceve', label: 'Ana Sayfa — Hizmetlerimiz: Çerçeveler', multiple: false, aspect: '4 / 3' },
-  { page: 'gallery', section: 'sertifikali-kagit', label: 'Ana Sayfa — Sertifikalı Fine Art Kağıtları', multiple: false, aspect: '16 / 9' },
+  { page: 'gallery', section: 'hero', label: 'Ana Sayfa — Hero Görseli', multiple: false, aspect: '21 / 9', defaultImg: galleryHeroDefault },
+  { page: 'gallery', section: 'hizmet-fotograf', label: 'Ana Sayfa — Hizmetlerimiz: Fotoğraf Baskı', multiple: false, aspect: '4 / 3', defaultImg: galleryFotografDefault },
+  { page: 'gallery', section: 'hizmet-fine-art', label: 'Ana Sayfa — Hizmetlerimiz: Fine Art Baskı', multiple: false, aspect: '4 / 3', defaultImg: galleryFineArtDefault },
+  { page: 'gallery', section: 'hizmet-cerceve', label: 'Ana Sayfa — Hizmetlerimiz: Çerçeveler', multiple: false, aspect: '4 / 3', defaultImg: galleryCerceveDefault },
+  { page: 'gallery', section: 'sertifikali-kagit', label: 'Ana Sayfa — Sertifikalı Fine Art Kağıtları', multiple: false, aspect: '16 / 9', defaultImg: gallerySertifikaliKagitDefault },
   { page: 'gallery', section: 'iletisim-gorsel', label: 'Ana Sayfa — İletişim Üstü Görsel', multiple: false, aspect: '16 / 7' },
-  { page: 'cerceve', section: 'hero', label: 'Çerçeve — Hero Görseli', multiple: false, aspect: '21 / 9' },
-  { page: 'cerceve', section: 'renk-secenekleri', label: 'Çerçeve — Renk Seçenekleri', multiple: false, aspect: '4 / 3' },
-  { page: 'cerceve', section: 'renk-detay', label: 'Çerçeve — Renk Detayı', multiple: false, aspect: '4 / 3' },
-  { page: 'cerceve', section: 'ornekler', label: 'Çerçeve — Örnek Çerçeveli İşler', multiple: true, aspect: '4 / 5' },
-  { page: 'fine-art-baski', section: 'hero', label: 'Fine Art Baskı — Hero Görseli', multiple: false, aspect: '21 / 9' },
-  { page: 'fine-art-baski', section: 'kagit-secenekleri', label: 'Fine Art Baskı — Kağıt Seçenekleri', multiple: false, aspect: '4 / 3' },
-  { page: 'fine-art-baski', section: 'ornekler', label: 'Fine Art Baskı — Örnek Baskılarımız', multiple: true, aspect: '4 / 5' },
+  { page: 'cerceve', section: 'hero', label: 'Çerçeve — Hero Görseli', multiple: false, aspect: '21 / 9', defaultImg: cerceveHeroDefault },
+  { page: 'cerceve', section: 'renk-secenekleri', label: 'Çerçeve — Renk Seçenekleri', multiple: false, aspect: '4 / 3', defaultImg: cerceveRenkSecenekleriDefault },
+  { page: 'cerceve', section: 'renk-detay', label: 'Çerçeve — Renk Detayı', multiple: false, aspect: '4 / 3', defaultImg: cerceveRenkDetayDefault },
+  { page: 'cerceve', section: 'ornekler', label: 'Çerçeve — Örnek Çerçeveli İşler', multiple: true, aspect: '4 / 5', defaultImgs: [cerceveOrnekSiyahDefault, cerceveOrnekAhsapDefault] },
+  { page: 'fine-art-baski', section: 'hero', label: 'Fine Art Baskı — Hero Görseli', multiple: false, aspect: '21 / 9', defaultImg: fineArtHeroDefault },
+  { page: 'fine-art-baski', section: 'kagit-secenekleri', label: 'Fine Art Baskı — Kağıt Seçenekleri', multiple: false, aspect: '4 / 3', defaultImg: fineArtKagitSecenekleriDefault },
+  { page: 'fine-art-baski', section: 'ornekler', label: 'Fine Art Baskı — Örnek Baskılarımız', multiple: true, aspect: '4 / 5', defaultImgs: [fineArtOrnekBotanikDefault, fineArtOrnekBotanik2Default, fineArtOrnekDoku1Default, fineArtOrnekDoku2Default] },
+  { page: 'fotograf-baski', section: 'hero', label: 'Fotoğraf Baskı — Hero Görseli', multiple: false, aspect: '21 / 9', defaultImg: fotografBaskiHeroDefault },
   { page: 'fotograf-baski', section: 'mat-1', label: 'Fotoğraf Baskı — Mat Örnek (1. görsel)', multiple: false, aspect: '4 / 3' },
   { page: 'fotograf-baski', section: 'mat-2', label: 'Fotoğraf Baskı — Mat Örnek (üzerine gelince, 2. görsel)', multiple: false, aspect: '4 / 3' },
   { page: 'fotograf-baski', section: 'parlak-1', label: 'Fotoğraf Baskı — Parlak Örnek (1. görsel)', multiple: false, aspect: '4 / 3' },
@@ -467,6 +491,10 @@ function Admin() {
       const key = `${slot.page}:${slot.section}`
       const rows = pageImages[key] || []
       const singleImage = !slot.multiple && rows[0]
+      // Admin hiç görsel yüklemediyse (satır yok) sitede hâlâ sayfanın kendi
+      // hardcoded fallback görseli gösteriliyor — Sami "eskisini de göreyim"
+      // dedi, o yüzden satır yoksa bunu önizlemede gösteriyoruz.
+      const showingDefault = !slot.multiple && !rows[0] && slot.defaultImg
       return (
         <div key={key} style={{ marginBottom: '2.5rem', borderBottom: '1px solid #eee', paddingBottom: '2rem' }}>
           <span style={{ ...label, display: 'block', marginBottom: '.8rem' }}>{slot.label}</span>
@@ -475,7 +503,7 @@ function Admin() {
             onDragOver={e => e.preventDefault()}
             onDrop={e => { e.preventDefault(); uploadForSlot(e.dataTransfer.files[0], slot) }}
             style={{
-              border: '2px dashed #ddd', padding: '1.5rem', textAlign: 'center',
+              border: '2px dashed #ddd', padding: singleImage || showingDefault ? '.5rem' : '1.5rem', textAlign: 'center',
               cursor: 'pointer', background: '#fafafa',
               minHeight: 160, display: 'flex', alignItems: 'center', justifyContent: 'center'
             }}
@@ -488,11 +516,21 @@ function Admin() {
                   style={{ position: 'absolute', top: 6, right: 6, background: '#cc4444', color: '#fff', border: 'none', borderRadius: '50%', width: 22, height: 22, cursor: 'pointer', fontSize: '.8rem', lineHeight: 1 }}
                 >×</button>
               </div>
+            ) : showingDefault ? (
+              <div style={{ position: 'relative', width: '100%', maxWidth: 360, aspectRatio: slot.aspect, overflow: 'hidden' }}>
+                <img src={slot.defaultImg} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block', opacity: .85 }} />
+                <span style={{
+                  position: 'absolute', bottom: 6, left: 6, background: 'rgba(0,0,0,.65)', color: '#fff',
+                  fontSize: '.62rem', padding: '.2rem .5rem', letterSpacing: '.03em',
+                }}>
+                  Sitede şu an bu görünüyor — değiştirmek için tıkla
+                </span>
+              </div>
             ) : (
               <span style={{ color: '#bbb', fontSize: '.85rem' }}>
                 {slot.multiple
                   ? 'Görsel eklemek için sürükle & bırak veya tıkla'
-                  : 'Henüz görsel yok, sitede eski hazır görsel gösteriliyor — sürükle & bırak veya tıkla'}
+                  : 'Henüz görsel yok — sürükle & bırak veya tıkla'}
               </span>
             )}
           </div>
@@ -511,6 +549,18 @@ function Admin() {
                 </div>
               ))}
             </div>
+          )}
+          {slot.multiple && rows.length === 0 && slot.defaultImgs?.length > 0 && (
+            <>
+              <p style={{ fontSize: '.66rem', color: '#bbb', margin: '.6rem 0 .3rem' }}>Sitede şu an bunlar görünüyor:</p>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '.8rem' }}>
+                {slot.defaultImgs.map((src, i) => (
+                  <div key={i} style={{ width: 130, aspectRatio: slot.aspect, overflow: 'hidden', opacity: .85 }}>
+                    <img src={src} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block', border: '1px solid #eee' }} />
+                  </div>
+                ))}
+              </div>
+            </>
           )}
         </div>
       )
