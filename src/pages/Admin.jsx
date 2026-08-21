@@ -98,6 +98,18 @@ const PAGE_TEXT_FIELDS = {
   ],
 }
 
+// supabase.js'teki 15sn'lik fetch timeout'u bir çağrının network seviyesinde
+// asılı kalmasını önlüyor, ama "Kaydediliyor…" butonlarının kod içi bir
+// sebepten (ör. beklenmeyen bir promise zinciri) hiç dönmemesine karşı ekstra
+// bir güvenlik ağı: bu süre dolunca reddedip butonun sonsuza kadar kilitli
+// kalmasını engelliyor.
+function withTimeout(promise, ms = 20000) {
+  return Promise.race([
+    promise,
+    new Promise((_, reject) => setTimeout(() => reject(new Error('İşlem zaman aşımına uğradı')), ms)),
+  ])
+}
+
 function Admin() {
   const navigate = useNavigate()
   const [tab, setTab] = useState('gorseller')
@@ -285,21 +297,26 @@ function Admin() {
     setSaving(true)
     const payload = { ...form, tags: form.tags.split(',').map(t => t.trim()).filter(Boolean) }
     delete payload.id; delete payload.created_at
-    let error
-    if (selected) {
-      ;({ error } = await supabase.from('artworks').update(payload).eq('id', selected))
-    } else {
-      // Eklenen satırın id'sini geri alıyoruz — yoksa "selected" hep null kalır,
-      // ek galeri görseli bölümü kaydedildikten sonra da hep kilitli görünür ve
-      // "Kaydet"e ikinci kez basılırsa yeni bir kopya daha eklenir.
-      let data
-      ;({ data, error } = await supabase.from('artworks').insert(payload).select().single())
-      if (!error && data) setSelected(data.id)
+    try {
+      let error
+      if (selected) {
+        ;({ error } = await withTimeout(supabase.from('artworks').update(payload).eq('id', selected)))
+      } else {
+        // Eklenen satırın id'sini geri alıyoruz — yoksa "selected" hep null kalır,
+        // ek galeri görseli bölümü kaydedildikten sonra da hep kilitli görünür ve
+        // "Kaydet"e ikinci kez basılırsa yeni bir kopya daha eklenir.
+        let data
+        ;({ data, error } = await withTimeout(supabase.from('artworks').insert(payload).select().single()))
+        if (!error && data) setSelected(data.id)
+      }
+      setSaving(false)
+      if (error) { setMsg('Hata: ' + error.message); return }
+      setMsg(selected ? 'Güncellendi ✓' : 'Eklendi ✓')
+      loadArtworks()
+    } catch (err) {
+      setSaving(false)
+      setMsg('Hata: ' + err.message)
     }
-    setSaving(false)
-    if (error) { setMsg('Hata: ' + error.message); return }
-    setMsg(selected ? 'Güncellendi ✓' : 'Eklendi ✓')
-    loadArtworks()
   }
 
   async function deleteArtwork() {
@@ -346,28 +363,33 @@ function Admin() {
 
   async function saveFrame() {
     setFrameSaving(true)
-    let frameId = selectedFrame
-    if (frameId) {
-      const { error: updateError } = await supabase.from('frame_options').update({ size: frameForm.size, note: frameForm.note }).eq('id', frameId)
-      if (updateError) { setFrameSaving(false); alert('Hata: ' + updateError.message); return }
-      const { error: deleteError } = await supabase.from('frame_option_prices').delete().eq('frame_option_id', frameId)
-      if (deleteError) { setFrameSaving(false); alert('Hata: ' + deleteError.message); return }
-    } else {
-      const nextOrder = frames.length ? Math.max(...frames.map(f => f.sort_order)) + 1 : 1
-      const { data, error } = await supabase.from('frame_options').insert({ size: frameForm.size, note: frameForm.note, sort_order: nextOrder }).select().single()
-      if (error) { setFrameSaving(false); alert('Hata: ' + error.message); return }
-      frameId = data.id
+    try {
+      let frameId = selectedFrame
+      if (frameId) {
+        const { error: updateError } = await withTimeout(supabase.from('frame_options').update({ size: frameForm.size, note: frameForm.note }).eq('id', frameId))
+        if (updateError) { setFrameSaving(false); alert('Hata: ' + updateError.message); return }
+        const { error: deleteError } = await withTimeout(supabase.from('frame_option_prices').delete().eq('frame_option_id', frameId))
+        if (deleteError) { setFrameSaving(false); alert('Hata: ' + deleteError.message); return }
+      } else {
+        const nextOrder = frames.length ? Math.max(...frames.map(f => f.sort_order)) + 1 : 1
+        const { data, error } = await withTimeout(supabase.from('frame_options').insert({ size: frameForm.size, note: frameForm.note, sort_order: nextOrder }).select().single())
+        if (error) { setFrameSaving(false); alert('Hata: ' + error.message); return }
+        frameId = data.id
+      }
+      const rows = frameForm.prices.filter(p => p.color).map((p, i) => ({
+        frame_option_id: frameId, color: p.color, price: p.price || 0, swatch_hex: p.swatch_hex || '#111111', sort_order: i,
+      }))
+      if (rows.length) {
+        const { error: pricesError } = await withTimeout(supabase.from('frame_option_prices').insert(rows))
+        if (pricesError) { setFrameSaving(false); alert('Hata: ' + pricesError.message); return }
+      }
+      setFrameSaving(false)
+      setSelectedFrame(frameId)
+      loadFrames()
+    } catch (err) {
+      setFrameSaving(false)
+      alert('Hata: ' + err.message)
     }
-    const rows = frameForm.prices.filter(p => p.color).map((p, i) => ({
-      frame_option_id: frameId, color: p.color, price: p.price || 0, swatch_hex: p.swatch_hex || '#111111', sort_order: i,
-    }))
-    if (rows.length) {
-      const { error: pricesError } = await supabase.from('frame_option_prices').insert(rows)
-      if (pricesError) { setFrameSaving(false); alert('Hata: ' + pricesError.message); return }
-    }
-    setFrameSaving(false)
-    setSelectedFrame(frameId)
-    loadFrames()
   }
 
   async function deleteFrame() {
@@ -404,16 +426,21 @@ function Admin() {
     setPaperSaving(true)
     const payload = { ...paperForm }
     delete payload.id; delete payload.created_at
-    let error
-    if (selectedPaper) {
-      ;({ error } = await supabase.from('papers').update(payload).eq('id', selectedPaper))
-    } else {
-      const nextOrder = papers.length ? Math.max(...papers.map(p => p.sort_order)) + 1 : 1
-      ;({ error } = await supabase.from('papers').insert({ ...payload, sort_order: nextOrder }))
+    try {
+      let error
+      if (selectedPaper) {
+        ;({ error } = await withTimeout(supabase.from('papers').update(payload).eq('id', selectedPaper)))
+      } else {
+        const nextOrder = papers.length ? Math.max(...papers.map(p => p.sort_order)) + 1 : 1
+        ;({ error } = await withTimeout(supabase.from('papers').insert({ ...payload, sort_order: nextOrder })))
+      }
+      setPaperSaving(false)
+      if (error) { alert('Hata: ' + error.message); return }
+      loadPapers()
+    } catch (err) {
+      setPaperSaving(false)
+      alert('Hata: ' + err.message)
     }
-    setPaperSaving(false)
-    if (error) { alert('Hata: ' + error.message); return }
-    loadPapers()
   }
 
   async function deletePaper() {
@@ -630,16 +657,21 @@ function Admin() {
 
   async function saveSiteSettings() {
     setFontSaving(true)
-    const { error } = await supabase.from('site_settings').upsert({
-      id: 'default', font_pair: fontPair,
-      artist_bio: artistBio, artist_photo_url: artistPhotoUrl,
-      updated_at: new Date().toISOString(),
-    })
-    setFontSaving(false)
-    if (error) { setFontMsg('Hata: ' + error.message); return }
-    setFont(fontPair)
-    setFontMsg('Kaydedildi ✓')
-    setTimeout(() => setFontMsg(''), 2000)
+    try {
+      const { error } = await withTimeout(supabase.from('site_settings').upsert({
+        id: 'default', font_pair: fontPair,
+        artist_bio: artistBio, artist_photo_url: artistPhotoUrl,
+        updated_at: new Date().toISOString(),
+      }))
+      setFontSaving(false)
+      if (error) { setFontMsg('Hata: ' + error.message); return }
+      setFont(fontPair)
+      setFontMsg('Kaydedildi ✓')
+      setTimeout(() => setFontMsg(''), 2000)
+    } catch (err) {
+      setFontSaving(false)
+      setFontMsg('Hata: ' + err.message)
+    }
   }
 
   async function uploadArtistPhoto(file) {
@@ -696,9 +728,14 @@ function Admin() {
     PHOTO_SIZES.forEach(size => PHOTO_FINISHES.forEach(finish => {
       rows.push({ size, finish, price: Number(photoPrices[`${size}:${finish}`]) || 0 })
     }))
-    const { error } = await supabase.from('photo_print_prices').upsert(rows, { onConflict: 'size,finish' })
-    setPhotoPriceSaving(false)
-    setPhotoPriceMsg(error ? 'Hata: ' + error.message : 'Kaydedildi ✓')
+    try {
+      const { error } = await withTimeout(supabase.from('photo_print_prices').upsert(rows, { onConflict: 'size,finish' }))
+      setPhotoPriceSaving(false)
+      setPhotoPriceMsg(error ? 'Hata: ' + error.message : 'Kaydedildi ✓')
+    } catch (err) {
+      setPhotoPriceSaving(false)
+      setPhotoPriceMsg('Hata: ' + err.message)
+    }
     setTimeout(() => setPhotoPriceMsg(''), 2000)
   }
 

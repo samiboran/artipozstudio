@@ -138,23 +138,27 @@ export default function KagitRehberi() {
   }, [])
 
   async function loadData() {
-    const [{ data: papers }, { data: imgs }] = await Promise.all([
-      supabase.from('papers').select('*').order('sort_order'),
-      supabase.from('page_images').select('section, image_url').eq('page', 'fotograf-baski'),
-    ])
+    try {
+      const [{ data: papers }, { data: imgs }] = await Promise.all([
+        supabase.from('papers').select('*').order('sort_order'),
+        supabase.from('page_images').select('section, image_url').eq('page', 'fotograf-baski'),
+      ])
 
-    if (papers) {
-      setGicleePapers(papers.filter(p => p.guide_category === 'giclee'))
-      setFeaturedPapers(papers.filter(p => p.featured_in_guide))
+      if (papers) {
+        setGicleePapers(papers.filter(p => p.guide_category === 'giclee'))
+        setFeaturedPapers(papers.filter(p => p.featured_in_guide))
+      }
+
+      if (imgs) {
+        const map = {}
+        imgs.forEach(row => { if (!map[row.section]) map[row.section] = row.image_url })
+        setFinishImages(map)
+      }
+    } catch (err) {
+      console.error('Kağıt Rehberi verisi yüklenemedi:', err)
+    } finally {
+      setLoaded(true)
     }
-
-    if (imgs) {
-      const map = {}
-      imgs.forEach(row => { if (!map[row.section]) map[row.section] = row.image_url })
-      setFinishImages(map)
-    }
-
-    setLoaded(true)
   }
 
   return (

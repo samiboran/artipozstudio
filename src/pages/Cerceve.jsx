@@ -101,43 +101,47 @@ export default function Cerceve() {
   useEffect(() => { loadData() }, [])
 
   async function loadData() {
-    const [{ data: options }, { data: imgs }, { data: contentRows }] = await Promise.all([
-      supabase.from('frame_options').select('id, size, note, sort_order, frame_option_prices(color, price, swatch_hex, sort_order)').order('sort_order'),
-      supabase.from('page_images').select('*').eq('page', 'cerceve').order('sort_order'),
-      supabase.from('page_content').select('section, content').eq('page', 'cerceve'),
-    ])
+    try {
+      const [{ data: options }, { data: imgs }, { data: contentRows }] = await Promise.all([
+        supabase.from('frame_options').select('id, size, note, sort_order, frame_option_prices(color, price, swatch_hex, sort_order)').order('sort_order'),
+        supabase.from('page_images').select('*').eq('page', 'cerceve').order('sort_order'),
+        supabase.from('page_content').select('section, content').eq('page', 'cerceve'),
+      ])
 
-    if (contentRows && contentRows.length) {
-      const map = {}
-      contentRows.forEach(row => { if (row.content) map[row.section] = row.content })
-      setContent(map)
-    }
+      if (contentRows && contentRows.length) {
+        const map = {}
+        contentRows.forEach(row => { if (row.content) map[row.section] = row.content })
+        setContent(map)
+      }
 
-    if (options && options.length) {
-      const swatch = {}
-      const mapped = options.map(o => {
-        const prices = {}
-        ;[...(o.frame_option_prices || [])].sort((a, b) => a.sort_order - b.sort_order).forEach(p => {
-          prices[p.color] = p.price
-          swatch[p.color] = p.swatch_hex
+      if (options && options.length) {
+        const swatch = {}
+        const mapped = options.map(o => {
+          const prices = {}
+          ;[...(o.frame_option_prices || [])].sort((a, b) => a.sort_order - b.sort_order).forEach(p => {
+            prices[p.color] = p.price
+            swatch[p.color] = p.swatch_hex
+          })
+          return { size: o.size, note: o.note, prices }
         })
-        return { size: o.size, note: o.note, prices }
-      })
-      setSizes(mapped)
-      setColorSwatch(swatch)
-    }
+        setSizes(mapped)
+        setColorSwatch(swatch)
+      }
 
-    if (imgs && imgs.length) {
-      setImages(prev => {
-        const next = { ...prev }
-        const bySection = {}
-        imgs.forEach(row => { (bySection[row.section] ||= []).push(row) })
-        if (bySection.hero?.[0]) next.hero = bySection.hero[0].image_url
-        if (bySection['renk-secenekleri']?.[0]) next['renk-secenekleri'] = bySection['renk-secenekleri'][0].image_url
-        if (bySection['renk-detay']?.[0]) next['renk-detay'] = bySection['renk-detay'][0].image_url
-        if (bySection.ornekler?.length) next.ornekler = bySection.ornekler
-        return next
-      })
+      if (imgs && imgs.length) {
+        setImages(prev => {
+          const next = { ...prev }
+          const bySection = {}
+          imgs.forEach(row => { (bySection[row.section] ||= []).push(row) })
+          if (bySection.hero?.[0]) next.hero = bySection.hero[0].image_url
+          if (bySection['renk-secenekleri']?.[0]) next['renk-secenekleri'] = bySection['renk-secenekleri'][0].image_url
+          if (bySection['renk-detay']?.[0]) next['renk-detay'] = bySection['renk-detay'][0].image_url
+          if (bySection.ornekler?.length) next.ornekler = bySection.ornekler
+          return next
+        })
+      }
+    } catch (err) {
+      console.error('Çerçeve sayfası verisi yüklenemedi:', err)
     }
   }
 

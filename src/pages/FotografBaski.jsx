@@ -93,34 +93,38 @@ export default function FotografBaski() {
   useEffect(() => { loadData() }, [])
 
   async function loadData() {
-    const [{ data: imgs }, { data: priceRows }, { data: contentRows }] = await Promise.all([
-      supabase.from('page_images').select('*').eq('page', 'fotograf-baski').order('sort_order'),
-      supabase.from('photo_print_prices').select('*'),
-      supabase.from('page_content').select('section, content').eq('page', 'fotograf-baski'),
-    ])
+    try {
+      const [{ data: imgs }, { data: priceRows }, { data: contentRows }] = await Promise.all([
+        supabase.from('page_images').select('*').eq('page', 'fotograf-baski').order('sort_order'),
+        supabase.from('photo_print_prices').select('*'),
+        supabase.from('page_content').select('section, content').eq('page', 'fotograf-baski'),
+      ])
 
-    if (contentRows && contentRows.length) {
-      const map = {}
-      contentRows.forEach(row => { if (row.content) map[row.section] = row.content })
-      setContent(map)
-    }
+      if (contentRows && contentRows.length) {
+        const map = {}
+        contentRows.forEach(row => { if (row.content) map[row.section] = row.content })
+        setContent(map)
+      }
 
-    if (imgs && imgs.length) {
-      setImages(prev => {
-        const next = { ...prev }
-        const bySection = {}
-        imgs.forEach(row => { (bySection[row.section] ||= []).push(row) })
-        ;['hero', 'mat-1', 'mat-2', 'parlak-1', 'parlak-2'].forEach(section => {
-          if (bySection[section]?.[0]) next[section] = bySection[section][0].image_url
+      if (imgs && imgs.length) {
+        setImages(prev => {
+          const next = { ...prev }
+          const bySection = {}
+          imgs.forEach(row => { (bySection[row.section] ||= []).push(row) })
+          ;['hero', 'mat-1', 'mat-2', 'parlak-1', 'parlak-2'].forEach(section => {
+            if (bySection[section]?.[0]) next[section] = bySection[section][0].image_url
+          })
+          return next
         })
-        return next
-      })
-    }
+      }
 
-    if (priceRows && priceRows.length) {
-      const map = {}
-      priceRows.forEach(p => { map[`${p.size}:${p.finish}`] = p.price })
-      setPrices(map)
+      if (priceRows && priceRows.length) {
+        const map = {}
+        priceRows.forEach(p => { map[`${p.size}:${p.finish}`] = p.price })
+        setPrices(map)
+      }
+    } catch (err) {
+      console.error('Fotoğraf Baskı sayfası verisi yüklenemedi:', err)
     }
   }
 

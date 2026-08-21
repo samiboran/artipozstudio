@@ -28,6 +28,7 @@ function ProductDetail() {
         if (data?.title) document.title = `${data.title} — Artı Poz`
         setActiveImage(data?.image_url || null)
       })
+      .catch(err => console.error('Eser yüklenemedi:', err))
       .finally(() => setLoading(false))
     return () => { document.title = 'Artı Poz — Fine Art Baskı & Özgün Eserler' }
   }, [slug])
@@ -35,6 +36,7 @@ function ProductDetail() {
   useEffect(() => {
     supabase.from('site_settings').select('artist_bio, artist_photo_url').eq('id', 'default').single()
       .then(({ data }) => { if (data?.artist_bio) setArtistInfo(data) })
+      .catch(err => console.error('Sanatçı bilgisi yüklenemedi:', err))
   }, [])
 
   if (loading) return (

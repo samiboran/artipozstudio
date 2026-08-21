@@ -66,7 +66,9 @@ function Gallery() {
   const [contactStatus, setContactStatus] = useState('idle') // idle | sent
 
   useEffect(() => {
-    supabase.from('papers').select('name').order('sort_order').then(({ data }) => setPapers(data || []))
+    supabase.from('papers').select('name').order('sort_order')
+      .then(({ data }) => setPapers(data || []))
+      .catch(err => console.error('Kağıtlar yüklenemedi:', err))
   }, [])
 
   function updateContact(e) {
@@ -93,6 +95,7 @@ function Gallery() {
         data.forEach(row => { if (!map[row.section]) map[row.section] = row.image_url })
         setImages(map)
       })
+      .catch(err => console.error('Ana sayfa görselleri yüklenemedi:', err))
 
     supabase
       .from('page_content')
@@ -104,6 +107,7 @@ function Gallery() {
         data.forEach(row => { if (row.content) map[row.section] = row.content })
         setContent(map)
       })
+      .catch(err => console.error('Ana sayfa metinleri yüklenemedi:', err))
   }, [])
 
   return (

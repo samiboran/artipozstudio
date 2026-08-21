@@ -15,6 +15,7 @@ export default function Hero() {
       .order('sort_order')
       .limit(1)
       .then(({ data }) => { if (data?.[0]) setHeroUrl(data[0].image_url) })
+      .catch(err => console.error('Hero görseli yüklenemedi:', err))
   }, [])
 
   return (

@@ -53,37 +53,41 @@ export default function FineArtBaski() {
   useEffect(() => { loadData() }, [])
 
   async function loadData() {
-    const [{ data: paperRows }, { data: imgs }, { data: contentRows }] = await Promise.all([
-      supabase.from('papers').select('*').order('sort_order'),
-      supabase.from('page_images').select('*').eq('page', 'fine-art-baski').order('sort_order'),
-      supabase.from('page_content').select('section, content').eq('page', 'fine-art-baski'),
-    ])
+    try {
+      const [{ data: paperRows }, { data: imgs }, { data: contentRows }] = await Promise.all([
+        supabase.from('papers').select('*').order('sort_order'),
+        supabase.from('page_images').select('*').eq('page', 'fine-art-baski').order('sort_order'),
+        supabase.from('page_content').select('section, content').eq('page', 'fine-art-baski'),
+      ])
 
-    if (contentRows && contentRows.length) {
-      const map = {}
-      contentRows.forEach(row => { if (row.content) map[row.section] = row.content })
-      setContent(map)
-    }
+      if (contentRows && contentRows.length) {
+        const map = {}
+        contentRows.forEach(row => { if (row.content) map[row.section] = row.content })
+        setContent(map)
+      }
 
-    if (paperRows && paperRows.length) {
-      setPapers(paperRows.map((p, i) => ({
-        no: String(i + 1).padStart(2, '0'),
-        name: p.name, surface: p.surface, gsm: p.gsm, texture: p.texture,
-        color: p.color, composition: p.composition, description: p.description,
-        texturePhoto: p.texture_photo_url, previewPhoto: p.preview_photo_url,
-      })))
-    }
+      if (paperRows && paperRows.length) {
+        setPapers(paperRows.map((p, i) => ({
+          no: String(i + 1).padStart(2, '0'),
+          name: p.name, surface: p.surface, gsm: p.gsm, texture: p.texture,
+          color: p.color, composition: p.composition, description: p.description,
+          texturePhoto: p.texture_photo_url, previewPhoto: p.preview_photo_url,
+        })))
+      }
 
-    if (imgs && imgs.length) {
-      setImages(prev => {
-        const next = { ...prev }
-        const bySection = {}
-        imgs.forEach(row => { (bySection[row.section] ||= []).push(row) })
-        if (bySection.hero?.[0]) next.hero = bySection.hero[0].image_url
-        if (bySection['kagit-secenekleri']?.[0]) next['kagit-secenekleri'] = bySection['kagit-secenekleri'][0].image_url
-        if (bySection.ornekler?.length) next.ornekler = bySection.ornekler
-        return next
-      })
+      if (imgs && imgs.length) {
+        setImages(prev => {
+          const next = { ...prev }
+          const bySection = {}
+          imgs.forEach(row => { (bySection[row.section] ||= []).push(row) })
+          if (bySection.hero?.[0]) next.hero = bySection.hero[0].image_url
+          if (bySection['kagit-secenekleri']?.[0]) next['kagit-secenekleri'] = bySection['kagit-secenekleri'][0].image_url
+          if (bySection.ornekler?.length) next.ornekler = bySection.ornekler
+          return next
+        })
+      }
+    } catch (err) {
+      console.error('Fine Art Baskı sayfası verisi yüklenemedi:', err)
     }
   }
 

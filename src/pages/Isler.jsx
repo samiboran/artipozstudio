@@ -19,6 +19,7 @@ function Isler() {
     setPage(0)
     fetchArtworks({ search, tag: category })
       .then(setArtworks)
+      .catch(err => console.error('Eserler yüklenemedi:', err))
       .finally(() => setLoading(false))
   }, [search, category])
 

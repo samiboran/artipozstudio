@@ -52,12 +52,26 @@ function Navbar({ cartCount = 0, onCartClick }) {
   useEffect(() => {
     async function loadCustomer(session) {
       if (!session) { setCustomerName(null); return }
-      const { data: profile } = await supabase.from('profiles').select('full_name, role').eq('id', session.user.id).single()
-      // Admin hesabı navbar'da müşteri gibi görünmesin — Admin panelinde zaten kendi girişini görüyor.
-      setCustomerName(profile?.role === 'admin' ? null : (profile?.full_name || session.user.email))
+      try {
+        const { data: profile } = await supabase.from('profiles').select('full_name, role').eq('id', session.user.id).single()
+        // Admin hesabı navbar'da müşteri gibi görünmesin — Admin panelinde zaten kendi girişini görüyor.
+        setCustomerName(profile?.role === 'admin' ? null : (profile?.full_name || session.user.email))
+      } catch (err) {
+        console.error('Kullanıcı bilgisi yüklenemedi:', err)
+      }
     }
     supabase.auth.getSession().then(({ data: { session } }) => loadCustomer(session))
-    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => loadCustomer(session))
+    // onAuthStateChange callback'i supabase-js'in kendi cross-tab auth kilidini
+    // (lock:sb-...-auth-token) tutarken çalışıyor. loadCustomer() içeride
+    // `await supabase.from(...)` yaptığı için, callback'in İÇİNDEN senkron
+    // çağrılırsa (await edilmese bile) aynı kilidi tekrar istiyor ve kilit hiç
+    // bırakılmadığı için site genelinde TÜM supabase isteklerini kilitliyordu
+    // (görseller yüklenmiyor, Admin'de "Kaydediliyor…" hiç bitmiyor gibi
+    // görünen sorunların kök nedeni buydu). setTimeout ile callback'in dışına,
+    // kilit serbest kaldıktan sonraki bir tick'e taşıyoruz.
+    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
+      setTimeout(() => loadCustomer(session), 0)
+    })
     return () => listener.subscription.unsubscribe()
   }, [])
 
