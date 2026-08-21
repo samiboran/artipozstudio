@@ -7,13 +7,10 @@ import fineArtDefault from '../assets/process/baski-sureci.jpg'
 import cerceveDefault from '../assets/cerceve/ornek-ahsap-cerceve.jpg'
 import kagitlarDefault from '../assets/fine-art/kagit-secenekleri.jpg'
 
-const PRINT_SIZES = ['A4', 'A3', 'A2', 'A1', 'A0', 'B0', '150×230 cm']
-const PRINT_MM = ['210×297', '297×420', '420×594', '594×841', '841×1189', '1030×1456', '1500×2300']
-const PRINT_TIERS = [
-  { label: '1 adet', prices: [750, 1200, 1800, 2700, 4500, 6000, 12000] },
-  { label: '2-10', prices: [720, 1170, 1740, 2610, 4380, 5820, 11760] },
-  { label: '11-50', prices: [705, 1140, 1680, 2550, 4230, 5640, 11640] },
-  { label: '51-100', prices: [690, 1080, 1650, 2460, 4110, 5460, 11520] },
+const PRINT_PRICES = [
+  { size: 'A4', mm: '210×297', price: 1240 },
+  { size: 'A3', mm: '297×420', price: 2240 },
+  { size: 'A2', mm: '420×594', price: 3640 },
 ]
 const PAYMENT_BADGES = ['Visa', 'Mastercard', 'TROY', 'Havale / EFT']
 
@@ -193,34 +190,26 @@ function Gallery() {
           color: 'var(--muted)', maxWidth: 700, margin: '0 auto 2.5rem',
         }}>
           Aynı ölçü ve aynı kağıt türünde hazırlanan baskılarda, farklı görseller için de aynı
-          indirimli fiyat geçerlidir. Baskılarınızı 1 mm hassasiyetle özel ölçülerde de sipariş edebilirsiniz.
+          fiyat geçerlidir. Baskılarınızı 1 mm hassasiyetle özel ölçülerde de sipariş edebilirsiniz.
         </p>
 
         <div style={{ overflowX: 'auto', marginBottom: '2rem' }}>
-          <table style={{ width: '100%', borderCollapse: 'collapse', fontFamily: "'Archivo', sans-serif", fontSize: '.82rem', minWidth: 640 }}>
+          <table style={{ width: '100%', maxWidth: 480, margin: '0 auto', borderCollapse: 'collapse', fontFamily: "'Archivo', sans-serif", fontSize: '.82rem' }}>
             <thead>
               <tr style={{ background: 'var(--ink)' }}>
-                <th style={{ padding: '.7rem .9rem', textAlign: 'left', color: '#fff', fontWeight: 600 }}>Size</th>
-                {PRINT_SIZES.map(s => (
-                  <th key={s} style={{ padding: '.7rem .9rem', textAlign: 'left', color: '#fff', fontWeight: 600 }}>{s}</th>
-                ))}
-              </tr>
-              <tr style={{ background: 'var(--surface)' }}>
-                <td style={{ padding: '.6rem .9rem', textAlign: 'left', color: 'var(--muted)' }}>mm</td>
-                {PRINT_MM.map(mm => (
-                  <td key={mm} style={{ padding: '.6rem .9rem', textAlign: 'left', color: 'var(--muted)' }}>{mm}</td>
-                ))}
+                <th style={{ padding: '.7rem .9rem', textAlign: 'left', color: '#fff', fontWeight: 600 }}>Boy</th>
+                <th style={{ padding: '.7rem .9rem', textAlign: 'left', color: '#fff', fontWeight: 600 }}>mm</th>
+                <th style={{ padding: '.7rem .9rem', textAlign: 'left', color: '#fff', fontWeight: 600 }}>Fiyat</th>
               </tr>
             </thead>
             <tbody>
-              {PRINT_TIERS.map(tier => (
-                <tr key={tier.label} style={{ borderBottom: '1px solid var(--border)' }}>
-                  <td style={{ padding: '.7rem .9rem', textAlign: 'left', color: 'var(--muted)' }}>{tier.label}</td>
-                  {tier.prices.map((p, i) => (
-                    <td key={i} style={{ padding: '.7rem .9rem', textAlign: 'left', color: 'var(--ink)' }}>
-                      {p.toLocaleString('tr-TR')} TL
-                    </td>
-                  ))}
+              {PRINT_PRICES.map(row => (
+                <tr key={row.size} style={{ borderBottom: '1px solid var(--border)' }}>
+                  <td style={{ padding: '.7rem .9rem', textAlign: 'left', color: 'var(--ink)', fontWeight: 600 }}>{row.size}</td>
+                  <td style={{ padding: '.7rem .9rem', textAlign: 'left', color: 'var(--muted)' }}>{row.mm}</td>
+                  <td style={{ padding: '.7rem .9rem', textAlign: 'left', color: 'var(--ink)' }}>
+                    {row.price.toLocaleString('tr-TR')} TL
+                  </td>
                 </tr>
               ))}
             </tbody>
