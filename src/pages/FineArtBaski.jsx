@@ -56,7 +56,7 @@ export default function FineArtBaski() {
     try {
       const [{ data: paperRows }, { data: imgs }, { data: contentRows }] = await Promise.all([
         supabase.from('papers').select('*').order('sort_order'),
-        supabase.from('page_images').select('*').eq('page', 'fine-art-baski').order('sort_order'),
+        supabase.from('page_images').select('*').eq('page', 'fine-art-baski').order('sort_order').order('id'),
         supabase.from('page_content').select('section, content').eq('page', 'fine-art-baski'),
       ])
 

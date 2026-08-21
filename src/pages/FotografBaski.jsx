@@ -95,7 +95,7 @@ export default function FotografBaski() {
   async function loadData() {
     try {
       const [{ data: imgs }, { data: priceRows }, { data: contentRows }] = await Promise.all([
-        supabase.from('page_images').select('*').eq('page', 'fotograf-baski').order('sort_order'),
+        supabase.from('page_images').select('*').eq('page', 'fotograf-baski').order('sort_order').order('id'),
         supabase.from('photo_print_prices').select('*'),
         supabase.from('page_content').select('section, content').eq('page', 'fotograf-baski'),
       ])

@@ -119,6 +119,7 @@ function Gallery() {
       .select('section, image_url')
       .eq('page', 'gallery')
       .order('sort_order')
+      .order('id')
       .then(({ data }) => {
         if (!data) return
         const map = {}

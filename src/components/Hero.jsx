@@ -13,6 +13,7 @@ export default function Hero() {
       .eq('page', 'gallery')
       .eq('section', 'hero')
       .order('sort_order')
+      .order('id')
       .limit(1)
       .then(({ data }) => { if (data?.[0]) setHeroUrl(data[0].image_url) })
       .catch(err => console.error('Hero görseli yüklenemedi:', err))
