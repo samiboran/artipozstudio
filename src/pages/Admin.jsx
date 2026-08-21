@@ -294,6 +294,10 @@ function Admin() {
   }
 
   async function save() {
+    // Başlıksız kayda izin verirsek slug boş kalır — "/product/" hiçbir rotaya
+    // uymadığı için canlıda 404'e düşen, İşler listesinde görselsiz/boş bir
+    // kart olarak takılı kalan "hayalet" eserler oluşuyordu.
+    if (!form.title.trim()) { setMsg('Hata: Başlık boş olamaz.'); return }
     setSaving(true)
     const payload = { ...form, tags: form.tags.split(',').map(t => t.trim()).filter(Boolean) }
     delete payload.id; delete payload.created_at
