@@ -33,6 +33,7 @@ const NAV_LINKS = [
   { label: 'Ana Sayfa', to: '/' },
   { label: 'Fotoğraf Baskı', to: '/fotograf-baski' },
   { label: 'Fine Art Baskı', to: '/fine-art-baski' },
+  { label: 'Kağıt Rehberi', to: '/kagit-rehberi' },
   { label: 'Çerçeve', to: '/cerceve' },
   { label: 'İşler', to: '/isler' },
 ]
@@ -119,15 +120,6 @@ function Navbar({ cartCount = 0, onCartClick }) {
               </a>
             ))}
           </div>
-
-          <Link to="/kagit-rehberi" style={{
-            background: 'var(--ink)', color: '#fff',
-            fontFamily: "'Archivo', sans-serif", fontSize: '.56rem',
-            letterSpacing: '.12em', textTransform: 'uppercase',
-            padding: '.32rem .6rem', whiteSpace: 'nowrap',
-          }}>
-            Kağıt Rehberi
-          </Link>
 
           {!transparent && (
             <Link to="/" style={{ display: 'flex', flexDirection: 'column', lineHeight: 1 }}>
@@ -362,14 +354,6 @@ function Navbar({ cartCount = 0, onCartClick }) {
                 {s.icon}
               </a>
             ))}
-            <Link to="/kagit-rehberi" onClick={() => setMenuOpen(false)} style={{
-              background: 'var(--ink)', color: '#fff',
-              fontFamily: "'Archivo', sans-serif", fontSize: '.56rem',
-              letterSpacing: '.12em', textTransform: 'uppercase',
-              padding: '.32rem .6rem', whiteSpace: 'nowrap',
-            }}>
-              Kağıt Rehberi
-            </Link>
           </div>
         </div>
       )}

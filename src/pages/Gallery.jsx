@@ -12,7 +12,37 @@ const PRINT_PRICES = [
   { size: 'A3', mm: '297×420', price: 2240 },
   { size: 'A2', mm: '420×594', price: 3640 },
 ]
-const PAYMENT_BADGES = ['Visa', 'Mastercard', 'TROY', 'Havale / EFT']
+// Marka isimlerini yazı yerine tanınabilir, basitleştirilmiş logo işaretleriyle
+// gösteriyoruz (gerçek marka dosyaları değil, stilize inline SVG'ler).
+const PAYMENT_LOGOS = [
+  {
+    key: 'visa', label: 'Visa',
+    node: (
+      <svg width="44" height="16" viewBox="0 0 44 16" role="img" aria-label="Visa">
+        <text x="0" y="13" fontFamily="Georgia, 'Times New Roman', serif" fontStyle="italic" fontWeight="700" fontSize="16" fill="#1A1F71">VISA</text>
+      </svg>
+    ),
+  },
+  {
+    key: 'mastercard', label: 'Mastercard',
+    node: (
+      <svg width="38" height="22" viewBox="0 0 38 22" role="img" aria-label="Mastercard">
+        <circle cx="14" cy="11" r="10" fill="#EB001B" />
+        <circle cx="24" cy="11" r="10" fill="#F79E1B" fillOpacity=".85" />
+      </svg>
+    ),
+  },
+  {
+    key: 'paypal', label: 'PayPal',
+    node: (
+      <svg width="58" height="16" viewBox="0 0 58 16" role="img" aria-label="PayPal">
+        <text x="0" y="13" fontFamily="'Archivo', sans-serif" fontWeight="800" fontSize="15" fill="#003087">Pay</text>
+        <text x="25" y="13" fontFamily="'Archivo', sans-serif" fontWeight="800" fontSize="15" fill="#009CDE">Pal</text>
+      </svg>
+    ),
+  },
+]
+const PAYMENT_TEXT_BADGES = ['TROY', 'Havale / EFT']
 
 const FILE_PREP = [
   {
@@ -134,7 +164,7 @@ function Gallery() {
                 alt={title}
                 style={{ width: '100%', aspectRatio: '4 / 3', objectFit: 'cover', display: 'block', marginBottom: '1.2rem' }}
               />
-              <p style={{ ...eyebrow, marginBottom: '.5rem' }}>{title.toUpperCase()}</p>
+              <p style={{ ...eyebrow, fontSize: '.85rem', fontWeight: 700, color: 'var(--ink)', marginBottom: '.5rem' }}>{title.toUpperCase()}</p>
               <p style={{
                 fontFamily: "'Archivo', sans-serif", fontSize: '.88rem', lineHeight: 1.7,
                 color: 'var(--muted)', textAlign: 'left', margin: '0 0 1.2rem',
@@ -156,27 +186,29 @@ function Gallery() {
       </section>
 
       {/* Sertifikalı Fine Art Kağıtları */}
-      <section style={{ maxWidth: 900, margin: '0 auto', padding: '2rem 2rem 5rem', textAlign: 'center' }}>
+      <section style={{ maxWidth: 1200, margin: '0 auto', padding: '2rem 2rem 3rem', textAlign: 'center' }}>
         <h2 style={{ ...displayHeading, fontSize: '2.4rem', margin: '0 0 1.2rem' }}>
           Sertifikalı Fine Art Kağıtları
         </h2>
         <div style={{ width: 60, height: 1, background: 'var(--border)', margin: '0 auto 1.5rem' }} />
         <p style={{
           fontFamily: "'Archivo', sans-serif", fontSize: '.92rem', lineHeight: 1.8,
-          color: 'var(--muted)', maxWidth: 640, margin: '0 auto 3rem',
+          color: 'var(--muted)', maxWidth: 900, margin: '0 auto',
         }}>
           {content['sertifikali-kagit-aciklama'] || `Hahnemühle'nin arşivsel kalitedeki fine art kağıtlarıyla, eserlerinizde üstün renk
           doğruluğu, derin tonlar ve yüksek detay elde edilir. Her baskı, uzun yıllar boyunca
           ilk günkü etkisini koruyacak kalıcılık ve premium sunum anlayışıyla üretilir.`}
         </p>
-        <div style={{ width: '100%', aspectRatio: '16 / 9', overflow: 'hidden' }}>
-          <img
-            src={images['sertifikali-kagit'] || kagitlarDefault}
-            alt="Hahnemühle fine art kağıt numuneleri"
-            style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
-          />
-        </div>
       </section>
+      {/* Fotoğraf, referans görseldeki gibi sayfa genişliğinin dışına taşıp
+          tam ekran genişliğinde (full-bleed) gösteriliyor. */}
+      <div style={{ width: '100vw', marginLeft: 'calc(50% - 50vw)', aspectRatio: '21 / 8', overflow: 'hidden', marginBottom: '5rem' }}>
+        <img
+          src={images['sertifikali-kagit'] || kagitlarDefault}
+          alt="Hahnemühle fine art kağıt numuneleri"
+          style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+        />
+      </div>
 
       {/* Baskı Ölçüleri ve Fiyatları */}
       <section style={{ maxWidth: 1100, margin: '0 auto', padding: '2rem 2rem 5rem', textAlign: 'center' }}>
@@ -230,8 +262,16 @@ function Gallery() {
           <p style={{ margin: 0 }}>Ödeme: havale/EFT ve online ödeme yöntemleriyle kabul edilmektedir.</p>
         </div>
 
-        <div style={{ display: 'flex', justifyContent: 'center', gap: '.9rem', flexWrap: 'wrap' }}>
-          {PAYMENT_BADGES.map(b => (
+        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '.9rem', flexWrap: 'wrap' }}>
+          {PAYMENT_LOGOS.map(p => (
+            <span key={p.key} style={{
+              padding: '.55rem 1.1rem', border: '1px solid var(--border)',
+              display: 'flex', alignItems: 'center',
+            }}>
+              {p.node}
+            </span>
+          ))}
+          {PAYMENT_TEXT_BADGES.map(b => (
             <span key={b} style={{
               padding: '.55rem 1.1rem', border: '1px solid var(--border)',
               fontFamily: "'Archivo', sans-serif", fontSize: '.72rem',
@@ -390,7 +430,7 @@ function Gallery() {
                 <label style={contactLabel}>Ödeme Yöntemi</label>
                 <select name="odemeYontemi" value={contact.odemeYontemi} onChange={updateContact} style={contactInput}>
                   <option value="">Ödeme yöntemi seçin</option>
-                  {PAYMENT_BADGES.map(b => <option key={b} value={b}>{b}</option>)}
+                  {[...PAYMENT_LOGOS.map(p => p.label), ...PAYMENT_TEXT_BADGES].map(b => <option key={b} value={b}>{b}</option>)}
                 </select>
               </div>
               <div>
@@ -440,6 +480,41 @@ function Gallery() {
             info@artipozstudio.com
           </a>
         </div>
+
+        {/* Haritaya tıklayınca Google Maps'e yönlendirir — adres henüz kesin
+            pinlenmedi, sadece genel konum aranıyor. */}
+        <a
+          href="https://www.google.com/maps/search/?api=1&query=Taksim+Meydan%C4%B1%2C+%C4%B0stanbul"
+          target="_blank" rel="noopener noreferrer"
+          aria-label="Google Maps'te görüntüle"
+          style={{
+            display: 'block', marginTop: '2rem', width: '100%', aspectRatio: '21 / 8',
+            position: 'relative', overflow: 'hidden', background: 'var(--surface)',
+          }}
+        >
+          <svg width="100%" height="100%" viewBox="0 0 840 320" preserveAspectRatio="xMidYMid slice" role="img" aria-hidden="true">
+            <rect width="840" height="320" fill="var(--surface)" />
+            <g stroke="var(--border)" strokeWidth="2" opacity=".9">
+              <line x1="0" y1="60" x2="840" y2="90" />
+              <line x1="0" y1="160" x2="840" y2="140" />
+              <line x1="0" y1="260" x2="840" y2="230" />
+              <line x1="120" y1="0" x2="200" y2="320" />
+              <line x1="420" y1="0" x2="380" y2="320" />
+              <line x1="700" y1="0" x2="660" y2="320" />
+            </g>
+            <circle cx="420" cy="150" r="120" fill="var(--border)" opacity=".35" />
+            <path d="M420 90 c-28 0-50 22-50 50 0 37 50 90 50 90s50-53 50-90c0-28-22-50-50-50z" fill="var(--accent)" />
+            <circle cx="420" cy="140" r="18" fill="#fff" />
+          </svg>
+          <span style={{
+            position: 'absolute', bottom: '.9rem', left: '50%', transform: 'translateX(-50%)',
+            background: '#fff', border: '1px solid var(--border)', padding: '.5rem 1rem',
+            fontFamily: "'Archivo', sans-serif", fontSize: '.68rem', letterSpacing: '.1em',
+            textTransform: 'uppercase', color: 'var(--ink)', whiteSpace: 'nowrap',
+          }}>
+            Google Maps'te Aç
+          </span>
+        </a>
       </section>
 
     </div>
