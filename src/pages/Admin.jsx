@@ -473,7 +473,7 @@ function Admin() {
   }
 
   async function loadPageImages() {
-    const { data } = await supabase.from('page_images').select('*').order('sort_order')
+    const { data } = await supabase.from('page_images').select('*').order('sort_order').order('id')
     const grouped = {}
     ;(data || []).forEach(row => { (grouped[`${row.page}:${row.section}`] ||= []).push(row) })
     setPageImages(grouped)
@@ -485,10 +485,21 @@ function Admin() {
     if (!url) return
     const { page, section, multiple } = slot
     if (!multiple) {
-      const { error: deleteError } = await supabase.from('page_images').delete().eq('page', page).eq('section', section)
-      if (deleteError) { alert('Görsel kaydedilemedi: ' + deleteError.message); return }
-      const { error: insertError } = await supabase.from('page_images').insert({ page, section, image_url: url, sort_order: 0 })
-      if (insertError) { alert('Görsel kaydedilemedi: ' + insertError.message); return }
+      // Önceden delete + insert (iki ayrı istek) yapılıyordu — delete başarılı
+      // olup insert arada bir sebepten (ağ, RLS) başarısız olursa ya da tam
+      // tersi, aynı page+section için 2 satır kalabiliyordu. Site tarafındaki
+      // sorgular tek satır bekliyor (limit(1) veya rows[0]) ve ikisi arasında
+      // hangisinin döneceği garanti değil — bu da "bir girişte bir görsel,
+      // başka girişte başka görsel" görünmesine yol açıyordu (Hero görseli
+      // dahil). Var olan satırı UPDATE ederek tekilliği garantiliyoruz.
+      const existing = pageImages[`${page}:${section}`]?.[0]
+      if (existing) {
+        const { error } = await withTimeout(supabase.from('page_images').update({ image_url: url }).eq('id', existing.id))
+        if (error) { alert('Görsel kaydedilemedi: ' + error.message); return }
+      } else {
+        const { error } = await withTimeout(supabase.from('page_images').insert({ page, section, image_url: url, sort_order: 0 }))
+        if (error) { alert('Görsel kaydedilemedi: ' + error.message); return }
+      }
     } else {
       const existing = pageImages[`${page}:${section}`] || []
       const nextOrder = existing.length ? Math.max(...existing.map(r => r.sort_order)) + 1 : 0

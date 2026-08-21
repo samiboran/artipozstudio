@@ -104,7 +104,7 @@ export default function Cerceve() {
     try {
       const [{ data: options }, { data: imgs }, { data: contentRows }] = await Promise.all([
         supabase.from('frame_options').select('id, size, note, sort_order, frame_option_prices(color, price, swatch_hex, sort_order)').order('sort_order'),
-        supabase.from('page_images').select('*').eq('page', 'cerceve').order('sort_order'),
+        supabase.from('page_images').select('*').eq('page', 'cerceve').order('sort_order').order('id'),
         supabase.from('page_content').select('section, content').eq('page', 'cerceve'),
       ])
 

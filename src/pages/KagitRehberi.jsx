@@ -141,7 +141,7 @@ export default function KagitRehberi() {
     try {
       const [{ data: papers }, { data: imgs }] = await Promise.all([
         supabase.from('papers').select('*').order('sort_order'),
-        supabase.from('page_images').select('section, image_url').eq('page', 'fotograf-baski'),
+        supabase.from('page_images').select('section, image_url').eq('page', 'fotograf-baski').order('sort_order').order('id'),
       ])
 
       if (papers) {
