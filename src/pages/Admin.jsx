@@ -3,6 +3,29 @@ import { supabase } from '../lib/supabase'
 import { useNavigate } from 'react-router-dom'
 import { FONT_PRESETS, setFont } from '../lib/siteFonts'
 
+// Sami "sitede şu an ne görünüyor onu da görmem lazım" dedi — bir slotta
+// hiç admin görseli yoksa (page_images'ta satır yok) sayfanın kendi
+// dosyasındaki hardcoded fallback görsel sitede gösteriliyor, ama Admin bunu
+// bilmiyordu, sadece düz metin gösteriyordu. Aynı fallback görselleri burada
+// da import edip önizlemede göstermek için.
+import galleryHeroDefault from '../assets/fine-art/hero.jpg'
+import galleryFotografDefault from '../assets/fine-art/ornek-botanik.jpg'
+import galleryFineArtDefault from '../assets/process/baski-sureci.jpg'
+import galleryCerceveDefault from '../assets/cerceve/ornek-ahsap-cerceve.jpg'
+import gallerySertifikaliKagitDefault from '../assets/fine-art/kagit-secenekleri.jpg'
+import cerceveHeroDefault from '../assets/cerceve/hero.jpg'
+import cerceveRenkSecenekleriDefault from '../assets/cerceve/renk-secenekleri.jpg'
+import cerceveRenkDetayDefault from '../assets/cerceve/renk-secenekleri-detay.jpg'
+import cerceveOrnekSiyahDefault from '../assets/cerceve/ornek-siyah-cerceve.jpg'
+import cerceveOrnekAhsapDefault from '../assets/cerceve/ornek-ahsap-cerceve.jpg'
+import fineArtHeroDefault from '../assets/fine-art/hero.jpg'
+import fineArtKagitSecenekleriDefault from '../assets/fine-art/kagit-secenekleri.jpg'
+import fineArtOrnekBotanikDefault from '../assets/fine-art/ornek-botanik.jpg'
+import fineArtOrnekBotanik2Default from '../assets/fine-art/ornek-botanik-2.jpg'
+import fineArtOrnekDoku1Default from '../assets/fine-art/ornek-doku-1.jpg'
+import fineArtOrnekDoku2Default from '../assets/fine-art/ornek-doku-2.jpg'
+import fotografBaskiHeroDefault from '../assets/process/studyo.jpg'
+
 const EMPTY_FORM = {
   title: '', slug: '', artist: 'Sami Boran',
   year: new Date().getFullYear(), medium: '', description: '',
@@ -11,43 +34,104 @@ const EMPTY_FORM = {
 }
 
 const EMPTY_FRAME = { size: '', note: '', prices: [{ color: '', price: '', swatch_hex: '#111111' }] }
-const EMPTY_PAPER = { name: '', surface: '', gsm: '', texture: '', color: '', composition: '', description: '', texture_photo_url: '', preview_photo_url: '' }
+const EMPTY_PAPER = {
+  name: '', surface: '', gsm: '', texture: '', color: '', composition: '', description: '',
+  texture_photo_url: '', preview_photo_url: '', guide_category: '', featured_in_guide: false,
+}
+
+// Fotoğraf Baskı sayfasındaki boy/yüzey fiyat matrisi — sabit 5×2 ızgara.
+const PHOTO_SIZES = ['A2', 'A3', 'A4', 'A5', 'A6']
+const PHOTO_FINISHES = ['Mat', 'Parlak']
 
 // Görseller sekmesinde yönetilen sabit alanlar. multiple:false => tek görsel (yeni yükleme
 // eskisinin yerine geçer). multiple:true => istenildiği kadar görsel eklenip silinebilir.
 const IMAGE_SLOTS = [
-  { page: 'gallery', section: 'hero', label: 'Ana Sayfa — Hero Görseli', multiple: false, aspect: '21 / 9' },
-  { page: 'gallery', section: 'hizmet-fotograf', label: 'Ana Sayfa — Hizmetlerimiz: Fotoğraf Baskı', multiple: false, aspect: '4 / 3' },
-  { page: 'gallery', section: 'hizmet-fine-art', label: 'Ana Sayfa — Hizmetlerimiz: Fine Art Baskı', multiple: false, aspect: '4 / 3' },
-  { page: 'gallery', section: 'hizmet-cerceve', label: 'Ana Sayfa — Hizmetlerimiz: Çerçeveler', multiple: false, aspect: '4 / 3' },
-  { page: 'gallery', section: 'sertifikali-kagit', label: 'Ana Sayfa — Sertifikalı Fine Art Kağıtları', multiple: false, aspect: '16 / 9' },
+  { page: 'gallery', section: 'hero', label: 'Ana Sayfa — Hero Görseli', multiple: false, aspect: '21 / 9', defaultImg: galleryHeroDefault },
+  { page: 'gallery', section: 'hizmet-fotograf', label: 'Ana Sayfa — Hizmetlerimiz: Fotoğraf Baskı', multiple: false, aspect: '4 / 3', defaultImg: galleryFotografDefault },
+  { page: 'gallery', section: 'hizmet-fine-art', label: 'Ana Sayfa — Hizmetlerimiz: Fine Art Baskı', multiple: false, aspect: '4 / 3', defaultImg: galleryFineArtDefault },
+  { page: 'gallery', section: 'hizmet-cerceve', label: 'Ana Sayfa — Hizmetlerimiz: Çerçeveler', multiple: false, aspect: '4 / 3', defaultImg: galleryCerceveDefault },
+  { page: 'gallery', section: 'sertifikali-kagit', label: 'Ana Sayfa — Sertifikalı Fine Art Kağıtları', multiple: false, aspect: '16 / 9', defaultImg: gallerySertifikaliKagitDefault },
   { page: 'gallery', section: 'iletisim-gorsel', label: 'Ana Sayfa — İletişim Üstü Görsel', multiple: false, aspect: '16 / 7' },
-  { page: 'cerceve', section: 'hero', label: 'Çerçeve — Hero Görseli', multiple: false, aspect: '21 / 9' },
-  { page: 'cerceve', section: 'renk-secenekleri', label: 'Çerçeve — Renk Seçenekleri', multiple: false, aspect: '4 / 3' },
-  { page: 'cerceve', section: 'renk-detay', label: 'Çerçeve — Renk Detayı', multiple: false, aspect: '4 / 3' },
-  { page: 'cerceve', section: 'ornekler', label: 'Çerçeve — Örnek Çerçeveli İşler', multiple: true, aspect: '4 / 5' },
-  { page: 'fine-art-baski', section: 'hero', label: 'Fine Art Baskı — Hero Görseli', multiple: false, aspect: '21 / 9' },
-  { page: 'fine-art-baski', section: 'kagit-secenekleri', label: 'Fine Art Baskı — Kağıt Seçenekleri', multiple: false, aspect: '4 / 3' },
-  { page: 'fine-art-baski', section: 'ornekler', label: 'Fine Art Baskı — Örnek Baskılarımız', multiple: true, aspect: '4 / 5' },
+  { page: 'cerceve', section: 'hero', label: 'Çerçeve — Hero Görseli', multiple: false, aspect: '21 / 9', defaultImg: cerceveHeroDefault },
+  { page: 'cerceve', section: 'renk-secenekleri', label: 'Çerçeve — Renk Seçenekleri', multiple: false, aspect: '4 / 3', defaultImg: cerceveRenkSecenekleriDefault },
+  { page: 'cerceve', section: 'renk-detay', label: 'Çerçeve — Renk Detayı', multiple: false, aspect: '4 / 3', defaultImg: cerceveRenkDetayDefault },
+  { page: 'cerceve', section: 'ornekler', label: 'Çerçeve — Örnek Çerçeveli İşler', multiple: true, aspect: '4 / 5', defaultImgs: [cerceveOrnekSiyahDefault, cerceveOrnekAhsapDefault] },
+  { page: 'fine-art-baski', section: 'hero', label: 'Fine Art Baskı — Hero Görseli', multiple: false, aspect: '21 / 9', defaultImg: fineArtHeroDefault },
+  { page: 'fine-art-baski', section: 'kagit-secenekleri', label: 'Fine Art Baskı — Kağıt Seçenekleri', multiple: false, aspect: '4 / 3', defaultImg: fineArtKagitSecenekleriDefault },
+  { page: 'fine-art-baski', section: 'ornekler', label: 'Fine Art Baskı — Örnek Baskılarımız', multiple: true, aspect: '4 / 5', defaultImgs: [fineArtOrnekBotanikDefault, fineArtOrnekBotanik2Default, fineArtOrnekDoku1Default, fineArtOrnekDoku2Default] },
+  { page: 'fotograf-baski', section: 'hero', label: 'Fotoğraf Baskı — Hero Görseli', multiple: false, aspect: '21 / 9', defaultImg: fotografBaskiHeroDefault },
+  { page: 'fotograf-baski', section: 'mat-1', label: 'Fotoğraf Baskı — Mat Örnek (1. görsel)', multiple: false, aspect: '4 / 3' },
+  { page: 'fotograf-baski', section: 'mat-2', label: 'Fotoğraf Baskı — Mat Örnek (üzerine gelince, 2. görsel)', multiple: false, aspect: '4 / 3' },
+  { page: 'fotograf-baski', section: 'parlak-1', label: 'Fotoğraf Baskı — Parlak Örnek (1. görsel)', multiple: false, aspect: '4 / 3' },
+  { page: 'fotograf-baski', section: 'parlak-2', label: 'Fotoğraf Baskı — Parlak Örnek (üzerine gelince, 2. görsel)', multiple: false, aspect: '4 / 3' },
 ]
+
+// page_content tablosunda yönetilen düzenlenebilir metin alanları — page_images ile
+// aynı desen: her satır page+section ile anahtarlı, admin hiç dokunmadıysa (satır
+// yok) sayfa kendi hardcoded metnini fallback olarak gösterir. placeholder, o
+// fallback'in aynısı — admin boş kutuya bakınca sitede şu an ne yazdığını görsün diye.
+const PAGE_TEXT_FIELDS = {
+  gallery: [
+    { section: 'hizmet-fotograf-baslik', label: 'Hizmetlerimiz — Fotoğraf Baskı Kart Başlığı', placeholder: 'Fotoğraf Baskı' },
+    { section: 'hizmet-fotograf-aciklama', label: 'Hizmetlerimiz — Fotoğraf Baskı Kart Açıklaması', placeholder: 'Mat, yarı mat, parlak ve saten yüzey seçenekli fotoğraf kağıtlarına, yüksek çözünürlükte profesyonel dijital fotoğraf baskıları üretiyoruz.', tall: true },
+    { section: 'hizmet-fine-art-baslik', label: 'Hizmetlerimiz — Fine Art Baskı Kart Başlığı', placeholder: 'Fine Art Baskı' },
+    { section: 'hizmet-fine-art-aciklama', label: 'Hizmetlerimiz — Fine Art Baskı Kart Açıklaması', placeholder: 'Fine art baskı hizmetimizle, arşivlik pigment mürekkepler ve özel sanat kağıtları kullanarak eserlerinizi yüksek kalite, doğru renk ve uzun ömürle sunuyoruz.', tall: true },
+    { section: 'hizmet-cerceve-baslik', label: 'Hizmetlerimiz — Çerçeveler Kart Başlığı', placeholder: 'Çerçeveler' },
+    { section: 'hizmet-cerceve-aciklama', label: 'Hizmetlerimiz — Çerçeveler Kart Açıklaması', placeholder: 'Eserlerinizi tamamlayan estetik ve koruyucu çerçeve çözümlerini, farklı ölçü ve tarz seçenekleriyle sunarak baskılarımızı sergilemeye hazır hale getiriyoruz.', tall: true },
+    { section: 'sertifikali-kagit-aciklama', label: 'Sertifikalı Fine Art Kağıtları — Açıklama', placeholder: "Hahnemühle'nin arşivsel kalitedeki fine art kağıtlarıyla, eserlerinizde üstün renk doğruluğu, derin tonlar ve yüksek detay elde edilir. Her baskı, uzun yıllar boyunca ilk günkü etkisini koruyacak kalıcılık ve premium sunum anlayışıyla üretilir.", tall: true },
+    { section: 'dosya-hazirlik-1-baslik', label: 'Dosya Hazırlığı — 1. Madde Başlığı', placeholder: 'Dosya Formatı' },
+    { section: 'dosya-hazirlik-1-aciklama', label: 'Dosya Hazırlığı — 1. Madde Açıklaması', placeholder: 'Önerilen formatlar: TIFF, PSD, JPG ve PDF. RGB dosyalarda gömülü renk profili bulunması önerilir.', tall: true },
+    { section: 'dosya-hazirlik-2-baslik', label: 'Dosya Hazırlığı — 2. Madde Başlığı', placeholder: 'Renk Profili' },
+    { section: 'dosya-hazirlik-2-aciklama', label: 'Dosya Hazırlığı — 2. Madde Açıklaması', placeholder: 'RGB çalışma alanında sRGB veya Adobe RGB tercih edilebilir. Renk profili gömülmemiş dosyalar, varsayılan profil ile değerlendirilerek baskıya alınabilir.', tall: true },
+    { section: 'dosya-hazirlik-3-baslik', label: 'Dosya Hazırlığı — 3. Madde Başlığı', placeholder: 'Taşma Payı ve Kesim' },
+    { section: 'dosya-hazirlik-3-aciklama', label: 'Dosya Hazırlığı — 3. Madde Açıklaması', placeholder: 'Kenara kadar baskı istenen çalışmalarda, dosyanıza her kenardan 3 mm taşma payı eklenmelidir. Taşma payı bulunmayan dosyalarda kesim sırasında görselde çok küçük kayıplar oluşabilir. Beyaz kenarlıklı işler için net ölçü ve boşlukların dosyada doğru tanımlanması önemlidir.', tall: true },
+  ],
+  'fotograf-baski': [
+    { section: 'hero-aciklama', label: 'Hero — Alt Açıklama', placeholder: 'Yüksek çözünürlükte, profesyonel fotoğraf kağıtlarına baskı.' },
+    { section: 'yuzey-aciklama', label: 'Mat/Parlak Karşılaştırma Açıklaması', placeholder: 'Seçtiğiniz yüzeye göre baskı hazırlıyoruz — mat yüzey yumuşak, yansımasız bir görünüm, parlak yüzey ise derin renkler ve yüksek kontrast sunar. Kartların üzerine gelerek yakın çekim detayını görebilirsiniz.', tall: true },
+  ],
+  'fine-art-baski': [
+    { section: 'hero-aciklama', label: 'Hero — Alt Açıklama', placeholder: 'Müze ve galeri standartlarında, arşiv kalitesinde baskı. Sanatınızı nesiller boyu yaşatın.', tall: true },
+  ],
+  cerceve: [
+    { section: 'hero-aciklama', label: 'Hero — Alt Açıklama', placeholder: 'Fotoğraflarınızı kalıcı kılın. Siyah, beyaz ve doğal ahşap çerçeve seçenekleriyle anılarınızı sanat eserine dönüştürün.', tall: true },
+  ],
+}
+
+// supabase.js'teki 15sn'lik fetch timeout'u bir çağrının network seviyesinde
+// asılı kalmasını önlüyor, ama "Kaydediliyor…" butonlarının kod içi bir
+// sebepten (ör. beklenmeyen bir promise zinciri) hiç dönmemesine karşı ekstra
+// bir güvenlik ağı: bu süre dolunca reddedip butonun sonsuza kadar kilitli
+// kalmasını engelliyor.
+function withTimeout(promise, ms = 20000) {
+  return Promise.race([
+    promise,
+    new Promise((_, reject) => setTimeout(() => reject(new Error('İşlem zaman aşımına uğradı')), ms)),
+  ])
+}
 
 function Admin() {
   const navigate = useNavigate()
-  const [tab, setTab] = useState('eserler')
+  const [tab, setTab] = useState('gorseller')
   const [artworks, setArtworks] = useState([])
   const [orders, setOrders] = useState([])
   const [selected, setSelected] = useState(null)
+  const [artworkImages, setArtworkImages] = useState([])
   const [form, setForm] = useState(EMPTY_FORM)
   const [uploading, setUploading] = useState(false)
   const [saving, setSaving] = useState(false)
   const [msg, setMsg] = useState('')
   const fileRef = useRef()
+  const galleryFileRef = useRef()
 
   // --- Çerçeve ---
   const [frames, setFrames] = useState([])
   const [selectedFrame, setSelectedFrame] = useState(null)
   const [frameForm, setFrameForm] = useState(EMPTY_FRAME)
   const [frameSaving, setFrameSaving] = useState(false)
+
+  // --- Çerçeve Siparişleri ---
+  const [frameOrders, setFrameOrders] = useState([])
 
   // --- Kağıtlar ---
   const [papers, setPapers] = useState([])
@@ -57,6 +141,8 @@ function Admin() {
 
   // --- Görseller (genel dosya yükleme) ---
   const [pageImages, setPageImages] = useState({}) // "page:section" -> [rows]
+  const [pageContent, setPageContent] = useState({}) // "page:section" -> content metni
+  const [contentSaving, setContentSaving] = useState({}) // "page:section" -> bool
   const [uploadTarget, setUploadTarget] = useState(null)
   const genericFileRef = useRef()
 
@@ -64,6 +150,8 @@ function Admin() {
   const [fontPair, setFontPairState] = useState('archivo')
   const [fontSaving, setFontSaving] = useState(false)
   const [fontMsg, setFontMsg] = useState('')
+  const [artistBio, setArtistBio] = useState('')
+  const [artistPhotoUrl, setArtistPhotoUrl] = useState('')
 
   // --- Kullanıcılar ---
   const [profiles, setProfiles] = useState([])
@@ -72,6 +160,18 @@ function Admin() {
   const [cartEvents, setCartEvents] = useState([])
   const [orderSessionIds, setOrderSessionIds] = useState(new Set())
 
+  // --- İstatistikler ---
+  const [pageViews, setPageViews] = useState([])
+
+  // --- Fotoğraf Baskı Fiyatları ---
+  const [photoPrices, setPhotoPrices] = useState({}) // "size:finish" -> price
+  const [photoPriceSaving, setPhotoPriceSaving] = useState(false)
+  const [photoPriceMsg, setPhotoPriceMsg] = useState('')
+
+  // --- Fotoğraf Siparişleri ---
+  const [photoOrders, setPhotoOrders] = useState([])
+  const [photoOrderItems, setPhotoOrderItems] = useState({}) // order_id -> [items]
+
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (!session) navigate('/login')
@@ -79,13 +179,19 @@ function Admin() {
   }, [])
 
   useEffect(() => { loadArtworks() }, [])
+  // Sanatçı Hakkında editörü İşler sekmesine taşındı ama font ayarları hâlâ
+  // Site Ayarları'nda — ikisi de aynı site_settings satırını paylaştığı için
+  // hangi sekme önce açılırsa açılsın veriler hazır olsun diye koşulsuz yükleniyor.
+  useEffect(() => { loadSiteSettings() }, [])
   useEffect(() => { if (tab === 'siparisler') loadOrders() }, [tab])
-  useEffect(() => { if (tab === 'cerceve') loadFrames() }, [tab])
+  useEffect(() => { if (tab === 'cerceve') { loadFrames(); loadFrameOrders() } }, [tab])
   useEffect(() => { if (tab === 'kagitlar') loadPapers() }, [tab])
-  useEffect(() => { if (tab === 'gorseller') loadPageImages() }, [tab])
-  useEffect(() => { if (tab === 'site') loadSiteSettings() }, [tab])
+  useEffect(() => { if (['gorseller', 'cerceve', 'kagitlar', 'fotofiyat'].includes(tab)) { loadPageImages(); loadPageContent() } }, [tab])
   useEffect(() => { if (tab === 'kullanicilar') loadProfiles() }, [tab])
   useEffect(() => { if (tab === 'sepetler') loadCartEvents() }, [tab])
+  useEffect(() => { if (tab === 'istatistikler') loadPageViews() }, [tab])
+  useEffect(() => { if (tab === 'fotofiyat') loadPhotoPrices() }, [tab])
+  useEffect(() => { if (tab === 'fotosiparis') loadPhotoOrders() }, [tab])
 
   async function loadArtworks() {
     const { data } = await supabase.from('artworks').select('*').order('created_at', { ascending: false })
@@ -129,9 +235,34 @@ function Admin() {
     setSelected(aw.id)
     setForm({ ...aw, tags: (aw.tags || []).join(', '), sizes: aw.sizes?.length ? aw.sizes : [{ label: 'A4', price: '' }] })
     setMsg('')
+    loadArtworkImages(aw.id)
   }
 
-  function newArtwork() { setSelected(null); setForm(EMPTY_FORM); setMsg('') }
+  function newArtwork() { setSelected(null); setForm(EMPTY_FORM); setMsg(''); setArtworkImages([]) }
+
+  async function loadArtworkImages(artworkId) {
+    const { data } = await supabase.from('artwork_images').select('*').eq('artwork_id', artworkId).order('sort_order')
+    setArtworkImages(data || [])
+  }
+
+  async function uploadArtworkImage(file) {
+    if (!selected) return
+    const ext = file.name.split('.').pop()
+    const path = `gallery-${Date.now()}-${Math.random().toString(36).slice(2, 7)}.${ext}`
+    const { error } = await supabase.storage.from('artwork-images').upload(path, file)
+    if (error) { alert('Görsel yüklenemedi: ' + error.message); return }
+    const { data } = supabase.storage.from('artwork-images').getPublicUrl(path)
+    const nextOrder = artworkImages.length ? Math.max(...artworkImages.map(i => i.sort_order)) + 1 : 0
+    const { error: insertError } = await supabase.from('artwork_images').insert({ artwork_id: selected, image_url: data.publicUrl, sort_order: nextOrder })
+    if (insertError) { alert('Görsel kaydedilemedi: ' + insertError.message); return }
+    loadArtworkImages(selected)
+  }
+
+  async function deleteArtworkImage(id) {
+    const { error } = await supabase.from('artwork_images').delete().eq('id', id)
+    if (error) { alert('Görsel silinemedi: ' + error.message); return }
+    loadArtworkImages(selected)
+  }
 
   function autoSlug(title) {
     return title.toLowerCase()
@@ -166,22 +297,33 @@ function Admin() {
     setSaving(true)
     const payload = { ...form, tags: form.tags.split(',').map(t => t.trim()).filter(Boolean) }
     delete payload.id; delete payload.created_at
-    let error
-    if (selected) {
-      ;({ error } = await supabase.from('artworks').update(payload).eq('id', selected))
-    } else {
-      ;({ error } = await supabase.from('artworks').insert(payload))
+    try {
+      let error
+      if (selected) {
+        ;({ error } = await withTimeout(supabase.from('artworks').update(payload).eq('id', selected)))
+      } else {
+        // Eklenen satırın id'sini geri alıyoruz — yoksa "selected" hep null kalır,
+        // ek galeri görseli bölümü kaydedildikten sonra da hep kilitli görünür ve
+        // "Kaydet"e ikinci kez basılırsa yeni bir kopya daha eklenir.
+        let data
+        ;({ data, error } = await withTimeout(supabase.from('artworks').insert(payload).select().single()))
+        if (!error && data) setSelected(data.id)
+      }
+      setSaving(false)
+      if (error) { setMsg('Hata: ' + error.message); return }
+      setMsg(selected ? 'Güncellendi ✓' : 'Eklendi ✓')
+      loadArtworks()
+    } catch (err) {
+      setSaving(false)
+      setMsg('Hata: ' + err.message)
     }
-    setSaving(false)
-    if (error) { setMsg('Hata: ' + error.message); return }
-    setMsg(selected ? 'Güncellendi ✓' : 'Eklendi ✓')
-    loadArtworks()
   }
 
   async function deleteArtwork() {
     if (!selected) return
     if (!window.confirm('Bu eseri silmek istediğinden emin misin?')) return
-    await supabase.from('artworks').delete().eq('id', selected)
+    const { error } = await supabase.from('artworks').delete().eq('id', selected)
+    if (error) { alert('Silinemedi: ' + error.message); return }
     newArtwork(); loadArtworks()
   }
 
@@ -221,30 +363,52 @@ function Admin() {
 
   async function saveFrame() {
     setFrameSaving(true)
-    let frameId = selectedFrame
-    if (frameId) {
-      await supabase.from('frame_options').update({ size: frameForm.size, note: frameForm.note }).eq('id', frameId)
-      await supabase.from('frame_option_prices').delete().eq('frame_option_id', frameId)
-    } else {
-      const nextOrder = frames.length ? Math.max(...frames.map(f => f.sort_order)) + 1 : 1
-      const { data, error } = await supabase.from('frame_options').insert({ size: frameForm.size, note: frameForm.note, sort_order: nextOrder }).select().single()
-      if (error) { setFrameSaving(false); alert('Hata: ' + error.message); return }
-      frameId = data.id
+    try {
+      let frameId = selectedFrame
+      if (frameId) {
+        const { error: updateError } = await withTimeout(supabase.from('frame_options').update({ size: frameForm.size, note: frameForm.note }).eq('id', frameId))
+        if (updateError) { setFrameSaving(false); alert('Hata: ' + updateError.message); return }
+        const { error: deleteError } = await withTimeout(supabase.from('frame_option_prices').delete().eq('frame_option_id', frameId))
+        if (deleteError) { setFrameSaving(false); alert('Hata: ' + deleteError.message); return }
+      } else {
+        const nextOrder = frames.length ? Math.max(...frames.map(f => f.sort_order)) + 1 : 1
+        const { data, error } = await withTimeout(supabase.from('frame_options').insert({ size: frameForm.size, note: frameForm.note, sort_order: nextOrder }).select().single())
+        if (error) { setFrameSaving(false); alert('Hata: ' + error.message); return }
+        frameId = data.id
+      }
+      const rows = frameForm.prices.filter(p => p.color).map((p, i) => ({
+        frame_option_id: frameId, color: p.color, price: p.price || 0, swatch_hex: p.swatch_hex || '#111111', sort_order: i,
+      }))
+      if (rows.length) {
+        const { error: pricesError } = await withTimeout(supabase.from('frame_option_prices').insert(rows))
+        if (pricesError) { setFrameSaving(false); alert('Hata: ' + pricesError.message); return }
+      }
+      setFrameSaving(false)
+      setSelectedFrame(frameId)
+      loadFrames()
+    } catch (err) {
+      setFrameSaving(false)
+      alert('Hata: ' + err.message)
     }
-    const rows = frameForm.prices.filter(p => p.color).map((p, i) => ({
-      frame_option_id: frameId, color: p.color, price: p.price || 0, swatch_hex: p.swatch_hex || '#111111', sort_order: i,
-    }))
-    if (rows.length) await supabase.from('frame_option_prices').insert(rows)
-    setFrameSaving(false)
-    setSelectedFrame(frameId)
-    loadFrames()
   }
 
   async function deleteFrame() {
     if (!selectedFrame) return
     if (!window.confirm('Bu boyu silmek istediğinden emin misin? Fiyatları da silinecek.')) return
-    await supabase.from('frame_options').delete().eq('id', selectedFrame)
+    const { error } = await supabase.from('frame_options').delete().eq('id', selectedFrame)
+    if (error) { alert('Silinemedi: ' + error.message); return }
     newFrame(); loadFrames()
+  }
+
+  async function loadFrameOrders() {
+    const { data } = await supabase.from('frame_orders').select('*').order('created_at', { ascending: false })
+    setFrameOrders(data || [])
+  }
+
+  async function updateFrameOrderStatus(id, status) {
+    const { error } = await supabase.from('frame_orders').update({ status }).eq('id', id)
+    if (error) { alert('Durum güncellenemedi: ' + error.message); return }
+    setFrameOrders(rows => rows.map(o => o.id === id ? { ...o, status } : o))
   }
 
   // ============================================================
@@ -262,22 +426,28 @@ function Admin() {
     setPaperSaving(true)
     const payload = { ...paperForm }
     delete payload.id; delete payload.created_at
-    let error
-    if (selectedPaper) {
-      ;({ error } = await supabase.from('papers').update(payload).eq('id', selectedPaper))
-    } else {
-      const nextOrder = papers.length ? Math.max(...papers.map(p => p.sort_order)) + 1 : 1
-      ;({ error } = await supabase.from('papers').insert({ ...payload, sort_order: nextOrder }))
+    try {
+      let error
+      if (selectedPaper) {
+        ;({ error } = await withTimeout(supabase.from('papers').update(payload).eq('id', selectedPaper)))
+      } else {
+        const nextOrder = papers.length ? Math.max(...papers.map(p => p.sort_order)) + 1 : 1
+        ;({ error } = await withTimeout(supabase.from('papers').insert({ ...payload, sort_order: nextOrder })))
+      }
+      setPaperSaving(false)
+      if (error) { alert('Hata: ' + error.message); return }
+      loadPapers()
+    } catch (err) {
+      setPaperSaving(false)
+      alert('Hata: ' + err.message)
     }
-    setPaperSaving(false)
-    if (error) { alert('Hata: ' + error.message); return }
-    loadPapers()
   }
 
   async function deletePaper() {
     if (!selectedPaper) return
     if (!window.confirm('Bu kağıdı silmek istediğinden emin misin?')) return
-    await supabase.from('papers').delete().eq('id', selectedPaper)
+    const { error } = await supabase.from('papers').delete().eq('id', selectedPaper)
+    if (error) { alert('Silinemedi: ' + error.message); return }
     newPaper(); loadPapers()
   }
 
@@ -311,12 +481,15 @@ function Admin() {
     if (!url) return
     const { page, section, multiple } = slot
     if (!multiple) {
-      await supabase.from('page_images').delete().eq('page', page).eq('section', section)
-      await supabase.from('page_images').insert({ page, section, image_url: url, sort_order: 0 })
+      const { error: deleteError } = await supabase.from('page_images').delete().eq('page', page).eq('section', section)
+      if (deleteError) { alert('Görsel kaydedilemedi: ' + deleteError.message); return }
+      const { error: insertError } = await supabase.from('page_images').insert({ page, section, image_url: url, sort_order: 0 })
+      if (insertError) { alert('Görsel kaydedilemedi: ' + insertError.message); return }
     } else {
       const existing = pageImages[`${page}:${section}`] || []
       const nextOrder = existing.length ? Math.max(...existing.map(r => r.sort_order)) + 1 : 0
-      await supabase.from('page_images').insert({ page, section, image_url: url, sort_order: nextOrder })
+      const { error: insertError } = await supabase.from('page_images').insert({ page, section, image_url: url, sort_order: nextOrder })
+      if (insertError) { alert('Görsel kaydedilemedi: ' + insertError.message); return }
     }
     loadPageImages()
   }
@@ -331,28 +504,179 @@ function Admin() {
   }
 
   async function deletePageImage(id) {
-    await supabase.from('page_images').delete().eq('id', id)
+    const { error } = await supabase.from('page_images').delete().eq('id', id)
+    if (error) { alert('Silinemedi: ' + error.message); return }
     loadPageImages()
+  }
+
+  // Bir sayfaya ait tüm görsel slotlarını render eder — Ana Sayfa, Çerçeve,
+  // Fine Art Baskı ve Fotoğraf Baskı sekmelerinde, o sayfanın kendi
+  // içerik/fiyat düzenleyicisinin altında tek bir yerde gösterilsin diye
+  // ortak fonksiyon olarak çıkarıldı.
+  function renderPageImageSlots(pageKey) {
+    return IMAGE_SLOTS.filter(slot => slot.page === pageKey).map(slot => {
+      const key = `${slot.page}:${slot.section}`
+      const rows = pageImages[key] || []
+      const singleImage = !slot.multiple && rows[0]
+      // Admin hiç görsel yüklemediyse (satır yok) sitede hâlâ sayfanın kendi
+      // hardcoded fallback görseli gösteriliyor — Sami "eskisini de göreyim"
+      // dedi, o yüzden satır yoksa bunu önizlemede gösteriyoruz.
+      const showingDefault = !slot.multiple && !rows[0] && slot.defaultImg
+      return (
+        <div key={key} style={{ marginBottom: '2.5rem', borderBottom: '1px solid #eee', paddingBottom: '2rem' }}>
+          <span style={{ ...label, display: 'block', marginBottom: '.8rem' }}>{slot.label}</span>
+          <div
+            onClick={() => triggerSlotUpload(slot)}
+            onDragOver={e => e.preventDefault()}
+            onDrop={e => { e.preventDefault(); uploadForSlot(e.dataTransfer.files[0], slot) }}
+            style={{
+              border: '2px dashed #ddd', padding: singleImage || showingDefault ? '.5rem' : '1.5rem', textAlign: 'center',
+              cursor: 'pointer', background: '#fafafa',
+              minHeight: 160, display: 'flex', alignItems: 'center', justifyContent: 'center'
+            }}
+          >
+            {singleImage ? (
+              <div style={{ position: 'relative', width: '100%', maxWidth: 360, aspectRatio: slot.aspect, overflow: 'hidden' }}>
+                <img src={rows[0].image_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+                <button
+                  onClick={e => { e.stopPropagation(); deletePageImage(rows[0].id) }}
+                  style={{ position: 'absolute', top: 6, right: 6, background: '#cc4444', color: '#fff', border: 'none', borderRadius: '50%', width: 22, height: 22, cursor: 'pointer', fontSize: '.8rem', lineHeight: 1 }}
+                >×</button>
+              </div>
+            ) : showingDefault ? (
+              <div style={{ position: 'relative', width: '100%', maxWidth: 360, aspectRatio: slot.aspect, overflow: 'hidden' }}>
+                <img src={slot.defaultImg} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block', opacity: .85 }} />
+                <span style={{
+                  position: 'absolute', bottom: 6, left: 6, background: 'rgba(0,0,0,.65)', color: '#fff',
+                  fontSize: '.62rem', padding: '.2rem .5rem', letterSpacing: '.03em',
+                }}>
+                  Sitede şu an bu görünüyor — değiştirmek için tıkla
+                </span>
+              </div>
+            ) : (
+              <span style={{ color: '#bbb', fontSize: '.85rem' }}>
+                {slot.multiple
+                  ? 'Görsel eklemek için sürükle & bırak veya tıkla'
+                  : 'Henüz görsel yok — sürükle & bırak veya tıkla'}
+              </span>
+            )}
+          </div>
+          <p style={{ fontSize: '.66rem', color: '#bbb', marginTop: '.4rem' }}>
+            Önizleme, sitede gerçekte nasıl kırpılacağını (oran: {slot.aspect}) gösteriyor.
+          </p>
+          {slot.multiple && rows.length > 0 && (
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '.8rem', marginTop: '.8rem' }}>
+              {rows.map(row => (
+                <div key={row.id} style={{ position: 'relative', width: 130, aspectRatio: slot.aspect, overflow: 'hidden' }}>
+                  <img src={row.image_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block', border: '1px solid #eee' }} />
+                  <button
+                    onClick={() => deletePageImage(row.id)}
+                    style={{ position: 'absolute', top: 4, right: 4, background: '#cc4444', color: '#fff', border: 'none', borderRadius: '50%', width: 20, height: 20, cursor: 'pointer', fontSize: '.72rem', lineHeight: 1 }}
+                  >×</button>
+                </div>
+              ))}
+            </div>
+          )}
+          {slot.multiple && rows.length === 0 && slot.defaultImgs?.length > 0 && (
+            <>
+              <p style={{ fontSize: '.66rem', color: '#bbb', margin: '.6rem 0 .3rem' }}>Sitede şu an bunlar görünüyor:</p>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '.8rem' }}>
+                {slot.defaultImgs.map((src, i) => (
+                  <div key={i} style={{ width: 130, aspectRatio: slot.aspect, overflow: 'hidden', opacity: .85 }}>
+                    <img src={src} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block', border: '1px solid #eee' }} />
+                  </div>
+                ))}
+              </div>
+            </>
+          )}
+        </div>
+      )
+    })
+  }
+
+  async function loadPageContent() {
+    const { data } = await supabase.from('page_content').select('*')
+    const map = {}
+    ;(data || []).forEach(row => { map[`${row.page}:${row.section}`] = row.content })
+    setPageContent(map)
+  }
+
+  function updatePageContentDraft(page, section, value) {
+    setPageContent(prev => ({ ...prev, [`${page}:${section}`]: value }))
+  }
+
+  async function savePageContentField(page, section) {
+    const key = `${page}:${section}`
+    setContentSaving(s => ({ ...s, [key]: true }))
+    const { error } = await supabase.from('page_content').upsert(
+      { page, section, content: pageContent[key] || '', updated_at: new Date().toISOString() },
+      { onConflict: 'page,section' }
+    )
+    setContentSaving(s => ({ ...s, [key]: false }))
+    if (error) alert('Kaydedilemedi: ' + error.message)
+  }
+
+  // Bir sayfaya ait tüm düzenlenebilir metin alanlarını render eder — page_content
+  // satırı yoksa textarea boş görünür ama placeholder'da sitedeki mevcut (hardcoded)
+  // metin gösterilir, admin neyi değiştirdiğini/değiştirmediğini görebilsin diye.
+  function renderPageTextFields(pageKey, fields) {
+    return fields.map(f => {
+      const key = `${pageKey}:${f.section}`
+      const value = pageContent[key] ?? ''
+      return (
+        <div key={key} style={{ marginBottom: '1.5rem' }}>
+          <span style={{ ...label, display: 'block', marginBottom: '.4rem' }}>{f.label}</span>
+          <textarea
+            value={value}
+            onChange={e => updatePageContentDraft(pageKey, f.section, e.target.value)}
+            placeholder={f.placeholder}
+            style={{ ...inp, minHeight: f.tall ? 90 : 46, resize: 'vertical' }}
+          />
+          <div style={{ display: 'flex', alignItems: 'center', gap: '.6rem', marginTop: '.4rem' }}>
+            <button onClick={() => savePageContentField(pageKey, f.section)} disabled={contentSaving[key]} style={btnGhost}>
+              {contentSaving[key] ? 'Kaydediliyor…' : 'Kaydet'}
+            </button>
+            {!value && <span style={{ fontSize: '.62rem', color: '#bbb' }}>Boş bırakılırsa sitede yukarıdaki varsayılan metin gösterilir.</span>}
+          </div>
+        </div>
+      )
+    })
   }
 
   // ============================================================
   // SİTE AYARLARI — font seçimi
   // ============================================================
   async function loadSiteSettings() {
-    const { data } = await supabase.from('site_settings').select('font_pair').eq('id', 'default').single()
+    const { data } = await supabase.from('site_settings').select('font_pair, artist_bio, artist_photo_url').eq('id', 'default').single()
     if (data?.font_pair) setFontPairState(data.font_pair)
+    setArtistBio(data?.artist_bio || '')
+    setArtistPhotoUrl(data?.artist_photo_url || '')
   }
 
   function previewFontPair(key) { setFontPairState(key); setFont(key) }
 
   async function saveSiteSettings() {
     setFontSaving(true)
-    const { error } = await supabase.from('site_settings').upsert({ id: 'default', font_pair: fontPair, updated_at: new Date().toISOString() })
-    setFontSaving(false)
-    if (error) { setFontMsg('Hata: ' + error.message); return }
-    setFont(fontPair)
-    setFontMsg('Kaydedildi ✓')
-    setTimeout(() => setFontMsg(''), 2000)
+    try {
+      const { error } = await withTimeout(supabase.from('site_settings').upsert({
+        id: 'default', font_pair: fontPair,
+        artist_bio: artistBio, artist_photo_url: artistPhotoUrl,
+        updated_at: new Date().toISOString(),
+      }))
+      setFontSaving(false)
+      if (error) { setFontMsg('Hata: ' + error.message); return }
+      setFont(fontPair)
+      setFontMsg('Kaydedildi ✓')
+      setTimeout(() => setFontMsg(''), 2000)
+    } catch (err) {
+      setFontSaving(false)
+      setFontMsg('Hata: ' + err.message)
+    }
+  }
+
+  async function uploadArtistPhoto(file) {
+    const url = await uploadToStorage(file)
+    if (url) setArtistPhotoUrl(url)
   }
 
   // ============================================================
@@ -375,9 +699,72 @@ function Admin() {
     setOrderSessionIds(new Set((orderRows || []).map(o => o.session_id)))
   }
 
-  const inp = { width: '100%', padding: '.6rem .8rem', border: '1px solid #ddd', fontSize: '.85rem', fontFamily: 'inherit', outline: 'none', boxSizing: 'border-box' }
+  // ============================================================
+  // İSTATİSTİKLER
+  // ============================================================
+  async function loadPageViews() {
+    const since = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString()
+    const { data } = await supabase.from('page_views').select('*').gte('created_at', since).order('created_at', { ascending: false })
+    setPageViews(data || [])
+  }
+
+  // ============================================================
+  // FOTOĞRAF BASKI FİYATLARI
+  // ============================================================
+  async function loadPhotoPrices() {
+    const { data } = await supabase.from('photo_print_prices').select('*')
+    const map = {}
+    ;(data || []).forEach(row => { map[`${row.size}:${row.finish}`] = row.price })
+    setPhotoPrices(map)
+  }
+
+  function updatePhotoPrice(size, finish, value) {
+    setPhotoPrices(p => ({ ...p, [`${size}:${finish}`]: value }))
+  }
+
+  async function savePhotoPrices() {
+    setPhotoPriceSaving(true)
+    const rows = []
+    PHOTO_SIZES.forEach(size => PHOTO_FINISHES.forEach(finish => {
+      rows.push({ size, finish, price: Number(photoPrices[`${size}:${finish}`]) || 0 })
+    }))
+    try {
+      const { error } = await withTimeout(supabase.from('photo_print_prices').upsert(rows, { onConflict: 'size,finish' }))
+      setPhotoPriceSaving(false)
+      setPhotoPriceMsg(error ? 'Hata: ' + error.message : 'Kaydedildi ✓')
+    } catch (err) {
+      setPhotoPriceSaving(false)
+      setPhotoPriceMsg('Hata: ' + err.message)
+    }
+    setTimeout(() => setPhotoPriceMsg(''), 2000)
+  }
+
+  // ============================================================
+  // FOTOĞRAF SİPARİŞLERİ
+  // ============================================================
+  async function loadPhotoOrders() {
+    const [{ data: orders }, { data: items }] = await Promise.all([
+      supabase.from('photo_print_orders').select('*').order('created_at', { ascending: false }),
+      supabase.from('photo_print_order_items').select('*'),
+    ])
+    const byOrder = {}
+    ;(items || []).forEach(row => { (byOrder[row.order_id] ||= []).push(row) })
+    setPhotoOrders(orders || [])
+    setPhotoOrderItems(byOrder)
+  }
+
+  async function updatePhotoOrderStatus(id, status) {
+    const { error } = await supabase.from('photo_print_orders').update({ status }).eq('id', id)
+    if (error) { alert('Durum güncellenemedi: ' + error.message); return }
+    setPhotoOrders(rows => rows.map(o => o.id === id ? { ...o, status } : o))
+  }
+
+  const inp ={ width: '100%', padding: '.6rem .8rem', border: '1px solid #ddd', fontSize: '.85rem', fontFamily: 'inherit', outline: 'none', boxSizing: 'border-box' }
   const label = { fontSize: '.62rem', letterSpacing: '.12em', textTransform: 'uppercase', color: '#888', marginBottom: '.3rem', display: 'block' }
-  const sectionHeading = { fontFamily: "'Archivo Black', sans-serif", fontSize: '1.8rem', fontWeight: 300, margin: 0 }
+  // Archivo Black Google Font'ta tek ağırlık (400) olarak yükleniyor — 300 istemek
+  // font takas anında (FOUT) yedek fontla eşleşmediği için başlıkların kesik/yarım
+  // görünmesine sebep oluyordu.
+  const sectionHeading = { fontFamily: "'Archivo Black', sans-serif", fontSize: '1.8rem', fontWeight: 400, margin: 0 }
   const listItem = (active) => ({
     padding: '.8rem 1rem', cursor: 'pointer', borderBottom: '1px solid #f5f5f5',
     background: active ? '#f9f6f1' : 'white',
@@ -390,14 +777,57 @@ function Admin() {
   const STATUS_LABELS = { yeni: 'Yeni', hazirlaniyor: 'Hazırlanıyor', kargoda: 'Kargoda', teslim: 'Teslim Edildi', iptal: 'İptal' }
 
   const TAB_LABELS = {
-    eserler: 'Eserler',
+    eserler: 'İşler',
     siparisler: `Siparişler ${orders.length > 0 ? `(${orders.length})` : ''}`,
     cerceve: 'Çerçeve',
-    kagitlar: 'Kağıtlar',
-    gorseller: 'Görseller',
+    kagitlar: 'Fine Art Baskı',
+    gorseller: 'Ana Sayfa',
     site: 'Site Ayarları',
     kullanicilar: 'Kullanıcılar',
     sepetler: 'Sepet Etkinliği',
+    istatistikler: 'İstatistikler',
+    fotofiyat: 'Fotoğraf Baskı',
+    fotosiparis: `Foto Baskı Siparişleri ${photoOrders.length > 0 ? `(${photoOrders.length})` : ''}`,
+  }
+
+  // Sol panel, sitenin kendi nav sırasını takip edecek şekilde gruplanmış:
+  // Ana Sayfa (Görseller) → Fotoğraf Baskı → Fine Art (Kağıtlar) → Çerçeve → İşler (Eserler).
+  const TAB_GROUPS = [
+    {
+      heading: 'Sayfa İçerikleri',
+      tabs: ['gorseller', 'fotofiyat', 'kagitlar', 'cerceve', 'eserler', 'site'],
+    },
+    {
+      heading: 'Siparişler',
+      tabs: ['siparisler', 'fotosiparis'],
+    },
+    {
+      heading: 'Ziyaretçiler & Kullanıcılar',
+      tabs: ['kullanicilar', 'sepetler', 'istatistikler'],
+    },
+  ]
+
+  const now = Date.now()
+  const views7d = pageViews.filter(v => now - new Date(v.created_at).getTime() <= 7 * 24 * 60 * 60 * 1000)
+  const uniqueSessions30d = new Set(pageViews.map(v => v.session_id))
+  const uniqueSessions7d = new Set(views7d.map(v => v.session_id))
+
+  const pathCounts = {}
+  pageViews.forEach(v => { pathCounts[v.path] = (pathCounts[v.path] || 0) + 1 })
+  const topPaths = Object.entries(pathCounts).sort((a, b) => b[1] - a[1]).slice(0, 10)
+
+  const sessionSpans = {}
+  pageViews.forEach(v => {
+    const t = new Date(v.created_at).getTime()
+    const s = sessionSpans[v.session_id]
+    if (!s) sessionSpans[v.session_id] = { min: t, max: t }
+    else { s.min = Math.min(s.min, t); s.max = Math.max(s.max, t) }
+  })
+  const durationsSec = Object.values(sessionSpans).map(s => (s.max - s.min) / 1000)
+  const avgDurationSec = durationsSec.length ? durationsSec.reduce((a, b) => a + b, 0) / durationsSec.length : 0
+  const formatDuration = sec => {
+    if (sec < 60) return `${Math.round(sec)} sn`
+    return `${Math.floor(sec / 60)} dk ${Math.round(sec % 60)} sn`
   }
 
   return (
@@ -407,16 +837,24 @@ function Admin() {
 
       {/* Sol panel */}
       <div style={{ width: 280, borderRight: '1px solid #eee', display: 'flex', flexDirection: 'column', flexShrink: 0 }}>
-        <div style={{ display: 'flex', flexWrap: 'wrap', borderBottom: '1px solid #eee' }}>
-          {Object.keys(TAB_LABELS).map(t => (
-            <button key={t} onClick={() => setTab(t)} style={{
-              flex: '1 1 33%', minWidth: 90, padding: '.6rem .3rem', background: 'none', border: 'none',
-              borderBottom: tab === t ? '2px solid #9a7a4a' : '2px solid transparent',
-              fontSize: '.62rem', letterSpacing: '.1em', textTransform: 'uppercase',
-              cursor: 'pointer', color: tab === t ? '#9a7a4a' : '#aaa', fontWeight: tab === t ? 600 : 400
-            }}>
-              {TAB_LABELS[t]}
-            </button>
+        <div style={{ borderBottom: '1px solid #eee', overflowY: 'auto', flexShrink: 0, maxHeight: '48vh' }}>
+          {TAB_GROUPS.map((group, gi) => (
+            <div key={group.heading} style={{ borderTop: gi > 0 ? '1px solid #f2f2f2' : 'none', padding: '.4rem 0' }}>
+              <div style={{ padding: '.5rem 1rem .3rem', fontSize: '.6rem', letterSpacing: '.12em', textTransform: 'uppercase', color: '#bbb', fontWeight: 600 }}>
+                {group.heading}
+              </div>
+              {group.tabs.map(t => (
+                <button key={t} onClick={() => setTab(t)} style={{
+                  display: 'block', width: '100%', textAlign: 'left', padding: '.5rem 1rem',
+                  background: tab === t ? '#f9f6f1' : 'none', border: 'none',
+                  borderLeft: tab === t ? '3px solid #9a7a4a' : '3px solid transparent',
+                  fontSize: '.72rem', letterSpacing: '.02em',
+                  cursor: 'pointer', color: tab === t ? '#9a7a4a' : '#555', fontWeight: tab === t ? 600 : 400
+                }}>
+                  {TAB_LABELS[t]}
+                </button>
+              ))}
+            </div>
           ))}
         </div>
 
@@ -489,12 +927,15 @@ function Admin() {
           </>
         )}
 
-        {(tab === 'gorseller' || tab === 'site' || tab === 'kullanicilar' || tab === 'sepetler') && (
+        {(tab === 'gorseller' || tab === 'site' || tab === 'kullanicilar' || tab === 'sepetler' || tab === 'istatistikler' || tab === 'fotofiyat' || tab === 'fotosiparis') && (
           <div style={{ padding: '1.5rem 1rem', fontSize: '.78rem', color: '#aaa', lineHeight: 1.6 }}>
-            {tab === 'gorseller' && 'Çerçeve ve Fine Art Baskı sayfalarındaki tüm görseller sağda listeleniyor. Değiştirmek istediğin alana tıkla.'}
+            {tab === 'gorseller' && 'Ana sayfada (/) kullanılan görseller sağda listeleniyor. Değiştirmek istediğin alana tıkla.'}
             {tab === 'site' && 'Sitenin tamamında kullanılan font çiftini buradan değiştirebilirsin.'}
             {tab === 'kullanicilar' && 'Siteye kayıt olan tüm kullanıcılar burada listeleniyor.'}
             {tab === 'sepetler' && 'Sepete eklenen ürünler burada listeleniyor. "Sipariş oldu" işaretli olmayanlar, sepete ekleyip almayanlardır.'}
+            {tab === 'istatistikler' && 'Son 30 günlük ziyaretçi özeti. Admin panelinin kendi gezinmesi bu sayıma dahil değil.'}
+            {tab === 'fotofiyat' && 'Fotoğraf Baskı sayfasının fiyat matrisi ve görselleri sağda. Değiştirip Kaydet\'e bas.'}
+            {tab === 'fotosiparis' && 'Fotoğraf Baskı sayfasından gelen siparişler ve içindeki fotoğraf/boy/yüzey satırları.'}
           </div>
         )}
       </div>
@@ -520,7 +961,7 @@ function Admin() {
                     <strong>Kargo takip no:</strong> {o.tracking_number}
                   </div>
                 )}
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1.5rem' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: '1rem', marginBottom: '1.5rem' }}>
                   {[['Ad Soyad', o.name], ['E-posta', o.email || '—'], ['Telefon', o.phone], ['Adres', o.address]].map(([k, v]) => (
                     <div key={k}>
                       <div style={{ fontSize: '.6rem', letterSpacing: '.12em', textTransform: 'uppercase', color: '#aaa', marginBottom: '.3rem' }}>{k}</div>
@@ -600,7 +1041,40 @@ function Admin() {
                   onChange={e => e.target.files[0] && uploadImage(e.target.files[0])} />
               </div>
 
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1rem' }}>
+              <div style={{ marginBottom: '1.5rem' }}>
+                <span style={label}>Ek Görseller (Galeri)</span>
+                {!selected ? (
+                  <p style={{ fontSize: '.72rem', color: '#aaa', marginTop: '.4rem' }}>
+                    Önce eseri kaydet, sonra galeri görsellerini ekleyebilirsin.
+                  </p>
+                ) : (
+                  <>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '.7rem', marginTop: '.6rem' }}>
+                      {artworkImages.map(img => (
+                        <div key={img.id} style={{ position: 'relative', width: 90, height: 90 }}>
+                          <img src={img.image_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', border: '1px solid #eee' }} />
+                          <button
+                            onClick={() => deleteArtworkImage(img.id)}
+                            style={{ position: 'absolute', top: -6, right: -6, background: '#cc4444', color: '#fff', border: 'none', borderRadius: '50%', width: 20, height: 20, cursor: 'pointer', fontSize: '.72rem', lineHeight: 1 }}
+                          >×</button>
+                        </div>
+                      ))}
+                      <div
+                        onClick={() => galleryFileRef.current.click()}
+                        style={{
+                          width: 90, height: 90, border: '2px dashed #ddd', cursor: 'pointer',
+                          display: 'flex', alignItems: 'center', justifyContent: 'center',
+                          color: '#bbb', fontSize: '1.4rem', background: '#fafafa',
+                        }}
+                      >+</div>
+                    </div>
+                    <input ref={galleryFileRef} type="file" accept="image/*" style={{ display: 'none' }}
+                      onChange={e => e.target.files[0] && uploadArtworkImage(e.target.files[0])} />
+                  </>
+                )}
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: '1rem', marginBottom: '1rem' }}>
                 <div><span style={label}>Başlık</span><input style={inp} value={form.title} onChange={e => handleTitle(e.target.value)} placeholder="Kırağı Botanik I" /></div>
                 <div><span style={label}>Slug (otomatik)</span><input style={{ ...inp, color: '#aaa' }} value={form.slug} onChange={e => setForm(f => ({ ...f, slug: e.target.value }))} /></div>
               </div>
@@ -647,6 +1121,40 @@ function Admin() {
                 </button>
                 {msg && <span style={{ fontSize: '.8rem', color: msg.includes('Hata') ? '#cc4444' : '#4a9a6a' }}>{msg}</span>}
               </div>
+
+              <div style={{ marginTop: '3rem', borderTop: '1px solid #eee', paddingTop: '2rem' }}>
+                <h2 style={{ ...sectionHeading, fontSize: '1.4rem', marginBottom: '.5rem' }}>Sanatçı Hakkında</h2>
+                <p style={{ fontSize: '.72rem', color: '#aaa', margin: '0 0 1rem' }}>
+                  Ürün detay sayfalarının altında gösterilir.
+                </p>
+                <div style={{ display: 'grid', gridTemplateColumns: '160px 1fr', gap: '1.2rem', alignItems: 'start' }}>
+                  <div
+                    onClick={() => document.getElementById('artist-photo-input').click()}
+                    style={{
+                      width: 160, aspectRatio: '1 / 1', border: '2px dashed #ddd', cursor: 'pointer',
+                      background: '#fafafa', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      overflow: 'hidden',
+                    }}
+                  >
+                    {artistPhotoUrl
+                      ? <img src={artistPhotoUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                      : <span style={{ color: '#bbb', fontSize: '.7rem', textAlign: 'center', padding: '.5rem' }}>Fotoğraf seç</span>}
+                  </div>
+                  <input id="artist-photo-input" type="file" accept="image/*" style={{ display: 'none' }}
+                    onChange={e => e.target.files[0] && uploadArtistPhoto(e.target.files[0])} />
+                  <textarea
+                    value={artistBio} onChange={e => setArtistBio(e.target.value)}
+                    style={{ ...inp, minHeight: 140, resize: 'vertical' }}
+                    placeholder="Sanatçı biyografisi…"
+                  />
+                </div>
+                <div style={{ display: 'flex', gap: '1rem', alignItems: 'center', marginTop: '1rem' }}>
+                  <button onClick={saveSiteSettings} disabled={fontSaving} style={btnPrimary}>
+                    {fontSaving ? 'Kaydediliyor…' : 'Kaydet'}
+                  </button>
+                  {fontMsg && <span style={{ fontSize: '.8rem', color: fontMsg.includes('Hata') ? '#cc4444' : '#4a9a6a' }}>{fontMsg}</span>}
+                </div>
+              </div>
             </>
           )}
 
@@ -657,7 +1165,7 @@ function Admin() {
                 {selectedFrame && <button onClick={deleteFrame} style={btnDanger}>Sil</button>}
               </div>
 
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1rem' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: '1rem', marginBottom: '1rem' }}>
                 <div><span style={label}>Boy (ör. 21×30 cm)</span><input style={inp} value={frameForm.size} onChange={e => setFrameForm(f => ({ ...f, size: e.target.value }))} /></div>
                 <div><span style={label}>Açıklama</span><input style={inp} value={frameForm.note} onChange={e => setFrameForm(f => ({ ...f, note: e.target.value }))} placeholder="A4 formatı, en çok tercih edilen boyut" /></div>
               </div>
@@ -681,6 +1189,50 @@ function Admin() {
               <button onClick={saveFrame} disabled={frameSaving} style={btnPrimary}>
                 {frameSaving ? 'Kaydediliyor…' : selectedFrame ? 'Güncelle' : 'Kaydet'}
               </button>
+
+              <div style={{ marginTop: '3rem', borderTop: '1px solid #eee', paddingTop: '2rem' }}>
+                <h2 style={{ ...sectionHeading, fontSize: '1.4rem', marginBottom: '1.5rem' }}>Çerçeve Sayfası Görselleri</h2>
+                {renderPageImageSlots('cerceve')}
+              </div>
+
+              <div style={{ marginTop: '3rem', borderTop: '1px solid #eee', paddingTop: '2rem' }}>
+                <h2 style={{ ...sectionHeading, fontSize: '1.4rem', marginBottom: '1.5rem' }}>Çerçeve Sayfası Metinleri</h2>
+                {renderPageTextFields('cerceve', PAGE_TEXT_FIELDS.cerceve)}
+              </div>
+
+              <div style={{ marginTop: '3rem', borderTop: '1px solid #eee', paddingTop: '2rem' }}>
+                <h2 style={{ ...sectionHeading, fontSize: '1.4rem', marginBottom: '1.5rem' }}>
+                  Gelen Çerçeve Siparişleri {frameOrders.length > 0 ? `(${frameOrders.length})` : ''}
+                </h2>
+                {frameOrders.length === 0 ? (
+                  <p style={{ color: '#aaa', fontSize: '.85rem' }}>Henüz çerçeve siparişi yok.</p>
+                ) : (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                    {frameOrders.map(o => (
+                      <div key={o.id} style={{ border: '1px solid #eee', padding: '1rem', display: 'flex', gap: '1rem', alignItems: 'center', flexWrap: 'wrap' }}>
+                        <img src={o.image_url} alt="" style={{ width: 70, height: 70, objectFit: 'cover', flexShrink: 0 }} />
+                        <div style={{ flex: 1, minWidth: 200 }}>
+                          <div style={{ fontSize: '.85rem', fontWeight: 600 }}>{o.customer_name}</div>
+                          <div style={{ fontSize: '.72rem', color: '#888' }}>{o.email} · {o.phone}</div>
+                          <div style={{ fontSize: '.72rem', color: '#888' }}>{o.address}</div>
+                          <div style={{ fontSize: '.72rem', color: '#666', marginTop: '.2rem' }}>{o.size} · {o.color} · {o.quantity} adet</div>
+                          <div style={{ fontSize: '.68rem', color: '#aaa', marginTop: '.2rem' }}>{new Date(o.created_at).toLocaleString('tr-TR')}</div>
+                        </div>
+                        <div style={{ textAlign: 'right' }}>
+                          <div style={{ fontSize: '1rem', fontWeight: 600, marginBottom: '.4rem' }}>₺{Number(o.total_price).toLocaleString('tr-TR')}</div>
+                          <select
+                            value={o.status}
+                            onChange={e => updateFrameOrderStatus(o.id, e.target.value)}
+                            style={{ ...inp, width: 'auto', fontSize: '.72rem', padding: '.35rem .6rem' }}
+                          >
+                            {Object.entries(STATUS_LABELS).map(([k, lbl]) => <option key={k} value={k}>{lbl}</option>)}
+                          </select>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
             </>
           )}
 
@@ -691,7 +1243,7 @@ function Admin() {
                 {selectedPaper && <button onClick={deletePaper} style={btnDanger}>Sil</button>}
               </div>
 
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1rem' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: '1rem', marginBottom: '1rem' }}>
                 <div style={{ gridColumn: '1 / -1' }}><span style={label}>Kağıt Adı</span><input style={inp} value={paperForm.name} onChange={e => setPaperForm(f => ({ ...f, name: e.target.value }))} placeholder="Bamboo" /></div>
                 <div><span style={label}>Yüzey (Mat / Parlak)</span><input style={inp} value={paperForm.surface} onChange={e => setPaperForm(f => ({ ...f, surface: e.target.value }))} /></div>
                 <div><span style={label}>Gramaj</span><input style={inp} value={paperForm.gsm} onChange={e => setPaperForm(f => ({ ...f, gsm: e.target.value }))} placeholder="290gsm" /></div>
@@ -705,7 +1257,22 @@ function Admin() {
                 <textarea style={{ ...inp, minHeight: 80, resize: 'vertical' }} value={paperForm.description} onChange={e => setPaperForm(f => ({ ...f, description: e.target.value }))} />
               </div>
 
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '2rem' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: '1rem', marginBottom: '1.5rem' }}>
+                <div>
+                  <span style={label}>Kağıt Rehberi Bölümü</span>
+                  <select style={inp} value={paperForm.guide_category || ''} onChange={e => setPaperForm(f => ({ ...f, guide_category: e.target.value || null }))}>
+                    <option value="">Rehber'de gösterme</option>
+                    <option value="sanat-baskisi">Sanat Baskısı Kağıtlar</option>
+                    <option value="giclee">Giclee Kağıtlar</option>
+                  </select>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '.6rem', paddingTop: '1.4rem' }}>
+                  <input type="checkbox" id="featured-in-guide" checked={paperForm.featured_in_guide} onChange={e => setPaperForm(f => ({ ...f, featured_in_guide: e.target.checked }))} />
+                  <label htmlFor="featured-in-guide" style={{ fontSize: '.82rem', cursor: 'pointer' }}>"En Popüler" galerisinde göster</label>
+                </div>
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: '1rem', marginBottom: '2rem' }}>
                 {[['texture_photo_url', 'Kağıt Dokusu Yakın Çekim'], ['preview_photo_url', 'Baskı Önizlemesi']].map(([field, lbl]) => (
                   <div key={field}>
                     <span style={label}>{lbl}</span>
@@ -726,66 +1293,32 @@ function Admin() {
               <button onClick={savePaper} disabled={paperSaving} style={btnPrimary}>
                 {paperSaving ? 'Kaydediliyor…' : selectedPaper ? 'Güncelle' : 'Kaydet'}
               </button>
+
+              <div style={{ marginTop: '3rem', borderTop: '1px solid #eee', paddingTop: '2rem' }}>
+                <h2 style={{ ...sectionHeading, fontSize: '1.4rem', marginBottom: '1.5rem' }}>Fine Art Baskı Sayfası Görselleri</h2>
+                {renderPageImageSlots('fine-art-baski')}
+              </div>
+
+              <div style={{ marginTop: '3rem', borderTop: '1px solid #eee', paddingTop: '2rem' }}>
+                <h2 style={{ ...sectionHeading, fontSize: '1.4rem', marginBottom: '1.5rem' }}>Fine Art Baskı Sayfası Metinleri</h2>
+                {renderPageTextFields('fine-art-baski', PAGE_TEXT_FIELDS['fine-art-baski'])}
+              </div>
             </>
           )}
 
           {tab === 'gorseller' && (
             <>
-              <h2 style={{ ...sectionHeading, marginBottom: '2rem' }}>Görseller</h2>
-              {IMAGE_SLOTS.map(slot => {
-                const key = `${slot.page}:${slot.section}`
-                const rows = pageImages[key] || []
-                const singleImage = !slot.multiple && rows[0]
-                return (
-                  <div key={key} style={{ marginBottom: '2.5rem', borderBottom: '1px solid #eee', paddingBottom: '2rem' }}>
-                    <span style={{ ...label, display: 'block', marginBottom: '.8rem' }}>{slot.label}</span>
+              <h2 style={{ ...sectionHeading, marginBottom: '.5rem' }}>Ana Sayfa Görselleri</h2>
+              <p style={{ fontSize: '.78rem', color: '#aaa', marginBottom: '2rem' }}>
+                Çerçeve, Fine Art Baskı ve Fotoğraf Baskı sayfalarının kendi görselleri artık
+                kendi sekmelerinde — bu sekme yalnızca ana sayfada (/) kullanılan görselleri yönetir.
+              </p>
+              {renderPageImageSlots('gallery')}
 
-                    <div
-                      onClick={() => triggerSlotUpload(slot)}
-                      onDragOver={e => e.preventDefault()}
-                      onDrop={e => { e.preventDefault(); uploadForSlot(e.dataTransfer.files[0], slot) }}
-                      style={{
-                        border: '2px dashed #ddd', padding: '1.5rem', textAlign: 'center',
-                        cursor: 'pointer', background: '#fafafa',
-                        minHeight: 160, display: 'flex', alignItems: 'center', justifyContent: 'center'
-                      }}
-                    >
-                      {singleImage ? (
-                        <div style={{ position: 'relative', width: '100%', maxWidth: 360, aspectRatio: slot.aspect, overflow: 'hidden' }}>
-                          <img src={rows[0].image_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
-                          <button
-                            onClick={e => { e.stopPropagation(); deletePageImage(rows[0].id) }}
-                            style={{ position: 'absolute', top: 6, right: 6, background: '#cc4444', color: '#fff', border: 'none', borderRadius: '50%', width: 22, height: 22, cursor: 'pointer', fontSize: '.8rem', lineHeight: 1 }}
-                          >×</button>
-                        </div>
-                      ) : (
-                        <span style={{ color: '#bbb', fontSize: '.85rem' }}>
-                          {slot.multiple
-                            ? 'Görsel eklemek için sürükle & bırak veya tıkla'
-                            : 'Henüz görsel yok, sitede eski hazır görsel gösteriliyor — sürükle & bırak veya tıkla'}
-                        </span>
-                      )}
-                    </div>
-                    <p style={{ fontSize: '.66rem', color: '#bbb', marginTop: '.4rem' }}>
-                      Önizleme, sitede gerçekte nasıl kırpılacağını (oran: {slot.aspect}) gösteriyor.
-                    </p>
-
-                    {slot.multiple && rows.length > 0 && (
-                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '.8rem', marginTop: '.8rem' }}>
-                        {rows.map(row => (
-                          <div key={row.id} style={{ position: 'relative', width: 130, aspectRatio: slot.aspect, overflow: 'hidden' }}>
-                            <img src={row.image_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block', border: '1px solid #eee' }} />
-                            <button
-                              onClick={() => deletePageImage(row.id)}
-                              style={{ position: 'absolute', top: 4, right: 4, background: '#cc4444', color: '#fff', border: 'none', borderRadius: '50%', width: 20, height: 20, cursor: 'pointer', fontSize: '.72rem', lineHeight: 1 }}
-                            >×</button>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                )
-              })}
+              <div style={{ marginTop: '1rem', borderTop: '1px solid #eee', paddingTop: '2rem' }}>
+                <h2 style={{ ...sectionHeading, fontSize: '1.4rem', marginBottom: '1.5rem' }}>Ana Sayfa Metinleri</h2>
+                {renderPageTextFields('gallery', PAGE_TEXT_FIELDS.gallery)}
+              </div>
             </>
           )}
 
@@ -810,6 +1343,7 @@ function Admin() {
                   ))}
                 </div>
               </div>
+
               <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
                 <button onClick={saveSiteSettings} disabled={fontSaving} style={btnPrimary}>
                   {fontSaving ? 'Kaydediliyor…' : 'Kaydet'}
@@ -817,8 +1351,9 @@ function Admin() {
                 {fontMsg && <span style={{ fontSize: '.8rem', color: fontMsg.includes('Hata') ? '#cc4444' : '#4a9a6a' }}>{fontMsg}</span>}
               </div>
               <p style={{ fontSize: '.72rem', color: '#aaa', marginTop: '1rem', lineHeight: 1.6 }}>
-                Not: şu an bu seçim sitenin geneline (yazı tipi) ve Çerçeve / Fine Art Baskı sayfalarına uygulanıyor.
-                Diğer sayfaları da aynı sisteme bağlamamız gerekiyor — sırada o var.
+                Not: font seçimi sitenin geneline (yazı tipi) ve Çerçeve / Fine Art Baskı sayfalarına uygulanıyor.
+                Diğer sayfaları da aynı sisteme bağlamamız gerekiyor — sırada o var. Sanatçı Hakkında
+                editörü İşler sekmesine taşındı.
               </p>
             </>
           )}
@@ -895,6 +1430,152 @@ function Admin() {
                 Not: bu takip {new Date().toLocaleDateString('tr-TR')} tarihinden itibaren başladı — geçmişe dönük veri yok.
                 Aynı kişi bir ürünü birden fazla kez sepete eklerse (miktar artırma dahil) her tıklama ayrı bir satır olarak görünür.
               </p>
+            </>
+          )}
+
+          {tab === 'istatistikler' && (
+            <>
+              <h2 style={{ ...sectionHeading, marginBottom: '2rem' }}>İstatistikler</h2>
+
+              {pageViews.length === 0 ? (
+                <p style={{ color: '#aaa', fontSize: '.85rem' }}>
+                  Henüz veri yok. Ziyaretçiler siteyi gezdikçe burada birikmeye başlayacak.
+                </p>
+              ) : (
+                <>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '1rem', marginBottom: '2.5rem' }}>
+                    {[
+                      ['Son 7 Gün Ziyaret', views7d.length],
+                      ['Son 30 Gün Ziyaret', pageViews.length],
+                      ['Tekil Ziyaretçi (7g)', uniqueSessions7d.size],
+                      ['Tekil Ziyaretçi (30g)', uniqueSessions30d.size],
+                      ['Ort. Oturum Süresi', formatDuration(avgDurationSec)],
+                    ].map(([lbl, val]) => (
+                      <div key={lbl} style={{ border: '1px solid #eee', padding: '1rem' }}>
+                        <div style={{ fontSize: '.6rem', letterSpacing: '.12em', textTransform: 'uppercase', color: '#aaa', marginBottom: '.5rem' }}>{lbl}</div>
+                        <div style={{ fontSize: '1.5rem', fontWeight: 600 }}>{val}</div>
+                      </div>
+                    ))}
+                  </div>
+
+                  <h3 style={{ fontSize: '.68rem', letterSpacing: '.12em', textTransform: 'uppercase', color: '#888', marginBottom: '1rem' }}>
+                    En Çok Görüntülenen Sayfalar (son 30 gün)
+                  </h3>
+                  <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '.82rem' }}>
+                    <thead>
+                      <tr style={{ borderBottom: '2px solid #eee' }}>
+                        <th style={{ textAlign: 'left', padding: '.6rem' }}>Sayfa</th>
+                        <th style={{ textAlign: 'left', padding: '.6rem' }}>Görüntülenme</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {topPaths.map(([path, count]) => (
+                        <tr key={path} style={{ borderBottom: '1px solid #f5f5f5' }}>
+                          <td style={{ padding: '.6rem' }}>{path}</td>
+                          <td style={{ padding: '.6rem', color: '#888' }}>{count}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+
+                  <p style={{ fontSize: '.72rem', color: '#aaa', marginTop: '1.5rem', lineHeight: 1.6 }}>
+                    Oturum süresi kabaca hesaplanır: aynı ziyaretçinin ilk ve son sayfa görüntülemesi arasındaki fark.
+                    Tek sayfa görüp ayrılanlarda süre 0 görünür, bu ortalamayı aşağı çeker — kesin değil, fikir vermesi içindir.
+                  </p>
+                </>
+              )}
+            </>
+          )}
+
+          {tab === 'fotofiyat' && (
+            <>
+              <h2 style={{ ...sectionHeading, marginBottom: '2rem' }}>Fotoğraf Baskı Fiyatları</h2>
+              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '.85rem', marginBottom: '1.5rem' }}>
+                <thead>
+                  <tr style={{ borderBottom: '2px solid #eee' }}>
+                    <th style={{ textAlign: 'left', padding: '.6rem' }}>Boy</th>
+                    {PHOTO_FINISHES.map(f => (
+                      <th key={f} style={{ textAlign: 'left', padding: '.6rem' }}>{f} (₺)</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {PHOTO_SIZES.map(size => (
+                    <tr key={size} style={{ borderBottom: '1px solid #f5f5f5' }}>
+                      <td style={{ padding: '.6rem', fontWeight: 500 }}>{size}</td>
+                      {PHOTO_FINISHES.map(finish => (
+                        <td key={finish} style={{ padding: '.6rem' }}>
+                          <input
+                            type="number" min="0" style={{ ...inp, width: 110 }}
+                            value={photoPrices[`${size}:${finish}`] ?? ''}
+                            onChange={e => updatePhotoPrice(size, finish, e.target.value)}
+                          />
+                        </td>
+                      ))}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+              <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+                <button onClick={savePhotoPrices} disabled={photoPriceSaving} style={btnPrimary}>
+                  {photoPriceSaving ? 'Kaydediliyor…' : 'Kaydet'}
+                </button>
+                {photoPriceMsg && <span style={{ fontSize: '.8rem', color: photoPriceMsg.includes('Hata') ? '#cc4444' : '#4a9a6a' }}>{photoPriceMsg}</span>}
+              </div>
+
+              <div style={{ marginTop: '3rem', borderTop: '1px solid #eee', paddingTop: '2rem' }}>
+                <h2 style={{ ...sectionHeading, fontSize: '1.4rem', marginBottom: '1.5rem' }}>Fotoğraf Baskı Sayfası Görselleri</h2>
+                {renderPageImageSlots('fotograf-baski')}
+              </div>
+
+              <div style={{ marginTop: '3rem', borderTop: '1px solid #eee', paddingTop: '2rem' }}>
+                <h2 style={{ ...sectionHeading, fontSize: '1.4rem', marginBottom: '1.5rem' }}>Fotoğraf Baskı Sayfası Metinleri</h2>
+                {renderPageTextFields('fotograf-baski', PAGE_TEXT_FIELDS['fotograf-baski'])}
+              </div>
+            </>
+          )}
+
+          {tab === 'fotosiparis' && (
+            <>
+              <h2 style={{ ...sectionHeading, marginBottom: '2rem' }}>Fotoğraf Baskı Siparişleri</h2>
+              {photoOrders.length === 0 ? (
+                <p style={{ color: '#aaa', fontSize: '.85rem' }}>Henüz fotoğraf baskı siparişi yok.</p>
+              ) : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+                  {photoOrders.map(o => (
+                    <div key={o.id} style={{ border: '1px solid #eee', padding: '1.2rem' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '.8rem', marginBottom: '.8rem' }}>
+                        <div>
+                          <div style={{ fontSize: '.85rem', fontWeight: 600 }}>{o.customer_name}</div>
+                          <div style={{ fontSize: '.72rem', color: '#888' }}>{o.email} · {o.phone}</div>
+                          <div style={{ fontSize: '.72rem', color: '#888' }}>{o.address}</div>
+                          {o.note && <div style={{ fontSize: '.72rem', color: '#888', marginTop: '.3rem' }}>Not: {o.note}</div>}
+                          <div style={{ fontSize: '.68rem', color: '#aaa', marginTop: '.3rem' }}>{new Date(o.created_at).toLocaleString('tr-TR')}</div>
+                        </div>
+                        <div style={{ textAlign: 'right' }}>
+                          <div style={{ fontSize: '1.1rem', fontWeight: 600, marginBottom: '.4rem' }}>₺{Number(o.total_price).toLocaleString('tr-TR')}</div>
+                          <select
+                            value={o.status}
+                            onChange={e => updatePhotoOrderStatus(o.id, e.target.value)}
+                            style={{ ...inp, width: 'auto', fontSize: '.72rem', padding: '.35rem .6rem' }}
+                          >
+                            {Object.entries(STATUS_LABELS).map(([k, lbl]) => <option key={k} value={k}>{lbl}</option>)}
+                          </select>
+                        </div>
+                      </div>
+                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '.8rem' }}>
+                        {(photoOrderItems[o.id] || []).map(item => (
+                          <div key={item.id} style={{ width: 110, fontSize: '.7rem', color: '#666' }}>
+                            <img src={item.image_url} alt="" style={{ width: '100%', aspectRatio: '4 / 3', objectFit: 'cover', display: 'block', border: '1px solid #eee', marginBottom: '.3rem' }} />
+                            {item.size} · {item.finish}<br />
+                            {item.quantity} adet · ₺{Number(item.unit_price).toLocaleString('tr-TR')}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </>
           )}
 

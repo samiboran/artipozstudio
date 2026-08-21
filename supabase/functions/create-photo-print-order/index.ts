@@ -41,70 +41,75 @@ serve(async (req) => {
     const { items, name, email, phone, address, session_id } = body
 
     // --- Girdi doğrulama ---
-    if (!Array.isArray(items) || items.length === 0) return badRequest('Sepet boş.')
+    if (!Array.isArray(items) || items.length === 0) return badRequest('Listeniz boş.')
     if (!name?.trim()) return badRequest('Ad soyad gerekli.')
     if (!email?.trim() || !email.includes('@')) return badRequest('Geçerli bir e-posta adresi giriniz.')
     if (!phone?.trim() || phone.trim().length < 10) return badRequest('Geçerli bir telefon numarası giriniz.')
     if (!address?.trim() || address.trim().length < 10) return badRequest('Geçerli bir adres giriniz.')
 
-    // items sadece {artwork_id, size, qty} içermeli — price KABUL EDİLMİYOR.
+    // items sadece {image_url, size, finish, quantity, note} içermeli — unit_price KABUL EDİLMİYOR.
     for (const item of items) {
-      if (!item.artwork_id || !item.size) return badRequest('Sepet verisi eksik.')
+      if (!item.image_url || !item.size || !item.finish) return badRequest('Liste verisi eksik.')
     }
 
     const supabase = createClient(SUPABASE_URL, SERVICE_ROLE_KEY)
 
-    // --- Fiyatları sunucuda, tek doğruluk kaynağından (artworks tablosu) doğrula ---
-    const artworkIds = [...new Set(items.map((i: any) => i.artwork_id))]
-    const { data: artworks, error: fetchError } = await supabase
-      .from('artworks')
-      .select('id, title, sizes')
-      .in('id', artworkIds)
+    // --- Fiyatları sunucuda, tek doğruluk kaynağından (photo_print_prices) doğrula ---
+    const { data: priceRows, error: priceError } = await supabase
+      .from('photo_print_prices')
+      .select('size, finish, price')
 
-    if (fetchError) return new Response(JSON.stringify({ error: 'Ürünler doğrulanamadı: ' + fetchError.message }), { status: 500, headers: JSON_HEADERS })
+    if (priceError) return new Response(JSON.stringify({ error: 'Fiyatlar doğrulanamadı: ' + priceError.message }), { status: 500, headers: JSON_HEADERS })
 
-    const artworkMap = new Map((artworks || []).map((a: any) => [a.id, a]))
+    const priceMap = new Map((priceRows || []).map((p: any) => [`${p.size}:${p.finish}`, p.price]))
 
     let total = 0
     const validatedItems: any[] = []
 
     for (const item of items) {
-      const artwork = artworkMap.get(item.artwork_id)
-      if (!artwork) return badRequest(`Ürün bulunamadı: ${item.artwork_id}`)
+      const unitPrice = priceMap.get(`${item.size}:${item.finish}`)
+      if (unitPrice === undefined) return badRequest(`Geçersiz boy/yüzey kombinasyonu: ${item.size} / ${item.finish}`)
 
-      const sizeInfo = artwork.sizes?.find((s: any) => s.label === item.size)
-      if (!sizeInfo) return badRequest(`Geçersiz boyut: ${item.size}`)
-
-      // qty'yi de makul bir aralığa sıkıştır (1-50) — client'tan gelen her sayıya güvenme.
-      const qty = Math.max(1, Math.min(50, Math.floor(Number(item.qty)) || 1))
-      const lineTotal = sizeInfo.price * qty
+      // quantity'yi makul bir aralığa sıkıştır (1-100) — client'tan gelen her sayıya güvenme.
+      const quantity = Math.max(1, Math.min(100, Math.floor(Number(item.quantity)) || 1))
+      const lineTotal = unitPrice * quantity
       total += lineTotal
 
       validatedItems.push({
-        artwork_id: artwork.id,
-        title: artwork.title,
+        image_url: String(item.image_url),
         size: item.size,
-        price: sizeInfo.price, // client'ın gönderdiği price tamamen yok sayıldı
-        qty,
+        finish: item.finish,
+        quantity,
+        unit_price: unitPrice,
+        note: item.note ? String(item.note).slice(0, 300) : null,
       })
     }
 
     // --- Siparişi kaydet (service role ile — RLS'i bypass eder, client bunu yapamaz) ---
-    const { data: order, error: insertError } = await supabase
-      .from('orders')
-      .insert({ name, email, phone, address, items: validatedItems, total, session_id: session_id || null })
+    const { data: order, error: orderError } = await supabase
+      .from('photo_print_orders')
+      .insert({
+        customer_name: name, email, phone, address,
+        total_price: total, session_id: session_id || null,
+      })
       .select()
       .single()
 
-    if (insertError) return new Response(JSON.stringify({ error: 'Sipariş kaydedilemedi: ' + insertError.message }), { status: 500, headers: JSON_HEADERS })
+    if (orderError) return new Response(JSON.stringify({ error: 'Sipariş kaydedilemedi: ' + orderError.message }), { status: 500, headers: JSON_HEADERS })
+
+    const { error: itemsError } = await supabase
+      .from('photo_print_order_items')
+      .insert(validatedItems.map((i) => ({ ...i, order_id: order.id })))
+
+    if (itemsError) return new Response(JSON.stringify({ error: 'Sipariş satırları kaydedilemedi: ' + itemsError.message }), { status: 500, headers: JSON_HEADERS })
 
     // --- Mail (her kullanıcı alanı esc() ile sanitize edilmiş hâlde) ---
     if (RESEND_API_KEY) {
       const itemsHtml = validatedItems.map((i) =>
         `<tr>
-          <td style="padding:8px;border-bottom:1px solid #eee">${esc(i.title)} — ${esc(i.size)}</td>
-          <td style="padding:8px;border-bottom:1px solid #eee;text-align:right">x${i.qty}</td>
-          <td style="padding:8px;border-bottom:1px solid #eee;text-align:right">₺${(i.price * i.qty).toLocaleString('tr-TR')}</td>
+          <td style="padding:8px;border-bottom:1px solid #eee">${esc(i.size)} — ${esc(i.finish)}${i.note ? ' · ' + esc(i.note) : ''}</td>
+          <td style="padding:8px;border-bottom:1px solid #eee;text-align:right">x${i.quantity}</td>
+          <td style="padding:8px;border-bottom:1px solid #eee;text-align:right">₺${(i.unit_price * i.quantity).toLocaleString('tr-TR')}</td>
         </tr>`
       ).join('')
 
@@ -112,15 +117,15 @@ serve(async (req) => {
         fetch('https://api.resend.com/emails', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${RESEND_API_KEY}` },
-          body: JSON.stringify({ from: 'Fossil Garden <onboarding@resend.dev>', to, subject, html }),
+          body: JSON.stringify({ from: 'Artı Poz <onboarding@resend.dev>', to, subject, html }),
         }).catch((e) => console.error('Mail gönderilemedi:', e))
 
       if (email) {
-        await sendMail(email, 'Siparişiniz Alındı — Fossil Garden', `
+        await sendMail(email, 'Fotoğraf Baskı Siparişiniz Alındı — Artı Poz', `
           <div style="font-family:Georgia,serif;max-width:600px;margin:0 auto;color:#111">
-            <h1 style="font-size:24px;font-weight:300;border-bottom:1px solid #eee;padding-bottom:16px">Fossil Garden</h1>
+            <h1 style="font-size:24px;font-weight:300;border-bottom:1px solid #eee;padding-bottom:16px">Artı Poz</h1>
             <p>Merhaba ${esc(name)},</p>
-            <p>Siparişiniz alındı. En kısa sürede sizinle iletişime geçeceğiz.</p>
+            <p>Fotoğraf baskı siparişiniz alındı. En kısa sürede sizinle iletişime geçeceğiz.</p>
             <table style="width:100%;border-collapse:collapse;margin:24px 0">
               ${itemsHtml}
               <tr>
@@ -131,14 +136,14 @@ serve(async (req) => {
             <p style="color:#666;font-size:14px">Teslimat adresi: ${esc(address)}</p>
             <p style="color:#666;font-size:14px">Telefon: ${esc(phone)}</p>
             <hr style="border:none;border-top:1px solid #eee;margin:24px 0">
-            <p style="color:#999;font-size:12px">Fossil Garden · Fine Art Print Studio · İstanbul</p>
+            <p style="color:#999;font-size:12px">Artı Poz · Fine Art Print Studio · İstanbul</p>
           </div>
         `)
       }
 
-      await sendMail(ADMIN_EMAIL || '', `🛍 Yeni Sipariş: ${name} — ₺${total}`, `
+      await sendMail(ADMIN_EMAIL || '', `📷 Yeni Fotoğraf Baskı Siparişi: ${name} — ₺${total}`, `
         <div style="font-family:Georgia,serif;max-width:600px;margin:0 auto;color:#111">
-          <h2 style="font-weight:300">Yeni Sipariş Geldi</h2>
+          <h2 style="font-weight:300">Yeni Fotoğraf Baskı Siparişi</h2>
           <p><strong>Ad:</strong> ${esc(name)}</p>
           <p><strong>E-posta:</strong> ${esc(email) || '—'}</p>
           <p><strong>Telefon:</strong> ${esc(phone)}</p>

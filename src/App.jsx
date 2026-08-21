@@ -6,6 +6,7 @@ import CartSidebar from './components/CartSidebar'
 import { useCart } from './hooks/useCart'
 import { supabase } from './lib/supabase'
 import { applySiteFont } from './lib/siteFonts'
+import { getSessionId } from './lib/session'
 import Gallery from './pages/Gallery'
 import Isler from './pages/Isler'
 import ProductDetail from './pages/ProductDetail'
@@ -19,6 +20,7 @@ import Legal from './pages/Legal'
 import FineArtBaski from './pages/FineArtBaski'
 import Cerceve from './pages/Cerceve'
 import FotografBaski from './pages/FotografBaski'
+import KagitRehberi from './pages/KagitRehberi'
 import WhatsAppButton from './components/WhatsAppButton'
 
 // React Router sayfa değiştirince scroll pozisyonunu KORUYOR, sıfırlamıyor —
@@ -28,6 +30,21 @@ function ScrollToTop() {
   const { pathname } = useLocation()
   useEffect(() => {
     window.scrollTo(0, 0)
+  }, [pathname])
+  return null
+}
+
+// Basit ziyaretçi istatistiği için her rota değişiminde page_views'e bir satır ekler.
+// Admin panelinin kendi gezinmesi istatistikleri kirletmesin diye /admin hariç tutulur.
+function PageViewTracker() {
+  const { pathname } = useLocation()
+  useEffect(() => {
+    if (pathname.startsWith('/admin')) return
+    supabase.from('page_views').insert({
+      session_id: getSessionId(),
+      path: pathname,
+      referrer: document.referrer || null,
+    })
   }, [pathname])
   return null
 }
@@ -43,6 +60,7 @@ function App() {
   return (
     <>
       <ScrollToTop />
+      <PageViewTracker />
       <Navbar cartCount={count} onCartClick={() => setCartOpen(true)} />
       <Routes>
         <Route path="/" element={<Gallery />} />
@@ -57,6 +75,7 @@ function App() {
         <Route path="/fine-art-baski" element={<FineArtBaski />} />
         <Route path="/cerceve" element={<Cerceve />} />
         <Route path="/fotograf-baski" element={<FotografBaski />} />
+        <Route path="/kagit-rehberi" element={<KagitRehberi />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
       <CartSidebar open={cartOpen} onClose={() => setCartOpen(false)} />

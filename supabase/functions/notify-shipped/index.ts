@@ -7,7 +7,7 @@ const SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
 const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY')
 
 // TEK yer: siteni buradan yönet. Wildcard (*) KULLANMA.
-const ALLOWED_ORIGIN = 'https://samiboran.github.io'
+const ALLOWED_ORIGIN = 'https://artipozstudio.com'
 
 const CORS_HEADERS = {
   'Access-Control-Allow-Origin': ALLOWED_ORIGIN,

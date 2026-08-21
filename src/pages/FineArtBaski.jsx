@@ -38,6 +38,7 @@ const placeholderBox = (label) => (
 
 export default function FineArtBaski() {
   const [papers, setPapers] = useState(FALLBACK_PAPERS)
+  const [content, setContent] = useState({})
   const [images, setImages] = useState({
     hero: heroImgDefault,
     'kagit-secenekleri': kagitSecenekleriImgDefault,
@@ -52,30 +53,41 @@ export default function FineArtBaski() {
   useEffect(() => { loadData() }, [])
 
   async function loadData() {
-    const [{ data: paperRows }, { data: imgs }] = await Promise.all([
-      supabase.from('papers').select('*').order('sort_order'),
-      supabase.from('page_images').select('*').eq('page', 'fine-art-baski').order('sort_order'),
-    ])
+    try {
+      const [{ data: paperRows }, { data: imgs }, { data: contentRows }] = await Promise.all([
+        supabase.from('papers').select('*').order('sort_order'),
+        supabase.from('page_images').select('*').eq('page', 'fine-art-baski').order('sort_order'),
+        supabase.from('page_content').select('section, content').eq('page', 'fine-art-baski'),
+      ])
 
-    if (paperRows && paperRows.length) {
-      setPapers(paperRows.map((p, i) => ({
-        no: String(i + 1).padStart(2, '0'),
-        name: p.name, surface: p.surface, gsm: p.gsm, texture: p.texture,
-        color: p.color, composition: p.composition, description: p.description,
-        texturePhoto: p.texture_photo_url, previewPhoto: p.preview_photo_url,
-      })))
-    }
+      if (contentRows && contentRows.length) {
+        const map = {}
+        contentRows.forEach(row => { if (row.content) map[row.section] = row.content })
+        setContent(map)
+      }
 
-    if (imgs && imgs.length) {
-      setImages(prev => {
-        const next = { ...prev }
-        const bySection = {}
-        imgs.forEach(row => { (bySection[row.section] ||= []).push(row) })
-        if (bySection.hero?.[0]) next.hero = bySection.hero[0].image_url
-        if (bySection['kagit-secenekleri']?.[0]) next['kagit-secenekleri'] = bySection['kagit-secenekleri'][0].image_url
-        if (bySection.ornekler?.length) next.ornekler = bySection.ornekler
-        return next
-      })
+      if (paperRows && paperRows.length) {
+        setPapers(paperRows.map((p, i) => ({
+          no: String(i + 1).padStart(2, '0'),
+          name: p.name, surface: p.surface, gsm: p.gsm, texture: p.texture,
+          color: p.color, composition: p.composition, description: p.description,
+          texturePhoto: p.texture_photo_url, previewPhoto: p.preview_photo_url,
+        })))
+      }
+
+      if (imgs && imgs.length) {
+        setImages(prev => {
+          const next = { ...prev }
+          const bySection = {}
+          imgs.forEach(row => { (bySection[row.section] ||= []).push(row) })
+          if (bySection.hero?.[0]) next.hero = bySection.hero[0].image_url
+          if (bySection['kagit-secenekleri']?.[0]) next['kagit-secenekleri'] = bySection['kagit-secenekleri'][0].image_url
+          if (bySection.ornekler?.length) next.ornekler = bySection.ornekler
+          return next
+        })
+      }
+    } catch (err) {
+      console.error('Fine Art Baskı sayfası verisi yüklenemedi:', err)
     }
   }
 
@@ -99,14 +111,13 @@ export default function FineArtBaski() {
         }} />
         <div style={{ position: 'relative', zIndex: 1, padding: '0 1.5rem' }}>
           <p style={{ ...eyebrow, color: '#fff', opacity: .85, marginBottom: '1rem' }}>
-            Meltems Arı
+            Meltem Sarı
           </p>
           <h1 style={{ ...heading, fontSize: 'clamp(2rem, 5vw, 3.2rem)', color: '#fff', margin: '0 0 1rem' }}>
             Fine Art Baskı
           </h1>
           <p style={{ ...body, color: 'rgba(255,255,255,.85)', maxWidth: 520, margin: '0 auto' }}>
-            Müze ve galeri standartlarında, arşiv kalitesinde baskı.
-            Sanatınızı nesiller boyu yaşatın.
+            {content['hero-aciklama'] || 'Müze ve galeri standartlarında, arşiv kalitesinde baskı. Sanatınızı nesiller boyu yaşatın.'}
           </p>
         </div>
       </section>
@@ -216,7 +227,7 @@ export default function FineArtBaski() {
                   </p>
                 </div>
               </div>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1.2rem' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: '1rem', marginBottom: '1.2rem' }}>
                 <div style={{ aspectRatio: '4/3' }}>
                   {p.texturePhoto
                     ? <img src={p.texturePhoto} alt={`${p.name} kağıt dokusu`} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />

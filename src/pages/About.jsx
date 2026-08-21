@@ -1,8 +1,8 @@
 function About() {
   const wrap = { maxWidth: 720, margin: '0 auto', padding: '3.5rem 2rem 6rem' }
   const h2 = {
-    fontFamily: "'Archivo Black', sans-serif",
-    fontSize: '1.5rem', fontWeight: 400, marginTop: '3rem', marginBottom: '1rem'
+    fontFamily: "'Playfair Display', serif", color: 'var(--blue)',
+    fontSize: '1.5rem', fontWeight: 600, marginTop: '3rem', marginBottom: '1rem'
   }
   const p = { fontSize: '.88rem', lineHeight: 1.9, color: '#333', marginBottom: '1rem' }
 
@@ -10,8 +10,8 @@ function About() {
     <div style={{ paddingTop: '4.2rem' }}>
       <div style={wrap}>
         <h1 style={{
-          fontFamily: "'Archivo Black', sans-serif",
-          fontSize: '2.4rem', fontWeight: 300, marginBottom: '.5rem'
+          fontFamily: "'Playfair Display', serif", color: 'var(--blue)',
+          fontSize: '2.4rem', fontWeight: 600, marginBottom: '.5rem'
         }}>
           Hakkımızda
         </h1>
@@ -25,23 +25,18 @@ function About() {
           titiz bir baskı süreciyle koleksiyonerlerle buluşturuyoruz.
         </p>
         <p style={p}>
-          [BURAYA KENDİ HİKÂYENİ YAZ — 2-3 cümle: neden kurdun, neye inanıyorsun,
-          sanata bakışın. Örn: analog fotoğrafla ilişkin, baskının fiziksel
-          nesne olarak değeri, duvarda yaşayan işler...]
+          Fotoğraf bölümünden mezun oldum ve uzun yıllar müzelerde, çağdaş sanat
+          galerilerinde çalıştım. O süreçte, asıl yapmam gerekenin kendi işimi
+          ve kendi markamı kurmak olduğuna inanmaya başladım. Fotoğrafa ve baskı
+          sürecine duyduğum ilgiyle bu yola çıktım — bugün kendi portföyümden
+          ve sizlerden gelen eserlerle müze kalitesinde baskılar üretiyorum.
         </p>
 
         <h2 style={h2}>Baskı Kalitesi</h2>
         <p style={p}>
-          Tüm baskılarımız Hahnemühle sertifikalı fine art kâğıtlara,
-          arşivsel pigment mürekkeplerle yapılır. Doğru saklama koşullarında
+          Fine art baskılarımız için Hahnemühle ve Awagami kağıtları, arşivsel
+          pigment mürekkeplerle kullanıyoruz. Doğru saklama koşullarında
           solmadan nesiller boyu dayanacak şekilde üretilir.
-        </p>
-
-        <h2 style={h2}>Orijinallik Sertifikası</h2>
-        <p style={p}>
-          Her eser, sanatçı imzalı ve numaralı orijinallik sertifikası ile
-          gönderilir. Sınırlı edisyonlarda edisyon numarası sertifika üzerinde
-          belirtilir.
         </p>
 
         <h2 style={h2}>Güvenli Teslimat</h2>

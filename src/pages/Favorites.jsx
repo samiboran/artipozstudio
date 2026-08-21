@@ -64,7 +64,7 @@ function Favorites() {
               artwork={artwork}
               index={i}
               onClick={() => navigate(`/product/${artwork.slug}`)}
-              onTagClick={tag => navigate(`/?category=${tag}`)}
+              onTagClick={tag => navigate(`/isler?category=${tag}`)}
             />
           ))}
         </div>

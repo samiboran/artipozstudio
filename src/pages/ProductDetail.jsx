@@ -4,6 +4,7 @@ import { fetchArtworkBySlug } from '../lib/artworks'
 import { makeSVG } from '../lib/makeSVG'
 import { useCart } from '../hooks/useCart'
 import { useFavorites } from '../hooks/useFavorites'
+import { supabase } from '../lib/supabase'
 
 function ProductDetail() {
   const { slug } = useParams()
@@ -16,6 +17,8 @@ function ProductDetail() {
   const [loading, setLoading] = useState(true)
   const [activeSize, setActiveSize] = useState(null)
   const [openAcc, setOpenAcc] = useState('desc')
+  const [artistInfo, setArtistInfo] = useState(null)
+  const [activeImage, setActiveImage] = useState(null)
 
   useEffect(() => {
     fetchArtworkBySlug(slug)
@@ -23,10 +26,18 @@ function ProductDetail() {
         setArtwork(data)
         if (data?.sizes?.length) setActiveSize(data.sizes[0].label)
         if (data?.title) document.title = `${data.title} — Artı Poz`
+        setActiveImage(data?.image_url || null)
       })
+      .catch(err => console.error('Eser yüklenemedi:', err))
       .finally(() => setLoading(false))
     return () => { document.title = 'Artı Poz — Fine Art Baskı & Özgün Eserler' }
   }, [slug])
+
+  useEffect(() => {
+    supabase.from('site_settings').select('artist_bio, artist_photo_url').eq('id', 'default').single()
+      .then(({ data }) => { if (data?.artist_bio) setArtistInfo(data) })
+      .catch(err => console.error('Sanatçı bilgisi yüklenemedi:', err))
+  }, [])
 
   if (loading) return (
     <div style={{ paddingTop: '8rem', textAlign: 'center', fontFamily: "'Archivo Black', sans-serif", fontSize: '1.5rem', color: 'var(--muted)', fontStyle: 'italic' }}>
@@ -45,7 +56,7 @@ function ProductDetail() {
     { key: 'desc', label: 'Eser Hakkında', content: artwork.description },
     { key: 'specs', label: 'Teknik Detaylar', content: `${artwork.medium || '—'} · ${artwork.year || '—'}` },
     { key: 'ship', label: 'Kargo & İade', content: 'Yurt içi kargo ücretsiz, 3–5 iş günü. Eserler özel ambalajla gönderilir. 14 gün içinde iade edilebilir.' },
-    { key: 'cert', label: 'Sertifika', content: 'Her eser sanatçı imzalı, numaralı orijinallik sertifikası ile gelir.' },
+    { key: 'cert', label: 'Baskı Kalitesi', content: 'Fine art baskılarımız için Hahnemühle ve Awagami kağıtları, arşivsel pigment mürekkeplerle kullanılır.' },
   ]
 
   return (
@@ -111,8 +122,8 @@ function ProductDetail() {
             )}
 
             {view === 'print' ? (
-              artwork.image_url
-                ? <img src={artwork.image_url} alt={artwork.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+              activeImage
+                ? <img src={activeImage} alt={artwork.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                 : <div dangerouslySetInnerHTML={{ __html: makeSVG(0) }} style={{ width: '100%', height: '100%' }} />
             ) : (
               /* Duvar mockup sahnesi */
@@ -131,8 +142,8 @@ function ProductDetail() {
                 }}>
                   {/* Paspartu */}
                   <div style={{ width: '100%', height: '100%', background: '#fbfaf7', padding: '9%', boxSizing: 'border-box' }}>
-                    {artwork.image_url
-                      ? <img src={artwork.image_url} alt={artwork.title} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+                    {activeImage
+                      ? <img src={activeImage} alt={artwork.title} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
                       : <div dangerouslySetInnerHTML={{ __html: makeSVG(0) }} style={{ width: '100%', height: '100%' }} />
                     }
                   </div>
@@ -140,6 +151,24 @@ function ProductDetail() {
               </div>
             )}
           </div>
+
+          {artwork.artwork_images?.length > 0 && (
+            <div style={{ display: 'flex', gap: '.6rem', marginTop: '.8rem', flexWrap: 'wrap' }}>
+              {[{ id: 'cover', image_url: artwork.image_url }, ...artwork.artwork_images].map(img => (
+                <button
+                  key={img.id}
+                  onClick={() => setActiveImage(img.image_url)}
+                  style={{
+                    width: 56, height: 56, padding: 0, cursor: 'pointer',
+                    border: `2px solid ${activeImage === img.image_url ? 'var(--ink)' : 'transparent'}`,
+                    background: 'none', flexShrink: 0,
+                  }}
+                >
+                  <img src={img.image_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+                </button>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* Sağ — bilgi */}
@@ -242,7 +271,7 @@ setTimeout(() => setAdded(false), 1800)
             <span style={{ fontSize: '1.1rem' }}>🛡</span>
             <div style={{ fontSize: '.64rem', lineHeight: 1.7 }}>
               <strong style={{ display: 'block', fontSize: '.68rem' }}>14 Gün İade Garantisi</strong>
-              Ücretsiz iade · Orijinallik sertifikası · Güvenli ödeme
+              Ücretsiz iade · Arşiv kalitesinde baskı · Güvenli ödeme
             </div>
           </div>
 
@@ -252,7 +281,7 @@ setTimeout(() => setAdded(false), 1800)
               <div style={{ fontSize: '.58rem', letterSpacing: '.18em', textTransform: 'uppercase', color: 'var(--muted)', marginBottom: '.65rem' }}>Etiketler</div>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: '.4rem', marginBottom: '1.4rem' }}>
                 {artwork.tags.map(tag => (
-                  <span key={tag} onClick={() => navigate(`/?category=${tag}`)} style={{
+                  <span key={tag} onClick={() => navigate(`/isler?category=${tag}`)} style={{
                     fontSize: '.6rem', letterSpacing: '.1em', textTransform: 'uppercase',
                     color: 'var(--gold)', padding: '.25rem .65rem',
                     border: '1px solid rgba(18,42,150,.28)', cursor: 'pointer'
@@ -290,6 +319,30 @@ setTimeout(() => setAdded(false), 1800)
 
         </div>
       </div>
+
+      {/* Sanatçı Hakkında */}
+      {artistInfo && (
+        <section style={{
+          maxWidth: 900, margin: '0 auto', padding: '2rem 2rem 5rem',
+          display: 'flex', gap: '2rem', alignItems: 'center', flexWrap: 'wrap',
+          borderTop: '1px solid var(--border)',
+        }}>
+          {artistInfo.artist_photo_url && (
+            <img
+              src={artistInfo.artist_photo_url} alt={artwork.artist}
+              style={{ width: 120, height: 120, borderRadius: '50%', objectFit: 'cover', flexShrink: 0, marginTop: '2rem' }}
+            />
+          )}
+          <div style={{ flex: 1, minWidth: 260, marginTop: '2rem' }}>
+            <div style={{ fontSize: '.58rem', letterSpacing: '.18em', textTransform: 'uppercase', color: 'var(--muted)', marginBottom: '.65rem' }}>
+              Sanatçı Hakkında
+            </div>
+            <p style={{ fontSize: '.85rem', lineHeight: 1.9, color: '#444', margin: 0 }}>
+              {artistInfo.artist_bio}
+            </p>
+          </div>
+        </section>
+      )}
     </div>
   )
 }

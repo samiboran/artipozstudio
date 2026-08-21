@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
+import heroImgDefault from '../assets/fine-art/hero.jpg'
 
 export default function Hero() {
-  const [heroUrl, setHeroUrl] = useState(null)
+  const [heroUrl, setHeroUrl] = useState(heroImgDefault)
 
   useEffect(() => {
     supabase
@@ -14,6 +15,7 @@ export default function Hero() {
       .order('sort_order')
       .limit(1)
       .then(({ data }) => { if (data?.[0]) setHeroUrl(data[0].image_url) })
+      .catch(err => console.error('Hero görseli yüklenemedi:', err))
   }, [])
 
   return (
@@ -22,33 +24,22 @@ export default function Hero() {
       display: 'flex', alignItems: 'center', justifyContent: 'center',
       textAlign: 'center', overflow: 'hidden', background: '#2b2f28',
     }}>
-      {heroUrl ? (
-        <img
-          src={heroUrl}
-          alt="Artı Poz"
-          style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }}
-        />
-      ) : (
-        <div style={{
-          position: 'absolute', inset: 0,
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          color: 'rgba(255,255,255,.35)', fontFamily: "'Archivo', sans-serif",
-          fontSize: '.75rem', letterSpacing: '.1em', textTransform: 'uppercase',
-        }}>
-          Hero görseli — Admin → Görseller'den yükle
-        </div>
-      )}
+      <img
+        src={heroUrl}
+        alt="Artı Poz"
+        style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }}
+      />
 
       <div style={{
         position: 'absolute', inset: 0,
-        background: 'linear-gradient(180deg, rgba(0,0,0,.25), rgba(0,0,0,.4))'
+        background: 'linear-gradient(180deg, rgba(0,0,0,.4), rgba(0,0,0,.6))'
       }} />
 
       <div style={{ position: 'relative', zIndex: 1 }}>
         <h1 style={{
           fontFamily: "'Archivo', sans-serif", fontWeight: 300,
           fontSize: 'clamp(3.5rem, 11vw, 8rem)', letterSpacing: '.14em',
-          textTransform: 'lowercase', color: '#fff', margin: 0,
+          textTransform: 'lowercase', color: 'var(--blue)', margin: 0,
         }}>
           artı poz
         </h1>

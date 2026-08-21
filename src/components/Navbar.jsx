@@ -1,9 +1,10 @@
 import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { useState, useEffect } from 'react'
+import { supabase } from '../lib/supabase'
 
 const SOCIAL_LINKS = [
   {
-    label: 'Instagram', href: 'https://instagram.com/artipoz', icon: (
+    label: 'Instagram', href: 'https://www.instagram.com/artipozstudio/', icon: (
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6">
         <rect x="3" y="3" width="18" height="18" rx="5" />
         <circle cx="12" cy="12" r="4" />
@@ -12,9 +13,9 @@ const SOCIAL_LINKS = [
     )
   },
   {
-    label: 'X', href: 'https://x.com/artipoz', icon: (
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
-        <path d="M18.9 2H22l-7.6 8.7L23 22h-6.9l-5.4-6.9L4.5 22H1.4l8.1-9.3L1 2h7.1l4.9 6.3L18.9 2zm-1.2 18h1.9L7.4 4H5.4l12.3 16z" />
+    label: 'Etsy', href: 'https://www.etsy.com/shop/ArtiPozStudioShop', icon: (
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6">
+        <path d="M6 3h9l-1 4H8v5h5.5l-1 4H8v3.5h6.5L15 21H6z" strokeLinejoin="round" />
       </svg>
     )
   },
@@ -33,19 +34,52 @@ const NAV_LINKS = [
   { label: 'Fotoğraf Baskı', to: '/fotograf-baski' },
   { label: 'Fine Art Baskı', to: '/fine-art-baski' },
   { label: 'Çerçeve', to: '/cerceve' },
-  { label: 'İşler', to: '/isler' }, // TODO: /isler sayfası henüz yok, netleşince eklenecek
+  { label: 'İşler', to: '/isler' },
 ]
 
 function Navbar({ cartCount = 0, onCartClick }) {
   const [search, setSearch] = useState('')
   const [menuOpen, setMenuOpen] = useState(false)
   const [scrolled, setScrolled] = useState(false)
+  const [customerName, setCustomerName] = useState(null)
   const navigate = useNavigate()
   const location = useLocation()
 
   const isHome = location.pathname === '/'
   // Ana sayfada hero'nun üzerinde şeffaf, aşağı inince beyaz; diğer sayfalarda her zaman beyaz.
   const transparent = isHome && !scrolled
+
+  useEffect(() => {
+    async function loadCustomer(session) {
+      if (!session) { setCustomerName(null); return }
+      try {
+        const { data: profile } = await supabase.from('profiles').select('full_name, role').eq('id', session.user.id).single()
+        // Admin hesabı navbar'da müşteri gibi görünmesin — Admin panelinde zaten kendi girişini görüyor.
+        setCustomerName(profile?.role === 'admin' ? null : (profile?.full_name || session.user.email))
+      } catch (err) {
+        console.error('Kullanıcı bilgisi yüklenemedi:', err)
+      }
+    }
+    supabase.auth.getSession().then(({ data: { session } }) => loadCustomer(session))
+    // onAuthStateChange callback'i supabase-js'in kendi cross-tab auth kilidini
+    // (lock:sb-...-auth-token) tutarken çalışıyor. loadCustomer() içeride
+    // `await supabase.from(...)` yaptığı için, callback'in İÇİNDEN senkron
+    // çağrılırsa (await edilmese bile) aynı kilidi tekrar istiyor ve kilit hiç
+    // bırakılmadığı için site genelinde TÜM supabase isteklerini kilitliyordu
+    // (görseller yüklenmiyor, Admin'de "Kaydediliyor…" hiç bitmiyor gibi
+    // görünen sorunların kök nedeni buydu). setTimeout ile callback'in dışına,
+    // kilit serbest kaldıktan sonraki bir tick'e taşıyoruz.
+    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
+      setTimeout(() => loadCustomer(session), 0)
+    })
+    return () => listener.subscription.unsubscribe()
+  }, [])
+
+  async function handleLogout() {
+    await supabase.auth.signOut()
+    setCustomerName(null)
+    navigate('/')
+  }
 
   useEffect(() => {
     if (!isHome) { setScrolled(false); return }
@@ -57,7 +91,7 @@ function Navbar({ cartCount = 0, onCartClick }) {
 
   const handleSearch = (e) => {
     if (e.key === 'Enter' && search.trim()) {
-      navigate(`/?search=${search}`)
+      navigate(`/isler?search=${search}`)
       setMenuOpen(false)
     }
   }
@@ -85,6 +119,15 @@ function Navbar({ cartCount = 0, onCartClick }) {
               </a>
             ))}
           </div>
+
+          <Link to="/kagit-rehberi" style={{
+            background: 'var(--ink)', color: '#fff',
+            fontFamily: "'Archivo', sans-serif", fontSize: '.56rem',
+            letterSpacing: '.12em', textTransform: 'uppercase',
+            padding: '.32rem .6rem', whiteSpace: 'nowrap',
+          }}>
+            Kağıt Rehberi
+          </Link>
 
           {!transparent && (
             <Link to="/" style={{ display: 'flex', flexDirection: 'column', lineHeight: 1 }}>
@@ -155,20 +198,37 @@ function Navbar({ cartCount = 0, onCartClick }) {
 
             <span style={{ width: 1, height: 16, background: 'var(--border)' }} />
 
-            <Link to="/login" style={{
-              fontSize: '.68rem', letterSpacing: '.14em',
-              textTransform: 'uppercase', color: 'var(--muted)'
-            }}>
-              Log in
-            </Link>
+            {customerName ? (
+              <>
+                <span style={{ fontSize: '.72rem', color: 'var(--ink)' }}>
+                  Merhaba, {customerName.split(' ')[0]}
+                </span>
+                <button onClick={handleLogout} style={{
+                  background: 'none', border: 'none', cursor: 'pointer',
+                  fontSize: '.68rem', letterSpacing: '.14em',
+                  textTransform: 'uppercase', color: 'var(--muted)',
+                }}>
+                  Çıkış
+                </button>
+              </>
+            ) : (
+              <>
+                <Link to="/login" style={{
+                  fontSize: '.68rem', letterSpacing: '.14em',
+                  textTransform: 'uppercase', color: 'var(--muted)'
+                }}>
+                  Log in
+                </Link>
 
-            <Link to="/login" style={{
-              fontSize: '.68rem', letterSpacing: '.14em',
-              textTransform: 'uppercase', color: 'var(--bg)',
-              background: 'var(--accent)', padding: '.5rem 1rem'
-            }}>
-              Sign up
-            </Link>
+                <Link to="/kayit" style={{
+                  fontSize: '.68rem', letterSpacing: '.14em',
+                  textTransform: 'uppercase', color: 'var(--bg)',
+                  background: 'var(--accent)', padding: '.5rem 1rem'
+                }}>
+                  Sign up
+                </Link>
+              </>
+            )}
           </div>
         )}
 
@@ -258,29 +318,58 @@ function Navbar({ cartCount = 0, onCartClick }) {
             Sepet ({cartCount})
           </button>
 
-          <Link to="/login" onClick={() => setMenuOpen(false)} style={{
-            fontSize: '.8rem', letterSpacing: '.16em',
-            textTransform: 'uppercase', color: 'var(--ink)',
-            borderBottom: '1px solid var(--border)', paddingBottom: '.8rem'
-          }}>
-            Log in
-          </Link>
+          {customerName ? (
+            <>
+              <div style={{
+                fontSize: '.8rem', letterSpacing: '.02em', color: 'var(--ink)',
+                borderBottom: '1px solid var(--border)', paddingBottom: '.8rem'
+              }}>
+                Merhaba, {customerName.split(' ')[0]}
+              </div>
+              <button onClick={() => { handleLogout(); setMenuOpen(false) }} style={{
+                background: 'none', border: 'none', textAlign: 'left', cursor: 'pointer',
+                fontSize: '.8rem', letterSpacing: '.16em',
+                textTransform: 'uppercase', color: 'var(--ink)',
+                borderBottom: '1px solid var(--border)', paddingBottom: '.8rem'
+              }}>
+                Çıkış
+              </button>
+            </>
+          ) : (
+            <>
+              <Link to="/login" onClick={() => setMenuOpen(false)} style={{
+                fontSize: '.8rem', letterSpacing: '.16em',
+                textTransform: 'uppercase', color: 'var(--ink)',
+                borderBottom: '1px solid var(--border)', paddingBottom: '.8rem'
+              }}>
+                Log in
+              </Link>
 
-          <Link to="/login" onClick={() => setMenuOpen(false)} style={{
-            fontSize: '.8rem', letterSpacing: '.16em',
-            textTransform: 'uppercase', color: 'var(--bg)',
-            background: 'var(--accent)', padding: '.7rem 1rem', textAlign: 'center'
-          }}>
-            Sign up
-          </Link>
+              <Link to="/kayit" onClick={() => setMenuOpen(false)} style={{
+                fontSize: '.8rem', letterSpacing: '.16em',
+                textTransform: 'uppercase', color: 'var(--bg)',
+                background: 'var(--accent)', padding: '.7rem 1rem', textAlign: 'center'
+              }}>
+                Sign up
+              </Link>
+            </>
+          )}
 
-          <div style={{ display: 'flex', gap: '1.2rem', marginTop: '.5rem' }}>
+          <div style={{ display: 'flex', gap: '1.2rem', marginTop: '.5rem', alignItems: 'center' }}>
             {SOCIAL_LINKS.map(s => (
               <a key={s.label} href={s.href} target="_blank" rel="noopener noreferrer"
                 aria-label={s.label} style={{ color: 'var(--muted)', display: 'flex' }}>
                 {s.icon}
               </a>
             ))}
+            <Link to="/kagit-rehberi" onClick={() => setMenuOpen(false)} style={{
+              background: 'var(--ink)', color: '#fff',
+              fontFamily: "'Archivo', sans-serif", fontSize: '.56rem',
+              letterSpacing: '.12em', textTransform: 'uppercase',
+              padding: '.32rem .6rem', whiteSpace: 'nowrap',
+            }}>
+              Kağıt Rehberi
+            </Link>
           </div>
         </div>
       )}
