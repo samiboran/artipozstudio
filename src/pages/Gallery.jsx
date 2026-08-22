@@ -289,7 +289,7 @@ function Gallery() {
       <Hero />
 
       {/* Hizmetlerimiz */}
-      <section style={{ maxWidth: 1280, margin: '0 auto', padding: '5rem 2rem' }}>
+      <section style={{ maxWidth: 1500, margin: '0 auto', padding: '5rem 2rem' }}>
         <div style={{
           display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between',
           alignItems: 'flex-end', gap: '2rem', marginBottom: '3rem',
@@ -309,7 +309,7 @@ function Gallery() {
         </div>
 
         <style>{`
-          .hizmetlerimiz-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.8rem; }
+          .hizmetlerimiz-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
           @media (max-width: 860px) {
             .hizmetlerimiz-grid { grid-template-columns: repeat(2, 1fr); }
           }
