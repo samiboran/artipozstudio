@@ -19,6 +19,7 @@ const CERTIFIED_PAPERS = [
   { key: 'sertifikali-kagit-7', name: 'Photo Rag® Pearl', info: '320 gsm · 100% Cotton · Natural White · Pearl Finish' },
   { key: 'sertifikali-kagit-8', name: 'Bamboo', info: '290 gsm · 90% Bamboo Fibres · 10% Cotton · Natural White' },
   { key: 'sertifikali-kagit-9', name: 'Photo Rag® Duo', info: '276 gsm · 100% Cotton · White · Printable on Both Sides' },
+  { key: 'sertifikali-kagit-10', name: 'Photo Rag®', info: '308 gsm · 100% Cotton · White · Matt' },
 ]
 
 const PRINT_PRICES = [
