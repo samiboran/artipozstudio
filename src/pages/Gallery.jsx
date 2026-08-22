@@ -79,27 +79,27 @@ const displayHeading = { fontFamily: "'Playfair Display', serif", fontWeight: 60
 const HIZMETLER = [
   {
     key: 'hizmet-fotograf', to: '/fotograf-baski', title: 'Fotoğraf Baskı', defaultImg: fotografDefault,
-    desc: 'Mat, yarı mat, parlak ve saten yüzey seçenekli fotoğraf kağıtlarına, yüksek çözünürlükte profesyonel dijital fotoğraf baskıları üretiyoruz.',
+    desc: 'Kodak ve profesyonel fotoğraf kağıtları ile mat, parlak veya saten yüzey seçenekleri.',
   },
   {
     key: 'hizmet-fine-art', to: '/fine-art-baski', title: 'Fine Art / Giclée Baskı', defaultImg: fineArtDefault,
-    desc: 'Fine art baskı hizmetimizle, arşivlik pigment mürekkepler ve özel sanat kağıtları kullanarak eserlerinizi yüksek kalite, doğru renk ve uzun ömürle sunuyoruz.',
+    desc: 'Hahnemühle arşiv kağıtları ve pigment mürekkeplerle, müze kalitesinde fine art baskılar.',
   },
   {
     key: 'hizmet-edisyon', to: '/fine-art-baski', title: 'Edisyon & Art Print Üretimi',
-    desc: 'Sanatçılar için sınırlı sayıda edisyon üretimi, numaralandırma, imza ve sertifika desteğiyle özgün baskı süreçlerini yönetiyoruz.',
+    desc: 'Sanatçılar için sınırlı sayıda edisyon, numaralandırma, imza ve sertifika desteği.',
   },
   {
     key: 'hizmet-poster', to: '/fotograf-baski', title: 'Poster & Kartpostal Baskı',
-    desc: 'Poster, kartpostal ve küçük format baskılarınız için yüksek kaliteli, uygun fiyatlı ve hızlı üretim çözümleri sunuyoruz.',
+    desc: 'Poster, kartpostal ve küçük format baskılarınız için yüksek kaliteli çözümler.',
   },
   {
     key: 'hizmet-sergi', to: '/fine-art-baski', title: 'Sergi & Portfolyo Baskıları',
-    desc: 'Sergiler, portfolyolar ve projeleriniz için büyük format baskı ve profesyonel sunum çözümleri sağlıyoruz.',
+    desc: 'Sergiler, portfolyolar ve projeleriniz için büyük format baskı ve sunum çözümleri.',
   },
   {
     key: 'hizmet-cerceve', to: '/cerceve', title: 'Çerçeveleme', defaultImg: cerceveDefault,
-    desc: 'Eserlerinizi tamamlayan estetik ve koruyucu çerçeve çözümlerini, farklı ölçü ve tarz seçenekleriyle sunarak baskılarımızı sergilemeye hazır hale getiriyoruz.',
+    desc: 'Eserlerinizi estetik ve koruyucu çerçeve çözümleriyle tamamlıyoruz. Özel ölçü seçenekleriyle.',
   },
 ]
 
@@ -289,22 +289,36 @@ function Gallery() {
       <Hero />
 
       {/* Hizmetlerimiz */}
-      <section style={{ maxWidth: 1200, margin: '0 auto', padding: '5rem 2rem' }}>
-        <h2 style={{
-          ...displayHeading,
-          fontSize: '2.2rem', margin: '0 0 3rem', textAlign: 'left',
+      <section style={{ maxWidth: 1280, margin: '0 auto', padding: '5rem 2rem' }}>
+        <div style={{
+          display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between',
+          alignItems: 'flex-end', gap: '2rem', marginBottom: '3rem',
         }}>
-          Hizmetlerimiz
-        </h2>
+          <div>
+            <h2 style={{ ...displayHeading, fontSize: '2.2rem', margin: 0 }}>
+              Hizmetlerimiz
+            </h2>
+            <div style={{ width: 46, height: 1, background: 'var(--border)', marginTop: '.9rem' }} />
+          </div>
+          <p style={{
+            fontFamily: "'Archivo', sans-serif", fontSize: '.88rem', lineHeight: 1.7,
+            color: 'var(--muted)', maxWidth: 420, margin: 0,
+          }}>
+            {content['hizmetlerimiz-aciklama'] || 'Sanatçılar, fotoğrafçılar, galeriler ve kurumlar için yüksek kalite, arşiv değeri taşıyan baskı çözümleri sunuyoruz.'}
+          </p>
+        </div>
 
         <style>{`
-          .hizmetlerimiz-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2.5rem; }
+          .hizmetlerimiz-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.8rem; }
           @media (max-width: 860px) {
             .hizmetlerimiz-grid { grid-template-columns: repeat(2, 1fr); }
           }
           @media (max-width: 560px) {
             .hizmetlerimiz-grid { grid-template-columns: 1fr; }
           }
+          .hizmet-card { color: inherit; text-decoration: none; display: block; }
+          .hizmet-card .hizmet-ok { transition: transform .2s ease; display: inline-block; }
+          .hizmet-card:hover .hizmet-ok { transform: translateX(4px); }
         `}</style>
         <div className="hizmetlerimiz-grid">
           {HIZMETLER.map((h, i) => {
@@ -312,41 +326,38 @@ function Gallery() {
             const desc = content[`${h.key}-aciklama`] || h.desc
             const imgSrc = images[h.key] || h.defaultImg
             return (
-            <div key={h.key}>
+            <Link key={h.key} to={h.to} className="hizmet-card">
               {imgSrc ? (
                 <img
                   src={imgSrc}
                   alt={title}
-                  style={{ width: '100%', aspectRatio: '4 / 3', objectFit: 'cover', display: 'block', marginBottom: '1.2rem' }}
+                  style={{ width: '100%', aspectRatio: '4 / 3', objectFit: 'cover', display: 'block' }}
                 />
               ) : (
                 <div style={{
-                  width: '100%', aspectRatio: '4 / 3', background: 'var(--surface)',
+                  width: '100%', aspectRatio: '4 / 3', background: '#e4e2db',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  marginBottom: '1.2rem', fontFamily: "'Archivo', sans-serif", fontSize: '.68rem',
+                  fontFamily: "'Archivo', sans-serif", fontSize: '.68rem',
                   letterSpacing: '.08em', textTransform: 'uppercase', color: 'var(--muted)', textAlign: 'center', padding: '1rem',
                 }}>
                   Görsel — Admin'den yükle
                 </div>
               )}
-              <p style={{ ...eyebrow, fontSize: '.85rem', fontWeight: 700, color: 'var(--ink)', marginBottom: '.5rem' }}>
-                {String(i + 1).padStart(2, '0')} — {title.toUpperCase()}
-              </p>
-              <p style={{
-                fontFamily: "'Archivo', sans-serif", fontSize: '.88rem', lineHeight: 1.7,
-                color: 'var(--muted)', textAlign: 'left', margin: '0 0 1.2rem',
-              }}>
-                {desc}
-              </p>
-              <Link to={h.to} style={{
-                display: 'inline-block', padding: '.6rem 1.3rem',
-                border: '1px solid var(--ink)', color: 'var(--ink)',
-                fontFamily: "'Archivo', sans-serif", fontSize: '.68rem',
-                letterSpacing: '.14em', textTransform: 'uppercase',
-              }}>
-                İncele
-              </Link>
-            </div>
+              <div style={{ background: 'var(--surface)', padding: '1.3rem 1.4rem 1.5rem' }}>
+                <p style={{ fontFamily: "'Playfair Display', serif", fontWeight: 600, fontSize: '1.08rem', color: 'var(--ink)', margin: '0 0 .6rem' }}>
+                  {String(i + 1).padStart(2, '0')} — {title}
+                </p>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', gap: '1rem' }}>
+                  <p style={{
+                    fontFamily: "'Archivo', sans-serif", fontSize: '.78rem', lineHeight: 1.6,
+                    color: 'var(--muted)', margin: 0,
+                  }}>
+                    {desc}
+                  </p>
+                  <span className="hizmet-ok" style={{ fontSize: '1.1rem', color: 'var(--ink)', flexShrink: 0 }}>→</span>
+                </div>
+              </div>
+            </Link>
             )
           })}
         </div>
