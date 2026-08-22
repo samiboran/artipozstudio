@@ -58,6 +58,7 @@ const IMAGE_SLOTS = [
   { page: 'gallery', section: 'sertifikali-kagit-7', label: 'Ana Sayfa — Sertifikalı Kağıt 7: Photo Rag Pearl', multiple: false, aspect: '4 / 5' },
   { page: 'gallery', section: 'sertifikali-kagit-8', label: 'Ana Sayfa — Sertifikalı Kağıt 8: Bamboo', multiple: false, aspect: '4 / 5' },
   { page: 'gallery', section: 'sertifikali-kagit-9', label: 'Ana Sayfa — Sertifikalı Kağıt 9: Photo Rag Duo', multiple: false, aspect: '4 / 5' },
+  { page: 'gallery', section: 'sertifikali-kagit-10', label: 'Ana Sayfa — Sertifikalı Kağıt 10: Photo Rag (308 gsm, Matt Baryta değil)', multiple: false, aspect: '4 / 5' },
   { page: 'gallery', section: 'iletisim-gorsel', label: 'Ana Sayfa — İletişim Üstü Görsel', multiple: false, aspect: '16 / 7' },
   { page: 'cerceve', section: 'hero', label: 'Çerçeve — Hero Görseli', multiple: false, aspect: '21 / 9', defaultImg: cerceveHeroDefault },
   { page: 'cerceve', section: 'renk-secenekleri', label: 'Çerçeve — Renk Seçenekleri', multiple: false, aspect: '4 / 3', defaultImg: cerceveRenkSecenekleriDefault },
