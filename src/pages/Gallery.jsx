@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { Link } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import Hero from '../components/Hero'
@@ -97,6 +97,122 @@ const contactInput = {
   width: '100%', padding: '.65rem .85rem', border: '1px solid var(--border)',
   fontFamily: "'Archivo', sans-serif", fontSize: '.85rem', color: 'var(--ink)',
   outline: 'none', boxSizing: 'border-box', background: '#fff',
+}
+
+// Sertifikalı kağıtlar için kaydırmalı carousel: masaüstünde 5 kart görünür,
+// sağ/sol oklarla bir sonraki/önceki "sayfa"ya geçer, sonuna gelince başa
+// loop eder. Mobilde ise 1 kart + bir sonrakinin bir kısmı görünecek şekilde
+// parmakla kaydırılır (native scroll-snap).
+function PaperCarousel({ papers, images }) {
+  const trackRef = useRef(null)
+
+  const scrollByPage = (dir) => {
+    const el = trackRef.current
+    if (!el) return
+    const atEnd = el.scrollLeft + el.clientWidth >= el.scrollWidth - 4
+    const atStart = el.scrollLeft <= 4
+    if (dir > 0 && atEnd) {
+      el.scrollTo({ left: 0, behavior: 'smooth' })
+    } else if (dir < 0 && atStart) {
+      el.scrollTo({ left: el.scrollWidth, behavior: 'smooth' })
+    } else {
+      el.scrollBy({ left: dir * el.clientWidth, behavior: 'smooth' })
+    }
+  }
+
+  return (
+    <div style={{ position: 'relative' }}>
+      <style>{`
+        .paper-carousel-track { scrollbar-width: none; -ms-overflow-style: none; }
+        .paper-carousel-track::-webkit-scrollbar { display: none; }
+        .paper-carousel-card { flex: 0 0 calc((100% - 4 * 1.2rem) / 5); }
+        @media (max-width: 900px) {
+          .paper-carousel-card { flex: 0 0 calc((100% - 2 * 1.2rem) / 3); }
+        }
+        @media (max-width: 640px) {
+          .paper-carousel-card { flex: 0 0 80%; }
+          .paper-carousel-arrow { display: none; }
+        }
+      `}</style>
+
+      <button
+        className="paper-carousel-arrow"
+        onClick={() => scrollByPage(-1)}
+        aria-label="Önceki kağıtlar"
+        style={{
+          position: 'absolute', left: -6, top: '38%', transform: 'translateY(-50%)',
+          zIndex: 2, background: 'none', border: 'none', cursor: 'pointer',
+          fontSize: '2.4rem', lineHeight: 1, fontFamily: 'Georgia, serif',
+          color: 'rgba(255,255,255,.35)', padding: '.5rem', transition: 'color .15s ease',
+        }}
+        onMouseEnter={e => { e.currentTarget.style.color = '#fff' }}
+        onMouseLeave={e => { e.currentTarget.style.color = 'rgba(255,255,255,.35)' }}
+      >
+        ‹
+      </button>
+
+      <div
+        ref={trackRef}
+        className="paper-carousel-track"
+        style={{
+          display: 'flex', gap: '1.2rem', overflowX: 'auto',
+          scrollSnapType: 'x mandatory', scrollBehavior: 'smooth',
+          padding: '0 .2rem',
+        }}
+      >
+        {papers.map(paper => (
+          <div key={paper.key} className="paper-carousel-card" style={{ scrollSnapAlign: 'start', minWidth: 0 }}>
+            <div style={{ position: 'relative', aspectRatio: '4 / 5', overflow: 'hidden', background: '#1a1a1a', marginBottom: '1rem' }}>
+              {images[paper.key] ? (
+                <img
+                  src={images[paper.key]}
+                  alt={paper.name}
+                  style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+                />
+              ) : (
+                <div style={{
+                  width: '100%', height: '100%', display: 'flex', alignItems: 'center',
+                  justifyContent: 'center', textAlign: 'center', padding: '1rem',
+                  fontFamily: "'Archivo', sans-serif", fontSize: '.68rem', color: 'rgba(255,255,255,.4)',
+                }}>
+                  {`${paper.name} — Admin'den yükle`}
+                </div>
+              )}
+              <span style={{
+                position: 'absolute', top: 10, left: 10, background: '#fff', color: '#111',
+                fontFamily: "'Archivo', sans-serif", fontSize: '.56rem', fontWeight: 600,
+                letterSpacing: '.1em', textTransform: 'uppercase', padding: '.3rem .6rem',
+              }}>
+                Hahnemühle
+              </span>
+            </div>
+            <h3 style={{ fontFamily: "'Playfair Display', serif", fontWeight: 600, color: '#fff', fontSize: '1.02rem', margin: '0 0 .4rem' }}>
+              {paper.name}
+            </h3>
+            <p lang="en" style={{ fontFamily: "'Archivo', sans-serif", fontSize: '.76rem', lineHeight: 1.6, color: 'rgba(255,255,255,.6)', margin: 0 }}>
+              {paper.info}
+            </p>
+          </div>
+        ))}
+      </div>
+
+      <button
+        className="paper-carousel-arrow"
+        onClick={() => scrollByPage(1)}
+        aria-label="Sonraki kağıtlar"
+        style={{
+          position: 'absolute', right: -6, top: '38%', transform: 'translateY(-50%)',
+          zIndex: 2, background: 'none', border: 'none', cursor: 'pointer',
+          fontSize: '2.4rem', lineHeight: 1, fontFamily: 'Georgia, serif',
+          color: 'rgba(255,255,255,.35)', padding: '.5rem', transition: 'color .15s ease',
+        }}
+        onMouseEnter={e => { e.currentTarget.style.color = '#fff' }}
+        onMouseLeave={e => { e.currentTarget.style.color = 'rgba(255,255,255,.35)' }}
+      >
+        ›
+      </button>
+    </div>
+  )
 }
 
 function Gallery() {
@@ -215,47 +331,12 @@ function Gallery() {
           ilk günkü etkisini koruyacak kalıcılık ve premium sunum anlayışıyla üretilir.`}
         </p>
       </section>
-      {/* Kağıt grid'i — referans tasarımdaki gibi koyu zeminde, sayfa
-          genişliğinin dışına taşıp tam ekran genişliğinde (full-bleed). */}
-      <div style={{ width: '100vw', marginLeft: 'calc(50% - 50vw)', background: '#111', padding: '3rem 2rem', marginBottom: '5rem' }}>
-        <div style={{
-          maxWidth: 1400, margin: '0 auto', display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(230px, 1fr))', gap: '1.5rem',
-        }}>
-          {CERTIFIED_PAPERS.map(paper => (
-            <div key={paper.key}>
-              <div style={{ position: 'relative', aspectRatio: '4 / 5', overflow: 'hidden', background: '#1a1a1a', marginBottom: '1rem' }}>
-                {images[paper.key] ? (
-                  <img
-                    src={images[paper.key]}
-                    alt={paper.name}
-                    style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
-                  />
-                ) : (
-                  <div style={{
-                    width: '100%', height: '100%', display: 'flex', alignItems: 'center',
-                    justifyContent: 'center', textAlign: 'center', padding: '1rem',
-                    fontFamily: "'Archivo', sans-serif", fontSize: '.68rem', color: 'rgba(255,255,255,.4)',
-                  }}>
-                    {`${paper.name} — Admin'den yükle`}
-                  </div>
-                )}
-                <span style={{
-                  position: 'absolute', top: 10, left: 10, background: '#fff', color: '#111',
-                  fontFamily: "'Archivo', sans-serif", fontSize: '.56rem', fontWeight: 600,
-                  letterSpacing: '.1em', textTransform: 'uppercase', padding: '.3rem .6rem',
-                }}>
-                  Hahnemühle
-                </span>
-              </div>
-              <h3 style={{ fontFamily: "'Playfair Display', serif", fontWeight: 600, color: '#fff', fontSize: '1.05rem', margin: '0 0 .4rem' }}>
-                {paper.name}
-              </h3>
-              <p lang="en" style={{ fontFamily: "'Archivo', sans-serif", fontSize: '.78rem', lineHeight: 1.6, color: 'rgba(255,255,255,.6)', margin: 0 }}>
-                {paper.info}
-              </p>
-            </div>
-          ))}
+      {/* Kağıt carousel'i — referans tasarımdaki gibi koyu zeminde, sayfa
+          genişliğinin dışına taşıp tam ekran genişliğinde (full-bleed),
+          sağ/sol oklarla kaydırılan ve mobilde parmakla kaydırılabilen şerit. */}
+      <div style={{ width: '100vw', marginLeft: 'calc(50% - 50vw)', background: '#111', padding: '3rem 2.5rem', marginBottom: '5rem' }}>
+        <div style={{ maxWidth: 1400, margin: '0 auto' }}>
+          <PaperCarousel papers={CERTIFIED_PAPERS} images={images} />
         </div>
       </div>
 
