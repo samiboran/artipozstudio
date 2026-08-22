@@ -80,7 +80,10 @@ function ExploreButton({ to, children }) {
 function PaperBlock({ paper, reverse }) {
   const [open, setOpen] = useState(false)
   const img = paper.preview_photo_url || paper.texture_photo_url
-  const badge = GICLEE_BADGES[paper.name.toLowerCase()] || 'Fine Art Kalite'
+  // "Fine Art Kalite" yerine tamamen Türkçe bir varsayılan kullanılıyor —
+  // uppercase transform'lu <span> içinde "Fine"deki İngilizce "i" doküman
+  // lang="tr" olduğu için yanlışlıkla "FİNE" olarak büyüyordu.
+  const badge = GICLEE_BADGES[paper.name.toLowerCase()] || 'Yüksek Kalite'
 
   return (
     <div style={{
@@ -281,7 +284,10 @@ function ExploreButtonLight() {
       fontFamily: "'Archivo', sans-serif", fontSize: '.72rem',
       letterSpacing: '.22em', textTransform: 'uppercase',
     }}>
-      Fine Art Baskı'ya Git
+      {/* Sadece "Fine" İngilizce — lang="en" kapsamı ona özel tutuluyor,
+          yoksa "Git" gibi gerçek Türkçe kelimeler de (GİT değil GIT
+          olarak) yanlış büyürdü. */}
+      <span lang="en">Fine</span> Art Baskı'ya Git
     </Link>
   )
 }

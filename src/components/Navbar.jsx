@@ -29,10 +29,15 @@ const SOCIAL_LINKS = [
   },
 ]
 
+// "Fine Art Baskı" tek İngilizce sözcük ("Fine") içerdiği için doküman
+// lang="tr" olduğunda text-transform:uppercase Türkçe kurala göre "İ"
+// üretip "FİNE ART BASKI" yazıyordu — bu öğe için lang="en" ile bunu
+// engelliyoruz. "Baskı"daki noktasız ı hem Türkçe hem İngilizce
+// kuralda aynı şekilde büyür (I), o yüzden lang="en" burada güvenli.
 const NAV_LINKS = [
   { label: 'Ana Sayfa', to: '/' },
   { label: 'Fotoğraf Baskı', to: '/fotograf-baski' },
-  { label: 'Fine Art Baskı', to: '/fine-art-baski' },
+  { label: 'Fine Art Baskı', to: '/fine-art-baski', lang: 'en' },
   { label: 'Kağıt Rehberi', to: '/kagit-rehberi' },
   { label: 'Çerçeve', to: '/cerceve' },
   { label: 'İşler', to: '/isler' },
@@ -139,6 +144,7 @@ function Navbar({ cartCount = 0, onCartClick }) {
             <Link
               key={item.to}
               to={item.to}
+              lang={item.lang}
               style={{
                 fontFamily: "'Archivo', sans-serif",
                 fontSize: '.68rem', letterSpacing: '.12em',
@@ -264,6 +270,7 @@ function Navbar({ cartCount = 0, onCartClick }) {
             <Link
               key={item.to}
               to={item.to}
+              lang={item.lang}
               onClick={() => setMenuOpen(false)}
               style={{
                 fontSize: '.8rem', letterSpacing: '.16em',

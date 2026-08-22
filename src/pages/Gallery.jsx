@@ -435,7 +435,7 @@ function Gallery() {
                 </select>
               </div>
               <div>
-                <label style={contactLabel}>Fine Art Kağıt Numune Seti</label>
+                <label style={contactLabel}><span lang="en">Fine</span> Art Kağıt Numune Seti</label>
                 <select name="numune" value={contact.numune} onChange={updateContact} style={contactInput}>
                   <option value="">Numune seçin</option>
                   {papers.map(p => <option key={p.name} value={p.name}>{p.name}</option>)}

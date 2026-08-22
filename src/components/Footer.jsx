@@ -72,7 +72,7 @@ function Footer() {
           © {new Date().getFullYear()} Artı Poz. Tüm hakları saklıdır.
         </span>
         <span style={{ fontSize: '.6rem', letterSpacing: '.1em', textTransform: 'uppercase', color: 'var(--muted)' }}>
-          Fine Art Print Studio · İstanbul
+          <span lang="en">Fine Art Print Studio</span> · İstanbul
         </span>
       </div>
 

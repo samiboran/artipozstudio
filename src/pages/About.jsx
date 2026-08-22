@@ -16,7 +16,7 @@ function About() {
           Hakkımızda
         </h1>
         <div style={{ fontSize: '.62rem', letterSpacing: '.2em', textTransform: 'uppercase', color: 'var(--gold)', marginBottom: '2.5rem' }}>
-          Fine Art Print Studio · İstanbul
+          <span lang="en">Fine Art Print Studio</span> · İstanbul
         </div>
 
         <p style={p}>

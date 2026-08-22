@@ -72,6 +72,7 @@ export default function FineArtBaski() {
           name: p.name, surface: p.surface, gsm: p.gsm, texture: p.texture,
           color: p.color, composition: p.composition, description: p.description,
           texturePhoto: p.texture_photo_url, previewPhoto: p.preview_photo_url,
+          featured: p.featured_in_guide,
         })))
       }
 
@@ -196,6 +197,56 @@ export default function FineArtBaski() {
         </div>
       </section>
 
+      {/* Sertifikalı Fine Art Kağıtları — kart grid'i (WhatsApp referans tasarımı) */}
+      <section style={{ background: '#111', padding: '4rem 2rem' }}>
+        <div style={{ maxWidth: 1300, margin: '0 auto' }}>
+          <div style={{ textAlign: 'center', marginBottom: '3rem' }}>
+            <p style={{ ...eyebrow, color: 'rgba(255,255,255,.6)', marginBottom: '.6rem' }}>Koleksiyon</p>
+            <h2 style={{ ...heading, color: '#fff', fontSize: '1.8rem', margin: 0 }}>Sertifikalı Fine Art Kağıtları</h2>
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1.5rem' }}>
+            {papers.map(p => (
+              <div key={p.no}>
+                <div style={{ position: 'relative', aspectRatio: '4 / 5', overflow: 'hidden', marginBottom: '1rem', background: '#1a1a1a' }}>
+                  {(p.previewPhoto || p.texturePhoto)
+                    ? <img
+                        src={p.previewPhoto || p.texturePhoto}
+                        alt={`${p.name} baskı önizlemesi`}
+                        style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+                      />
+                    : (
+                      <div style={{
+                        width: '100%', height: '100%', display: 'flex', alignItems: 'center',
+                        justifyContent: 'center', textAlign: 'center', padding: '1rem',
+                        fontFamily: 'var(--font-body)', fontSize: '.68rem', color: 'rgba(255,255,255,.4)',
+                      }}>
+                        {`${p.name} — Admin'den yükle`}
+                      </div>
+                    )}
+                  {p.featured && (
+                    <span style={{
+                      position: 'absolute', top: 10, left: 10, background: '#fff', color: '#111',
+                      fontFamily: 'var(--font-body)', fontSize: '.58rem', fontWeight: 600,
+                      letterSpacing: '.1em', textTransform: 'uppercase', padding: '.3rem .6rem',
+                    }}>
+                      Popüler
+                    </span>
+                  )}
+                </div>
+                <h3 style={{ ...heading, color: '#fff', fontSize: '1.05rem', margin: '0 0 .4rem' }}>{p.name}</h3>
+                <p style={{
+                  fontFamily: 'var(--font-body)', fontSize: '.8rem', lineHeight: 1.6,
+                  color: 'rgba(255,255,255,.6)', margin: 0,
+                  display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', overflow: 'hidden',
+                }}>
+                  {p.description || [p.gsm, p.surface].filter(Boolean).join(' · ') || 'Kağıt hakkında bilgi yakında eklenecek.'}
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* Kağıt seçenekleri — detaylı kartlar */}
       <section style={{ background: 'var(--surface)', padding: '4rem 2rem' }}>
         <div style={{ maxWidth: 900, margin: '0 auto 3.5rem', textAlign: 'center' }}>
@@ -222,7 +273,11 @@ export default function FineArtBaski() {
                 <span style={{ ...heading, fontSize: '2.2rem', color: 'var(--border)' }}>{p.no}</span>
                 <div>
                   <h3 style={{ ...heading, fontSize: '1.4rem', margin: 0 }}>{p.name}</h3>
-                  <p style={{ ...body, fontSize: '.72rem', letterSpacing: '.05em', textTransform: 'uppercase', margin: '.3rem 0 0' }}>
+                  {/* gsm/kompozisyon/renk hep İngilizce kağıt terminolojisi (Cotton,
+                      Fibre, White vb.) — doküman lang="tr" olduğu için
+                      text-transform:uppercase Türkçe İ kuralını uyguluyor ve
+                      "FİBRE"/"WHİTE" gibi yanlış sonuçlar üretiyordu. */}
+                  <p lang="en" style={{ ...body, fontSize: '.72rem', letterSpacing: '.05em', textTransform: 'uppercase', margin: '.3rem 0 0' }}>
                     {p.gsm} · {p.composition} · {p.color} · {p.surface}
                   </p>
                 </div>
