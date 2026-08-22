@@ -12,7 +12,6 @@ import galleryHeroDefault from '../assets/fine-art/hero.jpg'
 import galleryFotografDefault from '../assets/fine-art/ornek-botanik.jpg'
 import galleryFineArtDefault from '../assets/process/baski-sureci.jpg'
 import galleryCerceveDefault from '../assets/cerceve/ornek-ahsap-cerceve.jpg'
-import gallerySertifikaliKagitDefault from '../assets/fine-art/kagit-secenekleri.jpg'
 import cerceveHeroDefault from '../assets/cerceve/hero.jpg'
 import cerceveRenkSecenekleriDefault from '../assets/cerceve/renk-secenekleri.jpg'
 import cerceveRenkDetayDefault from '../assets/cerceve/renk-secenekleri-detay.jpg'
@@ -50,7 +49,15 @@ const IMAGE_SLOTS = [
   { page: 'gallery', section: 'hizmet-fotograf', label: 'Ana Sayfa — Hizmetlerimiz: Fotoğraf Baskı', multiple: false, aspect: '4 / 3', defaultImg: galleryFotografDefault },
   { page: 'gallery', section: 'hizmet-fine-art', label: 'Ana Sayfa — Hizmetlerimiz: Fine Art Baskı', multiple: false, aspect: '4 / 3', defaultImg: galleryFineArtDefault },
   { page: 'gallery', section: 'hizmet-cerceve', label: 'Ana Sayfa — Hizmetlerimiz: Çerçeveler', multiple: false, aspect: '4 / 3', defaultImg: galleryCerceveDefault },
-  { page: 'gallery', section: 'sertifikali-kagit', label: 'Ana Sayfa — Sertifikalı Fine Art Kağıtları', multiple: false, aspect: '16 / 9', defaultImg: gallerySertifikaliKagitDefault },
+  { page: 'gallery', section: 'sertifikali-kagit-1', label: 'Ana Sayfa — Sertifikalı Kağıt 1: Museum Etching', multiple: false, aspect: '4 / 5' },
+  { page: 'gallery', section: 'sertifikali-kagit-2', label: 'Ana Sayfa — Sertifikalı Kağıt 2: German Etching', multiple: false, aspect: '4 / 5' },
+  { page: 'gallery', section: 'sertifikali-kagit-3', label: 'Ana Sayfa — Sertifikalı Kağıt 3: Photo Rag Ultra Smooth', multiple: false, aspect: '4 / 5' },
+  { page: 'gallery', section: 'sertifikali-kagit-4', label: 'Ana Sayfa — Sertifikalı Kağıt 4: Photo Rag Bright White', multiple: false, aspect: '4 / 5' },
+  { page: 'gallery', section: 'sertifikali-kagit-5', label: 'Ana Sayfa — Sertifikalı Kağıt 5: William Turner', multiple: false, aspect: '4 / 5' },
+  { page: 'gallery', section: 'sertifikali-kagit-6', label: 'Ana Sayfa — Sertifikalı Kağıt 6: Photo Rag Matt Baryta', multiple: false, aspect: '4 / 5' },
+  { page: 'gallery', section: 'sertifikali-kagit-7', label: 'Ana Sayfa — Sertifikalı Kağıt 7: Photo Rag Pearl', multiple: false, aspect: '4 / 5' },
+  { page: 'gallery', section: 'sertifikali-kagit-8', label: 'Ana Sayfa — Sertifikalı Kağıt 8: Bamboo', multiple: false, aspect: '4 / 5' },
+  { page: 'gallery', section: 'sertifikali-kagit-9', label: 'Ana Sayfa — Sertifikalı Kağıt 9: Photo Rag Duo', multiple: false, aspect: '4 / 5' },
   { page: 'gallery', section: 'iletisim-gorsel', label: 'Ana Sayfa — İletişim Üstü Görsel', multiple: false, aspect: '16 / 7' },
   { page: 'cerceve', section: 'hero', label: 'Çerçeve — Hero Görseli', multiple: false, aspect: '21 / 9', defaultImg: cerceveHeroDefault },
   { page: 'cerceve', section: 'renk-secenekleri', label: 'Çerçeve — Renk Seçenekleri', multiple: false, aspect: '4 / 3', defaultImg: cerceveRenkSecenekleriDefault },
