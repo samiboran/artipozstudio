@@ -82,11 +82,23 @@ const HIZMETLER = [
     desc: 'Mat, yarı mat, parlak ve saten yüzey seçenekli fotoğraf kağıtlarına, yüksek çözünürlükte profesyonel dijital fotoğraf baskıları üretiyoruz.',
   },
   {
-    key: 'hizmet-fine-art', to: '/fine-art-baski', title: 'Fine Art Baskı', defaultImg: fineArtDefault,
+    key: 'hizmet-fine-art', to: '/fine-art-baski', title: 'Fine Art / Giclée Baskı', defaultImg: fineArtDefault,
     desc: 'Fine art baskı hizmetimizle, arşivlik pigment mürekkepler ve özel sanat kağıtları kullanarak eserlerinizi yüksek kalite, doğru renk ve uzun ömürle sunuyoruz.',
   },
   {
-    key: 'hizmet-cerceve', to: '/cerceve', title: 'Çerçeveler', defaultImg: cerceveDefault,
+    key: 'hizmet-edisyon', to: '/fine-art-baski', title: 'Edisyon & Art Print Üretimi',
+    desc: 'Sanatçılar için sınırlı sayıda edisyon üretimi, numaralandırma, imza ve sertifika desteğiyle özgün baskı süreçlerini yönetiyoruz.',
+  },
+  {
+    key: 'hizmet-poster', to: '/fotograf-baski', title: 'Poster & Kartpostal Baskı',
+    desc: 'Poster, kartpostal ve küçük format baskılarınız için yüksek kaliteli, uygun fiyatlı ve hızlı üretim çözümleri sunuyoruz.',
+  },
+  {
+    key: 'hizmet-sergi', to: '/fine-art-baski', title: 'Sergi & Portfolyo Baskıları',
+    desc: 'Sergiler, portfolyolar ve projeleriniz için büyük format baskı ve profesyonel sunum çözümleri sağlıyoruz.',
+  },
+  {
+    key: 'hizmet-cerceve', to: '/cerceve', title: 'Çerçeveleme', defaultImg: cerceveDefault,
     desc: 'Eserlerinizi tamamlayan estetik ve koruyucu çerçeve çözümlerini, farklı ölçü ve tarz seçenekleriyle sunarak baskılarımızı sergilemeye hazır hale getiriyoruz.',
   },
 ]
@@ -285,18 +297,41 @@ function Gallery() {
           Hizmetlerimiz
         </h2>
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '2.5rem' }}>
-          {HIZMETLER.map(h => {
+        <style>{`
+          .hizmetlerimiz-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2.5rem; }
+          @media (max-width: 860px) {
+            .hizmetlerimiz-grid { grid-template-columns: repeat(2, 1fr); }
+          }
+          @media (max-width: 560px) {
+            .hizmetlerimiz-grid { grid-template-columns: 1fr; }
+          }
+        `}</style>
+        <div className="hizmetlerimiz-grid">
+          {HIZMETLER.map((h, i) => {
             const title = content[`${h.key}-baslik`] || h.title
             const desc = content[`${h.key}-aciklama`] || h.desc
+            const imgSrc = images[h.key] || h.defaultImg
             return (
             <div key={h.key}>
-              <img
-                src={images[h.key] || h.defaultImg}
-                alt={title}
-                style={{ width: '100%', aspectRatio: '4 / 3', objectFit: 'cover', display: 'block', marginBottom: '1.2rem' }}
-              />
-              <p style={{ ...eyebrow, fontSize: '.85rem', fontWeight: 700, color: 'var(--ink)', marginBottom: '.5rem' }}>{title.toUpperCase()}</p>
+              {imgSrc ? (
+                <img
+                  src={imgSrc}
+                  alt={title}
+                  style={{ width: '100%', aspectRatio: '4 / 3', objectFit: 'cover', display: 'block', marginBottom: '1.2rem' }}
+                />
+              ) : (
+                <div style={{
+                  width: '100%', aspectRatio: '4 / 3', background: 'var(--surface)',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  marginBottom: '1.2rem', fontFamily: "'Archivo', sans-serif", fontSize: '.68rem',
+                  letterSpacing: '.08em', textTransform: 'uppercase', color: 'var(--muted)', textAlign: 'center', padding: '1rem',
+                }}>
+                  Görsel — Admin'den yükle
+                </div>
+              )}
+              <p style={{ ...eyebrow, fontSize: '.85rem', fontWeight: 700, color: 'var(--ink)', marginBottom: '.5rem' }}>
+                {String(i + 1).padStart(2, '0')} — {title.toUpperCase()}
+              </p>
               <p style={{
                 fontFamily: "'Archivo', sans-serif", fontSize: '.88rem', lineHeight: 1.7,
                 color: 'var(--muted)', textAlign: 'left', margin: '0 0 1.2rem',
