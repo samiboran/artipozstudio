@@ -164,6 +164,7 @@ function Admin() {
   const [contentSaving, setContentSaving] = useState({}) // "page:section" -> bool
   const [uploadTarget, setUploadTarget] = useState(null)
   const genericFileRef = useRef()
+  const hoveredSlotRef = useRef(null)
 
   // --- Site Ayarları ---
   const [fontPair, setFontPairState] = useState('archivo')
@@ -537,6 +538,23 @@ function Admin() {
     await uploadForSlot(file, uploadTarget)
   }
 
+  // Görsel yükleme kutusunun üzerine gelip Ctrl+V ile panodan görsel
+  // yapıştırma desteği — dosya seçme diyaloğu açmadan, ekran görüntüsünü
+  // doğrudan yapıştırarak yükleyebilmek için.
+  useEffect(() => {
+    function onPaste(e) {
+      const slot = hoveredSlotRef.current
+      if (!slot) return
+      const item = Array.from(e.clipboardData?.items || []).find(it => it.type.startsWith('image/'))
+      if (!item) return
+      e.preventDefault()
+      const file = item.getAsFile()
+      if (file) uploadForSlot(file, slot)
+    }
+    document.addEventListener('paste', onPaste)
+    return () => document.removeEventListener('paste', onPaste)
+  }, [pageImages])
+
   async function deletePageImage(id) {
     const { error } = await supabase.from('page_images').delete().eq('id', id)
     if (error) { alert('Silinemedi: ' + error.message); return }
@@ -560,9 +578,12 @@ function Admin() {
         <div key={key} style={{ marginBottom: '2.5rem', borderBottom: '1px solid #eee', paddingBottom: '2rem' }}>
           <span style={{ ...label, display: 'block', marginBottom: '.8rem' }}>{slot.label}</span>
           <div
+            className="admin-slot-box"
             onClick={() => triggerSlotUpload(slot)}
             onDragOver={e => e.preventDefault()}
             onDrop={e => { e.preventDefault(); uploadForSlot(e.dataTransfer.files[0], slot) }}
+            onMouseEnter={() => { hoveredSlotRef.current = slot }}
+            onMouseLeave={() => { if (hoveredSlotRef.current === slot) hoveredSlotRef.current = null }}
             style={{
               border: '2px dashed #ddd', padding: singleImage || showingDefault ? '.5rem' : '1.5rem', textAlign: 'center',
               cursor: 'pointer', background: '#fafafa',
@@ -590,8 +611,8 @@ function Admin() {
             ) : (
               <span style={{ color: '#bbb', fontSize: '.85rem' }}>
                 {slot.multiple
-                  ? 'Görsel eklemek için sürükle & bırak veya tıkla'
-                  : 'Henüz görsel yok — sürükle & bırak veya tıkla'}
+                  ? 'Görsel eklemek için sürükle & bırak, tıkla veya üzerine gelip yapıştır (Ctrl+V)'
+                  : 'Henüz görsel yok — sürükle & bırak, tıkla veya üzerine gelip yapıştır (Ctrl+V)'}
               </span>
             )}
           </div>
@@ -870,6 +891,7 @@ function Admin() {
         nav { display: none !important; }
         .admin-mobile-toggle { display: none; }
         .admin-sidebar-backdrop { display: none; }
+        .admin-slot-box:hover { border-color: #999 !important; background: #f2f2f2 !important; }
         @media (max-width: 860px) {
           .admin-sidebar {
             position: fixed; top: 4.2rem; left: 0; bottom: 0; z-index: 101;
