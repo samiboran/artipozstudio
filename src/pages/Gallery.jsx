@@ -5,7 +5,21 @@ import Hero from '../components/Hero'
 import fotografDefault from '../assets/fine-art/ornek-botanik.jpg'
 import fineArtDefault from '../assets/process/baski-sureci.jpg'
 import cerceveDefault from '../assets/cerceve/ornek-ahsap-cerceve.jpg'
-import kagitlarDefault from '../assets/fine-art/kagit-secenekleri.jpg'
+
+// "Sertifikalı Fine Art Kağıtları" grid'i — Sami'nin mailde gönderdiği 9
+// kağıdın adı ve kısa bilgisi, mail/WhatsApp referansındaki sırayla (1→9).
+// Görseller Admin > Ana Sayfa'dan yüklenecek (section: sertifikali-kagit-1..9).
+const CERTIFIED_PAPERS = [
+  { key: 'sertifikali-kagit-1', name: 'Museum Etching', info: '350 gsm · 100% Cotton · Natural White' },
+  { key: 'sertifikali-kagit-2', name: 'German Etching®', info: '310 gsm · 100% α-Cellulose · White · Genuine Mould-Made Paper' },
+  { key: 'sertifikali-kagit-3', name: 'Photo Rag® Ultra Smooth', info: '305 gsm · 100% Cotton · White' },
+  { key: 'sertifikali-kagit-4', name: 'Photo Rag® Bright White', info: '310 gsm · 100% Cotton · Bright White' },
+  { key: 'sertifikali-kagit-5', name: 'William Turner', info: '190 / 310 gsm · 100% Cotton · White · Genuine Mould-Made Paper' },
+  { key: 'sertifikali-kagit-6', name: 'Photo Rag® Matt Baryta', info: '308 gsm · 100% Cotton · White' },
+  { key: 'sertifikali-kagit-7', name: 'Photo Rag® Pearl', info: '320 gsm · 100% Cotton · Natural White · Pearl Finish' },
+  { key: 'sertifikali-kagit-8', name: 'Bamboo', info: '290 gsm · 90% Bamboo Fibres · 10% Cotton · Natural White' },
+  { key: 'sertifikali-kagit-9', name: 'Photo Rag® Duo', info: '276 gsm · 100% Cotton · White · Printable on Both Sides' },
+]
 
 const PRINT_PRICES = [
   { size: 'A4', mm: '210×297', price: 1240 },
@@ -201,14 +215,48 @@ function Gallery() {
           ilk günkü etkisini koruyacak kalıcılık ve premium sunum anlayışıyla üretilir.`}
         </p>
       </section>
-      {/* Fotoğraf, referans görseldeki gibi sayfa genişliğinin dışına taşıp
-          tam ekran genişliğinde (full-bleed) gösteriliyor. */}
-      <div style={{ width: '100vw', marginLeft: 'calc(50% - 50vw)', aspectRatio: '21 / 8', overflow: 'hidden', marginBottom: '5rem' }}>
-        <img
-          src={images['sertifikali-kagit'] || kagitlarDefault}
-          alt="Hahnemühle fine art kağıt numuneleri"
-          style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
-        />
+      {/* Kağıt grid'i — referans tasarımdaki gibi koyu zeminde, sayfa
+          genişliğinin dışına taşıp tam ekran genişliğinde (full-bleed). */}
+      <div style={{ width: '100vw', marginLeft: 'calc(50% - 50vw)', background: '#111', padding: '3rem 2rem', marginBottom: '5rem' }}>
+        <div style={{
+          maxWidth: 1400, margin: '0 auto', display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(230px, 1fr))', gap: '1.5rem',
+        }}>
+          {CERTIFIED_PAPERS.map(paper => (
+            <div key={paper.key}>
+              <div style={{ position: 'relative', aspectRatio: '4 / 5', overflow: 'hidden', background: '#1a1a1a', marginBottom: '1rem' }}>
+                {images[paper.key] ? (
+                  <img
+                    src={images[paper.key]}
+                    alt={paper.name}
+                    style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+                  />
+                ) : (
+                  <div style={{
+                    width: '100%', height: '100%', display: 'flex', alignItems: 'center',
+                    justifyContent: 'center', textAlign: 'center', padding: '1rem',
+                    fontFamily: "'Archivo', sans-serif", fontSize: '.68rem', color: 'rgba(255,255,255,.4)',
+                  }}>
+                    {`${paper.name} — Admin'den yükle`}
+                  </div>
+                )}
+                <span style={{
+                  position: 'absolute', top: 10, left: 10, background: '#fff', color: '#111',
+                  fontFamily: "'Archivo', sans-serif", fontSize: '.56rem', fontWeight: 600,
+                  letterSpacing: '.1em', textTransform: 'uppercase', padding: '.3rem .6rem',
+                }}>
+                  Hahnemühle
+                </span>
+              </div>
+              <h3 style={{ fontFamily: "'Playfair Display', serif", fontWeight: 600, color: '#fff', fontSize: '1.05rem', margin: '0 0 .4rem' }}>
+                {paper.name}
+              </h3>
+              <p lang="en" style={{ fontFamily: "'Archivo', sans-serif", fontSize: '.78rem', lineHeight: 1.6, color: 'rgba(255,255,255,.6)', margin: 0 }}>
+                {paper.info}
+              </p>
+            </div>
+          ))}
+        </div>
       </div>
 
       {/* Baskı Ölçüleri ve Fiyatları */}
