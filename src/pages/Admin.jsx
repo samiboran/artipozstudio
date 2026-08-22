@@ -120,6 +120,7 @@ function withTimeout(promise, ms = 20000) {
 function Admin() {
   const navigate = useNavigate()
   const [tab, setTab] = useState('gorseller')
+  const [sidebarOpen, setSidebarOpen] = useState(false)
   const [artworks, setArtworks] = useState([])
   const [orders, setOrders] = useState([])
   const [selected, setSelected] = useState(null)
@@ -854,11 +855,46 @@ function Admin() {
 
   return (
     <div style={{ display: 'flex', height: '100vh', fontFamily: "'DM Sans', sans-serif", paddingTop: '4.2rem' }}>
-      <style>{`nav { display: none !important; }`}</style>
+      <style>{`
+        nav { display: none !important; }
+        .admin-mobile-toggle { display: none; }
+        .admin-sidebar-backdrop { display: none; }
+        @media (max-width: 860px) {
+          .admin-sidebar {
+            position: fixed; top: 4.2rem; left: 0; bottom: 0; z-index: 101;
+            transform: translateX(-100%); transition: transform .25s ease;
+            background: #fff; box-shadow: 2px 0 12px rgba(0,0,0,.08);
+          }
+          .admin-sidebar.open { transform: translateX(0); }
+          .admin-mobile-toggle { display: flex !important; }
+          .admin-sidebar-backdrop.open {
+            display: block; position: fixed; inset: 4.2rem 0 0 0;
+            background: rgba(0,0,0,.25); z-index: 100;
+          }
+        }
+      `}</style>
       <input ref={genericFileRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={handleGenericFileChange} />
 
+      <button
+        className="admin-mobile-toggle"
+        onClick={() => setSidebarOpen(o => !o)}
+        aria-label="Menüyü aç/kapat"
+        style={{
+          position: 'fixed', top: '.7rem', left: '1rem', zIndex: 102,
+          width: 38, height: 38, alignItems: 'center', justifyContent: 'center',
+          background: '#fff', border: '1px solid #eee', cursor: 'pointer',
+        }}
+      >
+        <div style={{ width: 18 }}>
+          <span style={{ display: 'block', width: '100%', height: 1.5, background: '#111', marginBottom: 4 }} />
+          <span style={{ display: 'block', width: '100%', height: 1.5, background: '#111', marginBottom: 4 }} />
+          <span style={{ display: 'block', width: '100%', height: 1.5, background: '#111' }} />
+        </div>
+      </button>
+      <div className={`admin-sidebar-backdrop ${sidebarOpen ? 'open' : ''}`} onClick={() => setSidebarOpen(false)} />
+
       {/* Sol panel */}
-      <div style={{ width: 280, borderRight: '1px solid #eee', display: 'flex', flexDirection: 'column', flexShrink: 0 }}>
+      <div className={`admin-sidebar ${sidebarOpen ? 'open' : ''}`} style={{ width: 280, borderRight: '1px solid #eee', display: 'flex', flexDirection: 'column', flexShrink: 0 }}>
         <div style={{ borderBottom: '1px solid #eee', overflowY: 'auto', flexShrink: 0, maxHeight: '48vh' }}>
           {TAB_GROUPS.map((group, gi) => (
             <div key={group.heading} style={{ borderTop: gi > 0 ? '1px solid #f2f2f2' : 'none', padding: '.4rem 0' }}>
@@ -866,7 +902,7 @@ function Admin() {
                 {group.heading}
               </div>
               {group.tabs.map(t => (
-                <button key={t} onClick={() => setTab(t)} style={{
+                <button key={t} onClick={() => { setTab(t); setSidebarOpen(false) }} style={{
                   display: 'block', width: '100%', textAlign: 'left', padding: '.5rem 1rem',
                   background: tab === t ? '#f9f6f1' : 'none', border: 'none',
                   borderLeft: tab === t ? '3px solid #9a7a4a' : '3px solid transparent',
