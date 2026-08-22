@@ -99,7 +99,7 @@ const contactInput = {
   outline: 'none', boxSizing: 'border-box', background: '#fff',
 }
 
-// Sertifikalı kağıtlar için kaydırmalı carousel: masaüstünde 5 kart görünür,
+// Sertifikalı kağıtlar için kaydırmalı carousel: masaüstünde 4 kart görünür,
 // sağ/sol oklarla bir sonraki/önceki "sayfa"ya geçer, sonuna gelince başa
 // loop eder. Mobilde ise 1 kart + bir sonrakinin bir kısmı görünecek şekilde
 // parmakla kaydırılır (native scroll-snap).
@@ -125,9 +125,9 @@ function PaperCarousel({ papers, images }) {
       <style>{`
         .paper-carousel-track { scrollbar-width: none; -ms-overflow-style: none; }
         .paper-carousel-track::-webkit-scrollbar { display: none; }
-        .paper-carousel-card { flex: 0 0 calc((100% - 4 * 1.2rem) / 5); }
+        .paper-carousel-card { flex: 0 0 calc((100% - 3 * 1.2rem) / 4); }
         @media (max-width: 900px) {
-          .paper-carousel-card { flex: 0 0 calc((100% - 2 * 1.2rem) / 3); }
+          .paper-carousel-card { flex: 0 0 calc((100% - 1 * 1.2rem) / 2); }
         }
         @media (max-width: 640px) {
           .paper-carousel-card { flex: 0 0 80%; }
@@ -335,7 +335,7 @@ function Gallery() {
           genişliğinin dışına taşıp tam ekran genişliğinde (full-bleed),
           sağ/sol oklarla kaydırılan ve mobilde parmakla kaydırılabilen şerit. */}
       <div style={{ width: '100vw', marginLeft: 'calc(50% - 50vw)', background: '#111', padding: '3rem 2.5rem', marginBottom: '5rem' }}>
-        <div style={{ maxWidth: 1400, margin: '0 auto' }}>
+        <div style={{ maxWidth: 1800, margin: '0 auto' }}>
           <PaperCarousel papers={CERTIFIED_PAPERS} images={images} />
         </div>
       </div>
