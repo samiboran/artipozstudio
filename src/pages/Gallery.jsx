@@ -1,7 +1,9 @@
 import { useState, useEffect, useRef } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
+import { fetchArtworks } from '../lib/artworks'
 import Hero from '../components/Hero'
+import ArtCard from '../components/ArtCard'
 import fotografDefault from '../assets/fine-art/ornek-botanik.jpg'
 import fineArtDefault from '../assets/process/baski-sureci.jpg'
 import cerceveDefault from '../assets/cerceve/ornek-ahsap-cerceve.jpg'
@@ -228,10 +230,91 @@ function PaperCarousel({ papers, images }) {
   )
 }
 
+// Ana Sayfa vitrini — Fine Art Seçkisi'nden (İşler) 8-10 eseri, referans
+// tasarımdaki gibi 4'lü kaydırmalı bir şeritte gösterir (PaperCarousel ile
+// aynı sağ/sol ok + loop deseni). Kartlar için mevcut ArtCard bileşeni
+// yeniden kullanılıyor — tıklanınca doğrudan o eserin sayfasına gider.
+function FineArtCarousel({ artworks }) {
+  const trackRef = useRef(null)
+  const navigate = useNavigate()
+
+  const scrollByPage = (dir) => {
+    const el = trackRef.current
+    if (!el) return
+    const atEnd = el.scrollLeft + el.clientWidth >= el.scrollWidth - 4
+    const atStart = el.scrollLeft <= 4
+    if (dir > 0 && atEnd) {
+      el.scrollTo({ left: 0, behavior: 'smooth' })
+    } else if (dir < 0 && atStart) {
+      el.scrollTo({ left: el.scrollWidth, behavior: 'smooth' })
+    } else {
+      el.scrollBy({ left: dir * el.clientWidth, behavior: 'smooth' })
+    }
+  }
+
+  return (
+    <div style={{ position: 'relative' }}>
+      <style>{`
+        .fa-carousel-track { scrollbar-width: none; -ms-overflow-style: none; }
+        .fa-carousel-track::-webkit-scrollbar { display: none; }
+        .fa-carousel-card { flex: 0 0 calc((100% - 3 * 1.5rem) / 4); }
+        @media (max-width: 900px) {
+          .fa-carousel-card { flex: 0 0 calc((100% - 1 * 1.5rem) / 2); }
+        }
+        @media (max-width: 640px) {
+          .fa-carousel-card { flex: 0 0 80%; }
+          .fa-carousel-arrow { display: none; }
+        }
+      `}</style>
+
+      <button
+        className="fa-carousel-arrow"
+        onClick={() => scrollByPage(-1)}
+        aria-label="Önceki eserler"
+        style={{
+          position: 'absolute', left: -6, top: '38%', transform: 'translateY(-50%)',
+          zIndex: 2, background: '#fff', border: '1px solid var(--border)', borderRadius: '50%',
+          width: 40, height: 40, cursor: 'pointer', fontSize: '1.2rem', color: 'var(--ink)',
+          boxShadow: '0 2px 10px rgba(0,0,0,.08)',
+        }}
+      >
+        ‹
+      </button>
+
+      <div
+        ref={trackRef}
+        className="fa-carousel-track"
+        style={{ display: 'flex', gap: '1.5rem', overflowX: 'auto', scrollSnapType: 'x mandatory', scrollBehavior: 'smooth' }}
+      >
+        {artworks.map((artwork, i) => (
+          <div key={artwork.id} className="fa-carousel-card" style={{ scrollSnapAlign: 'start', minWidth: 0 }}>
+            <ArtCard artwork={artwork} index={i} onClick={() => navigate(`/product/${artwork.slug}`)} />
+          </div>
+        ))}
+      </div>
+
+      <button
+        className="fa-carousel-arrow"
+        onClick={() => scrollByPage(1)}
+        aria-label="Sonraki eserler"
+        style={{
+          position: 'absolute', right: -6, top: '38%', transform: 'translateY(-50%)',
+          zIndex: 2, background: '#fff', border: '1px solid var(--border)', borderRadius: '50%',
+          width: 40, height: 40, cursor: 'pointer', fontSize: '1.2rem', color: 'var(--ink)',
+          boxShadow: '0 2px 10px rgba(0,0,0,.08)',
+        }}
+      >
+        ›
+      </button>
+    </div>
+  )
+}
+
 function Gallery() {
   const [images, setImages] = useState({})
   const [content, setContent] = useState({})
   const [papers, setPapers] = useState([])
+  const [seckiArtworks, setSeckiArtworks] = useState([])
   const [contact, setContact] = useState({
     isim: '', postaKodu: '', adres: '', email: '', telefon: '',
     odemeYontemi: '', numune: '', mesaj: '',
@@ -242,6 +325,12 @@ function Gallery() {
     supabase.from('papers').select('name').order('sort_order')
       .then(({ data }) => setPapers(data || []))
       .catch(err => console.error('Kağıtlar yüklenemedi:', err))
+  }, [])
+
+  useEffect(() => {
+    fetchArtworks({})
+      .then(data => setSeckiArtworks((data || []).slice(0, 10)))
+      .catch(err => console.error('Fine Art Seçkisi yüklenemedi:', err))
   }, [])
 
   function updateContact(e) {
@@ -362,6 +451,35 @@ function Gallery() {
           })}
         </div>
       </section>
+
+      {/* Artı Poz Editions — Fine Art Seçkisi vitrini. Ana Sayfa'da ilgi
+          çeken birkaç eseri gösterip tıklayınca doğrudan o eserin sayfasına,
+          "Tümünü Gör" ile de Fine Art Seçkisi'nin (İşler) tamamına götürür. */}
+      {seckiArtworks.length > 0 && (
+        <section style={{ maxWidth: 1500, margin: '0 auto', padding: '2rem 2rem 5rem' }}>
+          <div style={{
+            display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between',
+            alignItems: 'flex-end', gap: '2rem', marginBottom: '3rem',
+          }}>
+            <div>
+              <p style={{ ...eyebrow, marginBottom: '.6rem' }}>Artı Poz Editions</p>
+              <h2 style={{ ...displayHeading, fontSize: '2.2rem', margin: 0 }}>
+                Fine Art Seçkisi
+              </h2>
+              <div style={{ width: 46, height: 1, background: 'var(--border)', marginTop: '.9rem' }} />
+            </div>
+            <Link to="/isler" style={{
+              display: 'inline-flex', alignItems: 'center', gap: '.5rem',
+              fontFamily: "'Archivo', sans-serif", fontSize: '.68rem',
+              letterSpacing: '.14em', textTransform: 'uppercase', color: 'var(--ink)',
+            }}>
+              Tümünü Gör <span>→</span>
+            </Link>
+          </div>
+
+          <FineArtCarousel artworks={seckiArtworks} />
+        </section>
+      )}
 
       {/* Sertifikalı Fine Art Kağıtları */}
       <section style={{ maxWidth: 1200, margin: '0 auto', padding: '2rem 2rem 3rem', textAlign: 'center' }}>
