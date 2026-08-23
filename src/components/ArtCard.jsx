@@ -9,12 +9,23 @@ function ArtCard({ artwork, index, onClick }) {
   const { addItem } = useCart()
   const liked = isFav(artwork.id)
   const [added, setAdded] = useState(false)
+  const [favShake, setFavShake] = useState(false)
+  const [cartShake, setCartShake] = useState(false)
+
+  // Giriş yapılmamışsa toggle/addItem hiçbir şey yapmaz (false döner) —
+  // butonun yine de tepki verdiğini göstermek için kısa bir sallanma.
+  async function handleFav(e) {
+    e.stopPropagation()
+    const ok = await toggle(artwork.id)
+    if (!ok) { setFavShake(true); setTimeout(() => setFavShake(false), 500) }
+  }
 
   function quickAdd(e) {
     e.stopPropagation()
     const s = artwork.sizes?.[0]
     if (!s) { onClick(); return } // boyut bilgisi yoksa ürün sayfasına götür
-    addItem(artwork, s.label, Number(s.price) || 0)
+    const ok = addItem(artwork, s.label, Number(s.price) || 0)
+    if (!ok) { setCartShake(true); setTimeout(() => setCartShake(false), 500); return }
     setAdded(true)
     setTimeout(() => setAdded(false), 1400)
   }
@@ -69,16 +80,16 @@ function ArtCard({ artwork, index, onClick }) {
             hover olmadığı için önceki hover-only overlay butonları görünmüyordu) */}
         <div style={{ display: 'flex', gap: '.5rem', marginBottom: '.4rem' }}>
           <button
-            onClick={e => { e.stopPropagation(); toggle(artwork.id) }}
+            onClick={handleFav}
             aria-label="Favorilere ekle"
-            style={{ ...iconBtn, color: liked ? 'var(--red)' : 'var(--muted)' }}
+            style={{ ...iconBtn, color: liked ? 'var(--red)' : 'var(--muted)', animation: favShake ? 'needsLogin .5s' : 'none' }}
           >
             {liked ? '♥' : '♡'}
           </button>
           <button
             onClick={quickAdd}
             aria-label="Sepete ekle"
-            style={{ ...iconBtn, fontSize: '1.05rem', color: added ? 'var(--gold)' : 'var(--muted)' }}
+            style={{ ...iconBtn, fontSize: '1.05rem', color: added ? 'var(--gold)' : 'var(--muted)', animation: cartShake ? 'needsLogin .5s' : 'none' }}
           >
             {added ? '✓' : '⊕'}
           </button>

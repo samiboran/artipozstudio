@@ -4,11 +4,19 @@ import { getSessionId } from '../lib/session'
 
 let listeners = []
 let cartState = []
+let currentUserId = null
 
 function setCart(newCart) {
   cartState = newCart
   listeners.forEach(l => l([...newCart]))
 }
+
+supabase.auth.getSession().then(({ data: { session } }) => { currentUserId = session?.user?.id || null })
+// setTimeout: onAuthStateChange callback'i içinde senkron supabase çağrısı
+// auth-lock deadlock'una yol açıyor (bu oturumda tespit edilip düzeltilen bug).
+supabase.auth.onAuthStateChange((_event, session) => {
+  setTimeout(() => { currentUserId = session?.user?.id || null }, 0)
+})
 
 // Sepete ekleme olayını arka planda kaydeder — sepetin kendi çalışmasını
 // engellemez, hata olursa sessizce yutulur.
@@ -36,7 +44,10 @@ export function useCart() {
     listeners.push(setItems)
   }
 
+  // Dönüş değeri: true = gerçekten eklendi, false = giriş yapılmadığı için
+  // hiçbir şey yapılmadı (arayüz sadece görsel bir geri bildirim gösterebilir).
   function addItem(artwork, size, price) {
+    if (!currentUserId) return false
     const key = `${artwork.id}-${size}`
     const exists = cartState.find(i => i.key === key)
     if (exists) {
@@ -45,6 +56,7 @@ export function useCart() {
       setCart([...cartState, { key, artwork, size, price, qty: 1 }])
     }
     logCartEvent(artwork, size, price)
+    return true
   }
 
   function removeItem(key) {
@@ -63,5 +75,5 @@ export function useCart() {
   const total = items.reduce((sum, i) => sum + (Number(i.price) || 0) * i.qty, 0)
   const count = items.reduce((sum, i) => sum + i.qty, 0)
 
-  return { items, addItem, removeItem, updateQty, clearCart, total, count }
+  return { items, addItem, removeItem, updateQty, clearCart, total, count, loggedIn: !!currentUserId }
 }
