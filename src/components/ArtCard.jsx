@@ -2,8 +2,9 @@ import { useState } from 'react'
 import { makeSVG } from '../lib/makeSVG'
 import { useFavorites } from '../hooks/useFavorites'
 import { useCart } from '../hooks/useCart'
+import { SIZE_MM } from '../lib/artworks'
 
-function ArtCard({ artwork, index, onClick, onTagClick }) {
+function ArtCard({ artwork, index, onClick }) {
   const { isFav, toggle } = useFavorites()
   const { addItem } = useCart()
   const liked = isFav(artwork.id)
@@ -19,6 +20,11 @@ function ArtCard({ artwork, index, onClick, onTagClick }) {
     setTimeout(() => setAdded(false), 1400)
   }
 
+  const firstSize = artwork.sizes?.[0]
+  const priceLabel = firstSize?.price ? `${Number(firstSize.price).toLocaleString('tr-TR')} TL` : null
+  const sizeLabel = firstSize ? (SIZE_MM[firstSize.label] || firstSize.label) : null
+  const titleLine = artwork.type ? `${artwork.title} / ${artwork.type}` : artwork.title
+
   return (
     <div
       onClick={onClick}
@@ -26,30 +32,35 @@ function ArtCard({ artwork, index, onClick, onTagClick }) {
       onMouseLeave={() => setHovered(false)}
       style={{
         cursor: 'pointer',
-        borderRight: '1px solid var(--border)',
-        borderBottom: '1px solid var(--border)',
+        breakInside: 'avoid',
+        marginBottom: '1.8rem',
         background: hovered ? 'var(--surface)' : 'var(--bg)',
         transition: 'background .2s',
         animation: `fadeUp .4s ease ${index * 0.04}s both`
       }}
     >
-   {/* Görsel */}
-<div style={{ aspectRatio: '4/5', overflow: 'hidden', position: 'relative', background: 'var(--surface)' }}>
-  {artwork.image_url
-    ? <img src={artwork.image_url} alt={artwork.title}
-        style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-    : <div dangerouslySetInnerHTML={{ __html: makeSVG(index) }}
-        style={{ width: '100%', height: '100%' }} />
-  }
+      {/* Görsel — gerçek fotoğraflarda kendi en/boy oranı korunur (masonry) */}
+      <div style={{
+        overflow: 'hidden', position: 'relative', background: 'var(--surface)',
+        ...(artwork.image_url ? {} : { aspectRatio: '4/5' }),
+      }}>
+        {artwork.image_url
+          ? <img src={artwork.image_url} alt={artwork.title}
+              style={{ width: '100%', height: 'auto', display: 'block' }} />
+          : <div dangerouslySetInnerHTML={{ __html: makeSVG(index) }}
+              style={{ width: '100%', height: '100%' }} />
+        }
         {/* Edisyon badge */}
-        <div style={{
-          position: 'absolute', top: '.75rem', left: '.75rem',
-          background: 'var(--ink)', color: '#fff',
-          fontSize: '.52rem', letterSpacing: '.18em',
-          textTransform: 'uppercase', padding: '.22rem .6rem'
-        }}>
-          {artwork.edition}
-        </div>
+        {artwork.edition && (
+          <div style={{
+            position: 'absolute', top: '.75rem', left: '.75rem',
+            background: 'var(--ink)', color: '#fff',
+            fontSize: '.52rem', letterSpacing: '.18em',
+            textTransform: 'uppercase', padding: '.22rem .6rem'
+          }}>
+            {artwork.edition}
+          </div>
+        )}
 
         {/* Favori butonu */}
         <button
@@ -87,42 +98,26 @@ function ArtCard({ artwork, index, onClick, onTagClick }) {
         </button>
       </div>
 
-      {/* Bilgi */}
-      <div style={{ padding: '.85rem 1rem 1rem' }}>
-        <div style={{ fontSize: '.58rem', letterSpacing: '.14em', textTransform: 'uppercase', color: 'var(--muted)', marginBottom: '.2rem' }}>
-          {artwork.artist}
-        </div>
-        <div style={{ fontFamily: "'Archivo Black', sans-serif", fontSize: '1.15rem', marginBottom: '.45rem', lineHeight: 1.2 }}>
-          {artwork.title}
-        </div>
-
-        {/* Etiketler */}
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '.3rem', marginBottom: '.7rem' }}>
-          {artwork.tags.map(tag => (
-            <span
-              key={tag}
-              onClick={e => { e.stopPropagation(); onTagClick(tag) }}
-              style={{
-                fontSize: '.56rem', letterSpacing: '.1em',
-                textTransform: 'uppercase', color: 'var(--gold)',
-                padding: '.18rem .45rem',
-                border: '1px solid rgba(18,42,150,.22)',
-                cursor: 'pointer'
-              }}
-            >
-              #{tag}
-            </span>
-          ))}
-        </div>
-
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
-          <div style={{ fontFamily: "'Archivo Black', sans-serif", fontSize: '1.25rem' }}>
-            {artwork.price}
+      {/* Bilgi — Fiyat / Başlık / Malzeme / Ölçü */}
+      <div style={{ padding: '.85rem .2rem 0' }}>
+        {priceLabel && (
+          <div style={{ fontFamily: "'Archivo Black', sans-serif", fontSize: '1rem', marginBottom: '.35rem' }}>
+            {priceLabel}
           </div>
-          <div style={{ fontSize: '.58rem', letterSpacing: '.08em', textTransform: 'uppercase', color: 'var(--muted)' }}>
-            {artwork.type}
-          </div>
+        )}
+        <div style={{ fontSize: '.85rem', fontWeight: 600, color: 'var(--ink)', lineHeight: 1.3, marginBottom: '.25rem' }}>
+          {titleLine}
         </div>
+        {artwork.material && (
+          <div style={{ fontSize: '.72rem', color: 'var(--muted)', lineHeight: 1.4, marginBottom: '.15rem' }}>
+            {artwork.material}
+          </div>
+        )}
+        {sizeLabel && (
+          <div style={{ fontSize: '.7rem', color: 'var(--muted)' }}>
+            {sizeLabel}
+          </div>
+        )}
       </div>
     </div>
   )

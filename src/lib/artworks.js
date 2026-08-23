@@ -1,6 +1,14 @@
 
 import { supabase } from './supabase'
 
+// Standart ISO kağıt boyutlarının mm karşılığı — İşler ürünlerinde
+// "A4/A3/A2" etiketinin yanında fiziksel ölçüyü de göstermek için.
+export const SIZE_MM = {
+  A4: '210 × 297 mm',
+  A3: '297 × 420 mm',
+  A2: '420 × 594 mm',
+}
+
 export async function fetchArtworks({ tag, search } = {}) {
   let query = supabase
     .from('artworks')
@@ -32,10 +40,11 @@ if (s) query = query.or(`title.ilike.%${s}%,artist.ilike.%${s}%`)
 export async function fetchArtworkBySlug(slug) {
   const { data, error } = await supabase
     .from('artworks')
-    .select('*, artwork_images(id, image_url, sort_order)')
+    .select('*, artwork_images(id, image_url, sort_order), artwork_mockups(id, image_url, sort_order)')
     .eq('slug', slug)
     .single()
   if (error) { console.error('Slug hatası:', error.message); return null }
   if (data?.artwork_images) data.artwork_images.sort((a, b) => a.sort_order - b.sort_order)
+  if (data?.artwork_mockups) data.artwork_mockups.sort((a, b) => a.sort_order - b.sort_order)
   return data
 }

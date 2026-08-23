@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { fetchArtworkBySlug } from '../lib/artworks'
+import { fetchArtworkBySlug, SIZE_MM } from '../lib/artworks'
 import { makeSVG } from '../lib/makeSVG'
 import { useCart } from '../hooks/useCart'
 import { useFavorites } from '../hooks/useFavorites'
@@ -169,6 +169,32 @@ function ProductDetail() {
               ))}
             </div>
           )}
+
+          {/* Mockup görselleri — ürünün bir mekanda/duvarda gösterildiği
+              ayrı görsel seti, artwork_images'tan (ürünün kendi açı/yakın
+              çekimleri) bağımsız. */}
+          {artwork.artwork_mockups?.length > 0 && (
+            <div style={{ marginTop: '.6rem' }}>
+              <div style={{ fontSize: '.58rem', letterSpacing: '.16em', textTransform: 'uppercase', color: 'var(--muted)', marginBottom: '.5rem' }}>
+                Mekanda Görünüm
+              </div>
+              <div style={{ display: 'flex', gap: '.6rem', flexWrap: 'wrap' }}>
+                {artwork.artwork_mockups.map(img => (
+                  <button
+                    key={img.id}
+                    onClick={() => setActiveImage(img.image_url)}
+                    style={{
+                      width: 56, height: 56, padding: 0, cursor: 'pointer',
+                      border: `2px solid ${activeImage === img.image_url ? 'var(--ink)' : 'transparent'}`,
+                      background: 'none', flexShrink: 0,
+                    }}
+                  >
+                    <img src={img.image_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Sağ — bilgi */}
@@ -231,16 +257,20 @@ function ProductDetail() {
           {artwork.sizes?.length > 0 && (
             <>
               <div style={{ fontSize: '.58rem', letterSpacing: '.18em', textTransform: 'uppercase', color: 'var(--muted)', marginBottom: '.65rem' }}>Boyut</div>
-              <div style={{ display: 'flex', gap: '.45rem', marginBottom: '1.4rem' }}>
+              <div style={{ display: 'flex', gap: '.45rem', marginBottom: '1.4rem', flexWrap: 'wrap' }}>
                 {artwork.sizes.map(s => (
                   <button key={s.label} onClick={() => setActiveSize(s.label)} style={{
                     padding: '.45rem .85rem',
                     border: `1px solid ${activeSize === s.label ? 'var(--ink)' : 'var(--border)'}`,
                     background: activeSize === s.label ? 'var(--ink)' : 'none',
                     color: activeSize === s.label ? '#fff' : 'var(--ink)',
-                    fontSize: '.64rem', letterSpacing: '.1em', cursor: 'pointer'
+                    fontSize: '.64rem', letterSpacing: '.1em', cursor: 'pointer',
+                    display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '.15rem',
                   }}>
-                    {s.label}
+                    <span>{s.label}</span>
+                    {SIZE_MM[s.label] && (
+                      <span style={{ fontSize: '.54rem', opacity: .7, letterSpacing: '.02em' }}>{SIZE_MM[s.label]}</span>
+                    )}
                   </button>
                 ))}
               </div>
