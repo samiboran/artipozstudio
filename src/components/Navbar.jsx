@@ -215,7 +215,7 @@ function Navbar({ cartCount = 0, onCartClick }) {
                   fontSize: '.68rem', letterSpacing: '.14em',
                   textTransform: 'uppercase', color: 'var(--muted)'
                 }}>
-                  Log in
+                  Giriş Yap
                 </Link>
 
                 <Link to="/kayit" style={{
@@ -223,7 +223,7 @@ function Navbar({ cartCount = 0, onCartClick }) {
                   textTransform: 'uppercase', color: 'var(--bg)',
                   background: 'var(--accent)', padding: '.5rem 1rem'
                 }}>
-                  Sign up
+                  Üye Ol
                 </Link>
               </>
             )}
@@ -341,7 +341,7 @@ function Navbar({ cartCount = 0, onCartClick }) {
                 textTransform: 'uppercase', color: 'var(--ink)',
                 borderBottom: '1px solid var(--border)', paddingBottom: '.8rem'
               }}>
-                Log in
+                Giriş Yap
               </Link>
 
               <Link to="/kayit" onClick={() => setMenuOpen(false)} style={{
@@ -349,7 +349,7 @@ function Navbar({ cartCount = 0, onCartClick }) {
                 textTransform: 'uppercase', color: 'var(--bg)',
                 background: 'var(--accent)', padding: '.7rem 1rem', textAlign: 'center'
               }}>
-                Sign up
+                Üye Ol
               </Link>
             </>
           )}

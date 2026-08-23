@@ -5,7 +5,7 @@ import { useFavorites } from '../hooks/useFavorites'
 import ArtCard from '../components/ArtCard'
 
 function Favorites() {
-  const { ids } = useFavorites()
+  const { ids, loggedIn } = useFavorites()
   const [artworks, setArtworks] = useState([])
   const [loading, setLoading] = useState(true)
   const navigate = useNavigate()
@@ -22,8 +22,8 @@ function Favorites() {
     <div style={{ paddingTop: '4.2rem', minHeight: '60vh' }}>
       <div style={{ padding: '2.5rem 2rem 1.5rem', borderBottom: '1px solid var(--border)' }}>
         <h1 style={{
-          fontFamily: "'Archivo Black', sans-serif",
-          fontSize: '2rem', fontWeight: 300, margin: 0
+          fontFamily: "'Playfair Display', serif",
+          fontWeight: 600, fontSize: '2.2rem', margin: 0
         }}>
           Favoriler
         </h1>
@@ -35,6 +35,22 @@ function Favorites() {
       {loading ? (
         <div style={{ padding: '5rem 2rem', textAlign: 'center', fontFamily: "'Archivo Black', sans-serif", fontSize: '1.4rem', fontStyle: 'italic', color: 'var(--muted)' }}>
           Yükleniyor…
+        </div>
+      ) : !loggedIn ? (
+        <div style={{ padding: '5rem 2rem', textAlign: 'center' }}>
+          <div style={{ fontFamily: "'Archivo Black', sans-serif", fontSize: '1.5rem', color: 'var(--muted)', marginBottom: '1.2rem' }}>
+            Favorilerini görmek için giriş yap
+          </div>
+          <button
+            onClick={() => navigate('/login')}
+            style={{
+              background: 'var(--ink)', color: '#fff', border: 'none',
+              padding: '.8rem 2rem', fontSize: '.65rem',
+              letterSpacing: '.18em', textTransform: 'uppercase', cursor: 'pointer'
+            }}
+          >
+            Giriş Yap
+          </button>
         </div>
       ) : favs.length === 0 ? (
         <div style={{ padding: '5rem 2rem', textAlign: 'center' }}>
