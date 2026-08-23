@@ -1,10 +1,61 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { fetchArtworkBySlug, SIZE_MM } from '../lib/artworks'
 import { makeSVG } from '../lib/makeSVG'
 import { useCart } from '../hooks/useCart'
 import { useFavorites } from '../hooks/useFavorites'
 import { supabase } from '../lib/supabase'
+
+// Mobilde tek görsel yerine, kapak + galeri + mockup görsellerinin hepsini
+// tek bir kaydırmalı (scroll-snap) şeritte, alt nokta göstergesiyle sunan
+// carousel — Saatchi Art referansındaki mobil ürün görünümüne benzer.
+function MobileImageCarousel({ images, alt }) {
+  const trackRef = useRef(null)
+  const [activeIdx, setActiveIdx] = useState(0)
+
+  function onScroll() {
+    const el = trackRef.current
+    if (!el) return
+    setActiveIdx(Math.round(el.scrollLeft / el.clientWidth))
+  }
+
+  if (!images.length) {
+    return (
+      <div style={{ width: '100%', aspectRatio: '4/5', background: 'var(--surface)' }}>
+        <div dangerouslySetInnerHTML={{ __html: makeSVG(0) }} style={{ width: '100%', height: '100%' }} />
+      </div>
+    )
+  }
+
+  return (
+    <div>
+      <div
+        ref={trackRef}
+        onScroll={onScroll}
+        style={{
+          display: 'flex', overflowX: 'auto', scrollSnapType: 'x mandatory',
+          WebkitOverflowScrolling: 'touch',
+        }}
+      >
+        {images.map((img, i) => (
+          <div key={img.id || i} style={{ flex: '0 0 100%', scrollSnapAlign: 'start', aspectRatio: '4/5', background: 'var(--surface)' }}>
+            <img src={img.image_url} alt={alt} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+          </div>
+        ))}
+      </div>
+      {images.length > 1 && (
+        <div style={{ display: 'flex', justifyContent: 'center', gap: '.4rem', marginTop: '.7rem' }}>
+          {images.map((img, i) => (
+            <span key={img.id || i} style={{
+              width: 6, height: 6, borderRadius: '50%',
+              background: i === activeIdx ? 'var(--ink)' : 'var(--border)',
+            }} />
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
 
 function ProductDetail() {
   const { slug } = useParams()
@@ -52,9 +103,15 @@ function ProductDetail() {
   )
 
   const activePrice = artwork.sizes?.find(s => s.label === activeSize)?.price
+  // Mobil carousel için kapak + galeri + mockup görsellerinin hepsi tek şeritte.
+  const allImages = [
+    { id: 'cover', image_url: artwork.image_url },
+    ...(artwork.artwork_images || []),
+    ...(artwork.artwork_mockups || []),
+  ].filter(img => img.image_url)
   const accs = [
     { key: 'desc', label: 'Eser Hakkında', content: artwork.description },
-    { key: 'specs', label: 'Teknik Detaylar', content: `${artwork.medium || '—'} · ${artwork.year || '—'}` },
+    { key: 'specs', label: 'Teknik Detaylar', content: `${artwork.type || artwork.medium || '—'} · ${artwork.material || '—'} · ${artwork.year || '—'}` },
     { key: 'ship', label: 'Kargo & İade', content: 'Yurt içi kargo ücretsiz, 3–5 iş günü. Eserler özel ambalajla gönderilir. 14 gün içinde iade edilebilir.' },
     { key: 'cert', label: 'Baskı Kalitesi', content: 'Fine art baskılarımız için Hahnemühle ve Awagami kağıtları, arşivsel pigment mürekkeplerle kullanılır.' },
   ]
@@ -85,18 +142,33 @@ function ProductDetail() {
         <span style={{ color: 'var(--ink)' }}>{artwork.title}</span>
       </div>
 
-      {/* Ana grid */}
-      <div style={{
-        display: 'grid', gridTemplateColumns: '55% 45%',
+      {/* Ana grid — masaüstünde 55/45 yan yana, mobilde (≤860px) alt alta;
+          görsel kolonu masaüstünde sticky+tam yükseklik, mobilde doğal
+          boyutta (aksi halde görsel "basık" görünüyordu). */}
+      <style>{`
+        .pd-grid { display: grid; grid-template-columns: 55% 45%; }
+        .pd-image-col {
+          position: sticky; top: 4.5rem; height: calc(100vh - 4.5rem);
+          padding-right: 3rem;
+        }
+        .pd-desktop-viewer { display: flex; flex-direction: column; gap: .8rem; flex: 1; min-height: 0; }
+        .pd-mobile-viewer { display: none; }
+        @media (max-width: 860px) {
+          .pd-grid { display: block; }
+          .pd-image-col { position: static; height: auto; padding-right: 0; padding-top: 1rem; }
+          .pd-desktop-viewer { display: none; }
+          .pd-mobile-viewer { display: block; }
+          .pd-info-col { padding-left: 0 !important; padding-top: 1.5rem !important; }
+        }
+      `}</style>
+      <div className="pd-grid" style={{
         maxWidth: 1300, margin: '0 auto', padding: '0 2rem 6rem'
       }}>
 
         {/* Sol — görsel */}
-        <div style={{
-          position: 'sticky', top: '4.5rem',
-          height: 'calc(100vh - 4.5rem)',
+        <div className="pd-image-col" style={{
           display: 'flex', flexDirection: 'column',
-          gap: '.8rem', paddingRight: '3rem', paddingTop: '1.5rem', paddingBottom: '1.5rem'
+          gap: '.8rem', paddingTop: '1.5rem', paddingBottom: '1.5rem'
         }}>
           {/* Görünüm seçici */}
           <div style={{ display: 'flex', gap: '.4rem' }}>
@@ -114,6 +186,35 @@ function ProductDetail() {
             ))}
           </div>
 
+          {/* Mobil — kapak + galeri + mockup görselleri tek kaydırmalı şeritte */}
+          <div className="pd-mobile-viewer">
+            {view === 'print' ? (
+              <MobileImageCarousel images={allImages} alt={artwork.title} />
+            ) : (
+              <div style={{
+                width: '100%', aspectRatio: '4/5', position: 'relative',
+                background: 'linear-gradient(180deg, #efece6 0%, #e9e5de 78%, #d8d3ca 78%, #cfc9bf 100%)'
+              }}>
+                <div style={{ position: 'absolute', left: 0, right: 0, top: '76.5%', height: '1.5%', background: '#f4f1ec', boxShadow: '0 1px 2px rgba(0,0,0,.08)' }} />
+                <div style={{
+                  position: 'absolute', left: '50%', top: '42%', transform: 'translate(-50%, -50%)',
+                  width: '52%', aspectRatio: '4/5',
+                  background: '#1c1a18', padding: '1.1%',
+                  boxShadow: '0 18px 40px rgba(0,0,0,.28), 0 4px 10px rgba(0,0,0,.18)'
+                }}>
+                  <div style={{ width: '100%', height: '100%', background: '#fbfaf7', padding: '9%', boxSizing: 'border-box' }}>
+                    {activeImage
+                      ? <img src={activeImage} alt={artwork.title} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+                      : <div dangerouslySetInnerHTML={{ __html: makeSVG(0) }} style={{ width: '100%', height: '100%' }} />
+                    }
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Masaüstü — ana görsel + ayrı galeri/mockup thumbnail şeritleri */}
+          <div className="pd-desktop-viewer">
           <div style={{ flex: 1, overflow: 'hidden', background: 'var(--surface)', position: 'relative' }}>
             {artwork.is_original && view === 'print' && (
               <div style={{ position: 'absolute', top: '.9rem', left: '.9rem', zIndex: 2, background: 'var(--ink)', color: '#fff', fontSize: '.56rem', letterSpacing: '.18em', textTransform: 'uppercase', padding: '.28rem .7rem' }}>
@@ -195,10 +296,11 @@ function ProductDetail() {
               </div>
             </div>
           )}
+          </div>
         </div>
 
         {/* Sağ — bilgi */}
-        <div style={{ paddingLeft: '2.5rem', paddingTop: '2rem' }}>
+        <div className="pd-info-col" style={{ paddingLeft: '2.5rem', paddingTop: '2rem' }}>
 
           {/* Sanatçı */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '.9rem', marginBottom: '1.4rem' }}>
@@ -213,7 +315,7 @@ function ProductDetail() {
             <div>
               <div style={{ fontSize: '.72rem', fontWeight: 500, color: 'var(--ink)' }}>{artwork.artist}</div>
               <div style={{ fontSize: '.65rem', letterSpacing: '.12em', textTransform: 'uppercase', color: 'var(--muted)' }}>
-                {artwork.medium}
+                {artwork.type || artwork.medium}
               </div>
             </div>
           </div>
@@ -236,9 +338,14 @@ function ProductDetail() {
               {isFav(artwork.id) ? '♥' : '♡'}
             </button>
           </div>
-          <div style={{ fontSize: '.6rem', letterSpacing: '.14em', textTransform: 'uppercase', color: 'var(--muted)', marginBottom: '1.4rem' }}>
-            {artwork.year} · {artwork.medium}
+          <div style={{ fontSize: '.6rem', letterSpacing: '.14em', textTransform: 'uppercase', color: 'var(--muted)', marginBottom: '.3rem' }}>
+            {artwork.year} · {artwork.type || artwork.medium}
           </div>
+          {artwork.material && (
+            <div style={{ fontSize: '.72rem', color: 'var(--muted)', marginBottom: '1.4rem' }}>
+              {artwork.material}
+            </div>
+          )}
 
           <hr style={{ border: 'none', borderTop: '1px solid var(--border)', margin: '1.4rem 0' }} />
 

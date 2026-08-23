@@ -8,7 +8,6 @@ function ArtCard({ artwork, index, onClick }) {
   const { isFav, toggle } = useFavorites()
   const { addItem } = useCart()
   const liked = isFav(artwork.id)
-  const [hovered, setHovered] = useState(false)
   const [added, setAdded] = useState(false)
 
   function quickAdd(e) {
@@ -25,18 +24,19 @@ function ArtCard({ artwork, index, onClick }) {
   const sizeLabel = firstSize ? (SIZE_MM[firstSize.label] || firstSize.label) : null
   const titleLine = artwork.type ? `${artwork.title} / ${artwork.type}` : artwork.title
 
+  const iconBtn = {
+    background: 'none', border: 'none', padding: 0, cursor: 'pointer',
+    display: 'flex', alignItems: 'center', justifyContent: 'center',
+    width: 26, height: 26, fontSize: '1rem',
+  }
+
   return (
     <div
       onClick={onClick}
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
       style={{
         cursor: 'pointer',
         breakInside: 'avoid',
         marginBottom: '1.8rem',
-        background: hovered ? 'var(--surface)' : 'var(--bg)',
-        transition: 'background .2s',
-        animation: `fadeUp .4s ease ${index * 0.04}s both`
       }}
     >
       {/* Görsel — gerçek fotoğraflarda kendi en/boy oranı korunur (masonry) */}
@@ -61,60 +61,44 @@ function ArtCard({ artwork, index, onClick }) {
             {artwork.edition}
           </div>
         )}
-
-        {/* Favori butonu */}
-        <button
-          onClick={e => { e.stopPropagation(); toggle(artwork.id) }}
-          style={{
-            position: 'absolute', top: '.65rem', right: '.65rem',
-            background: 'rgba(255,255,255,.88)',
-            border: `1px solid ${liked ? 'var(--red)' : 'var(--border)'}`,
-            width: 30, height: 30,
-            display: hovered || liked ? 'flex' : 'none',
-            alignItems: 'center', justifyContent: 'center',
-            fontSize: '.9rem', color: liked ? 'var(--red)' : 'var(--muted)',
-            cursor: 'pointer'
-          }}
-        >
-          {liked ? '♥' : '♡'}
-        </button>
-
-        {/* Hızlı sepete ekle */}
-        <button
-          onClick={quickAdd}
-          aria-label="Sepete ekle"
-          style={{
-            position: 'absolute', top: 'calc(.65rem + 36px)', right: '.65rem',
-            background: added ? 'var(--gold)' : 'rgba(255,255,255,.88)',
-            border: `1px solid ${added ? 'var(--gold)' : 'var(--border)'}`,
-            width: 30, height: 30,
-            display: hovered || added ? 'flex' : 'none',
-            alignItems: 'center', justifyContent: 'center',
-            fontSize: '.85rem', color: added ? '#fff' : 'var(--muted)',
-            cursor: 'pointer', transition: 'background .2s'
-          }}
-        >
-          {added ? '✓' : '+'}
-        </button>
       </div>
 
-      {/* Bilgi — Fiyat / Başlık / Malzeme / Ölçü */}
-      <div style={{ padding: '.85rem .2rem 0' }}>
+      {/* Bilgi — İkonlar / Fiyat / Başlık / Malzeme / Ölçü */}
+      <div style={{ padding: '.6rem .2rem 0' }}>
+        {/* Favori + sepete ekle — her zaman görünür, fiyattan önce (mobilde
+            hover olmadığı için önceki hover-only overlay butonları görünmüyordu) */}
+        <div style={{ display: 'flex', gap: '.5rem', marginBottom: '.4rem' }}>
+          <button
+            onClick={e => { e.stopPropagation(); toggle(artwork.id) }}
+            aria-label="Favorilere ekle"
+            style={{ ...iconBtn, color: liked ? 'var(--red)' : 'var(--muted)' }}
+          >
+            {liked ? '♥' : '♡'}
+          </button>
+          <button
+            onClick={quickAdd}
+            aria-label="Sepete ekle"
+            style={{ ...iconBtn, fontSize: '1.05rem', color: added ? 'var(--gold)' : 'var(--muted)' }}
+          >
+            {added ? '✓' : '⊕'}
+          </button>
+        </div>
+
         {priceLabel && (
-          <div style={{ fontFamily: "'Archivo Black', sans-serif", fontSize: '1rem', marginBottom: '.35rem' }}>
+          <div style={{ fontFamily: "'Archivo', sans-serif", fontWeight: 500, fontSize: '.82rem', color: 'var(--ink)', marginBottom: '.3rem' }}>
             {priceLabel}
           </div>
         )}
-        <div style={{ fontSize: '.85rem', fontWeight: 600, color: 'var(--ink)', lineHeight: 1.3, marginBottom: '.25rem' }}>
+        <div style={{ fontFamily: "'Archivo', sans-serif", fontSize: '.78rem', fontWeight: 500, color: 'var(--ink)', lineHeight: 1.3, marginBottom: '.2rem' }}>
           {titleLine}
         </div>
         {artwork.material && (
-          <div style={{ fontSize: '.72rem', color: 'var(--muted)', lineHeight: 1.4, marginBottom: '.15rem' }}>
+          <div style={{ fontFamily: "'Archivo', sans-serif", fontSize: '.7rem', color: 'var(--muted)', lineHeight: 1.4, marginBottom: '.1rem' }}>
             {artwork.material}
           </div>
         )}
         {sizeLabel && (
-          <div style={{ fontSize: '.7rem', color: 'var(--muted)' }}>
+          <div style={{ fontFamily: "'Archivo', sans-serif", fontSize: '.7rem', color: 'var(--muted)' }}>
             {sizeLabel}
           </div>
         )}

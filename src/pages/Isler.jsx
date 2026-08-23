@@ -60,12 +60,9 @@ function Isler() {
       ) : (
         <div style={{ maxWidth: 1300, margin: '0 auto', padding: '0 2rem 5rem' }}>
           <style>{`
-            .isler-masonry { column-count: 3; column-gap: 1.8rem; }
-            @media (max-width: 900px) {
-              .isler-masonry { column-count: 2; }
-            }
-            @media (max-width: 560px) {
-              .isler-masonry { column-count: 1; }
+            .isler-masonry { column-count: 2; column-gap: 1rem; }
+            @media (min-width: 700px) {
+              .isler-masonry { column-count: 3; column-gap: 1.8rem; }
             }
           `}</style>
           <div className="isler-masonry">
