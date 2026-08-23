@@ -1172,76 +1172,6 @@ function Admin() {
                   onChange={e => e.target.files[0] && uploadImage(e.target.files[0])} />
               </div>
 
-              <div style={{ marginBottom: '1.5rem' }}>
-                <span style={label}>Ek Görseller (Galeri)</span>
-                {!selected ? (
-                  <p style={{ fontSize: '.72rem', color: '#aaa', marginTop: '.4rem' }}>
-                    Önce eseri kaydet, sonra galeri görsellerini ekleyebilirsin.
-                  </p>
-                ) : (
-                  <>
-                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '.7rem', marginTop: '.6rem' }}>
-                      {artworkImages.map(img => (
-                        <div key={img.id} style={{ position: 'relative', width: 90, height: 90 }}>
-                          <img src={img.image_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', border: '1px solid #eee' }} />
-                          <button
-                            onClick={() => deleteArtworkImage(img.id)}
-                            style={{ position: 'absolute', top: -6, right: -6, background: '#cc4444', color: '#fff', border: 'none', borderRadius: '50%', width: 20, height: 20, cursor: 'pointer', fontSize: '.72rem', lineHeight: 1 }}
-                          >×</button>
-                        </div>
-                      ))}
-                      <div
-                        onClick={() => galleryFileRef.current.click()}
-                        style={{
-                          width: 90, height: 90, border: '2px dashed #ddd', cursor: 'pointer',
-                          display: 'flex', alignItems: 'center', justifyContent: 'center',
-                          color: '#bbb', fontSize: '1.4rem', background: '#fafafa',
-                        }}
-                      >+</div>
-                    </div>
-                    <input ref={galleryFileRef} type="file" accept="image/*" style={{ display: 'none' }}
-                      onChange={e => e.target.files[0] && uploadArtworkImage(e.target.files[0])} />
-                  </>
-                )}
-              </div>
-
-              <div style={{ marginBottom: '1.5rem' }}>
-                <span style={label}>Mockup Görselleri (mekanda/duvarda gösterim, en fazla {MAX_MOCKUPS})</span>
-                {!selected ? (
-                  <p style={{ fontSize: '.72rem', color: '#aaa', marginTop: '.4rem' }}>
-                    Önce eseri kaydet, sonra mockup görsellerini ekleyebilirsin.
-                  </p>
-                ) : (
-                  <>
-                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '.7rem', marginTop: '.6rem' }}>
-                      {artworkMockups.map(img => (
-                        <div key={img.id} style={{ position: 'relative', width: 90, height: 90 }}>
-                          <img src={img.image_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', border: '1px solid #eee' }} />
-                          <button
-                            onClick={() => deleteArtworkMockup(img.id)}
-                            style={{ position: 'absolute', top: -6, right: -6, background: '#cc4444', color: '#fff', border: 'none', borderRadius: '50%', width: 20, height: 20, cursor: 'pointer', fontSize: '.72rem', lineHeight: 1 }}
-                          >×</button>
-                        </div>
-                      ))}
-                      {/* Aşamalı: bir öncekine görsel yüklenene kadar bir sonraki
-                          slot gösterilmez — MAX_MOCKUPS'a ulaşınca hiç gösterilmez. */}
-                      {artworkMockups.length < MAX_MOCKUPS && (
-                        <div
-                          onClick={() => mockupFileRef.current.click()}
-                          style={{
-                            width: 90, height: 90, border: '2px dashed #ddd', cursor: 'pointer',
-                            display: 'flex', alignItems: 'center', justifyContent: 'center',
-                            color: '#bbb', fontSize: '1.4rem', background: '#fafafa',
-                          }}
-                        >+</div>
-                      )}
-                    </div>
-                    <input ref={mockupFileRef} type="file" accept="image/*" style={{ display: 'none' }}
-                      onChange={e => e.target.files[0] && uploadArtworkMockup(e.target.files[0])} />
-                  </>
-                )}
-              </div>
-
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: '1rem', marginBottom: '1rem' }}>
                 <div><span style={label}>Başlık</span><input style={inp} value={form.title} onChange={e => handleTitle(e.target.value)} placeholder="Kırağı Botanik I" /></div>
                 <div><span style={label}>Slug (otomatik)</span><input style={{ ...inp, color: '#aaa' }} value={form.slug} onChange={e => setForm(f => ({ ...f, slug: e.target.value }))} /></div>
@@ -1294,12 +1224,77 @@ function Admin() {
                 <label htmlFor="original" style={{ fontSize: '.82rem', cursor: 'pointer' }}>Orijinal eser</label>
               </div>
 
-              <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+              <div style={{ display: 'flex', gap: '1rem', alignItems: 'center', marginBottom: '2.5rem' }}>
                 <button onClick={save} disabled={saving} style={btnPrimary}>
                   {saving ? 'Kaydediliyor…' : selected ? 'Güncelle' : 'Kaydet'}
                 </button>
                 {msg && <span style={{ fontSize: '.8rem', color: msg.includes('Hata') ? '#cc4444' : '#4a9a6a' }}>{msg}</span>}
               </div>
+
+              {/* Ek görseller ve mockup, eser kaydedildikten sonra ID'ye ihtiyaç
+                  duyduğu için Kaydet/Güncelle butonunun hemen altına, kolayca
+                  görülecek şekilde yerleştirildi. */}
+              {!selected ? (
+                <p style={{ fontSize: '.8rem', color: '#aaa', background: '#fafafa', padding: '1rem', border: '1px dashed #ddd' }}>
+                  Ek görseller ve mockup fotoğrafları eklemek için önce yukarıdaki "Kaydet" butonuna bas — kaydettikten sonra bu alanlar burada açılacak.
+                </p>
+              ) : (
+                <>
+                  <div style={{ marginBottom: '1.5rem' }}>
+                    <span style={label}>Ek Görseller (Galeri)</span>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '.7rem', marginTop: '.6rem' }}>
+                      {artworkImages.map(img => (
+                        <div key={img.id} style={{ position: 'relative', width: 90, height: 90 }}>
+                          <img src={img.image_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', border: '1px solid #eee' }} />
+                          <button
+                            onClick={() => deleteArtworkImage(img.id)}
+                            style={{ position: 'absolute', top: -6, right: -6, background: '#cc4444', color: '#fff', border: 'none', borderRadius: '50%', width: 20, height: 20, cursor: 'pointer', fontSize: '.72rem', lineHeight: 1 }}
+                          >×</button>
+                        </div>
+                      ))}
+                      <div
+                        onClick={() => galleryFileRef.current.click()}
+                        style={{
+                          width: 90, height: 90, border: '2px dashed #ddd', cursor: 'pointer',
+                          display: 'flex', alignItems: 'center', justifyContent: 'center',
+                          color: '#bbb', fontSize: '1.4rem', background: '#fafafa',
+                        }}
+                      >+</div>
+                    </div>
+                    <input ref={galleryFileRef} type="file" accept="image/*" style={{ display: 'none' }}
+                      onChange={e => e.target.files[0] && uploadArtworkImage(e.target.files[0])} />
+                  </div>
+
+                  <div style={{ marginBottom: '1.5rem' }}>
+                    <span style={label}>Mockup Görselleri (mekanda/duvarda gösterim, en fazla {MAX_MOCKUPS})</span>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '.7rem', marginTop: '.6rem' }}>
+                      {artworkMockups.map(img => (
+                        <div key={img.id} style={{ position: 'relative', width: 90, height: 90 }}>
+                          <img src={img.image_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', border: '1px solid #eee' }} />
+                          <button
+                            onClick={() => deleteArtworkMockup(img.id)}
+                            style={{ position: 'absolute', top: -6, right: -6, background: '#cc4444', color: '#fff', border: 'none', borderRadius: '50%', width: 20, height: 20, cursor: 'pointer', fontSize: '.72rem', lineHeight: 1 }}
+                          >×</button>
+                        </div>
+                      ))}
+                      {/* Aşamalı: bir öncekine görsel yüklenene kadar bir sonraki
+                          slot gösterilmez — MAX_MOCKUPS'a ulaşınca hiç gösterilmez. */}
+                      {artworkMockups.length < MAX_MOCKUPS && (
+                        <div
+                          onClick={() => mockupFileRef.current.click()}
+                          style={{
+                            width: 90, height: 90, border: '2px dashed #ddd', cursor: 'pointer',
+                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                            color: '#bbb', fontSize: '1.4rem', background: '#fafafa',
+                          }}
+                        >+</div>
+                      )}
+                    </div>
+                    <input ref={mockupFileRef} type="file" accept="image/*" style={{ display: 'none' }}
+                      onChange={e => e.target.files[0] && uploadArtworkMockup(e.target.files[0])} />
+                  </div>
+                </>
+              )}
 
               <div style={{ marginTop: '3rem', borderTop: '1px solid #eee', paddingTop: '2rem' }}>
                 <h2 style={{ ...sectionHeading, fontSize: '1.4rem', marginBottom: '.5rem' }}>Sanatçı Hakkında</h2>
