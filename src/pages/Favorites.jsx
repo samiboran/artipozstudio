@@ -55,12 +55,9 @@ function Favorites() {
       ) : (
         <div style={{ padding: '0 2rem' }}>
           <style>{`
-            .favorites-masonry { column-count: 3; column-gap: 1.8rem; }
-            @media (max-width: 900px) {
-              .favorites-masonry { column-count: 2; }
-            }
-            @media (max-width: 560px) {
-              .favorites-masonry { column-count: 1; }
+            .favorites-masonry { column-count: 2; column-gap: 1rem; }
+            @media (min-width: 700px) {
+              .favorites-masonry { column-count: 3; column-gap: 1.8rem; }
             }
           `}</style>
           <div className="favorites-masonry">
