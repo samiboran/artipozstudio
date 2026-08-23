@@ -53,20 +53,26 @@ function Favorites() {
           </button>
         </div>
       ) : (
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))',
-          borderLeft: '1px solid var(--border)'
-        }}>
-          {favs.map((artwork, i) => (
-            <ArtCard
-              key={artwork.id}
-              artwork={artwork}
-              index={i}
-              onClick={() => navigate(`/product/${artwork.slug}`)}
-              onTagClick={tag => navigate(`/isler?category=${tag}`)}
-            />
-          ))}
+        <div style={{ padding: '0 2rem' }}>
+          <style>{`
+            .favorites-masonry { column-count: 3; column-gap: 1.8rem; }
+            @media (max-width: 900px) {
+              .favorites-masonry { column-count: 2; }
+            }
+            @media (max-width: 560px) {
+              .favorites-masonry { column-count: 1; }
+            }
+          `}</style>
+          <div className="favorites-masonry">
+            {favs.map((artwork, i) => (
+              <ArtCard
+                key={artwork.id}
+                artwork={artwork}
+                index={i}
+                onClick={() => navigate(`/product/${artwork.slug}`)}
+              />
+            ))}
+          </div>
         </div>
       )}
     </div>

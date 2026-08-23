@@ -25,10 +25,18 @@ import fineArtOrnekDoku1Default from '../assets/fine-art/ornek-doku-1.jpg'
 import fineArtOrnekDoku2Default from '../assets/fine-art/ornek-doku-2.jpg'
 import fotografBaskiHeroDefault from '../assets/process/studyo.jpg'
 
+// İşler ürünlerinde kullanılan sabit boy/fiyat seçenekleri — yeni eser
+// eklerken varsayılan olarak bunlarla başlanır (gerekirse elle değiştirilebilir).
+const DEFAULT_SIZES = [
+  { label: 'A4', price: 1240 },
+  { label: 'A3', price: 2420 },
+  { label: 'A2', price: 3640 },
+]
+
 const EMPTY_FORM = {
   title: '', slug: '', artist: 'Sami Boran',
-  year: new Date().getFullYear(), medium: '', description: '',
-  tags: '', sizes: [{ label: 'A4', price: '' }],
+  year: new Date().getFullYear(), medium: '', type: '', material: '', description: '',
+  tags: '', sizes: DEFAULT_SIZES.map(s => ({ ...s })),
   is_original: false, stock: 0, image_url: ''
 }
 
@@ -136,12 +144,14 @@ function Admin() {
   const [orders, setOrders] = useState([])
   const [selected, setSelected] = useState(null)
   const [artworkImages, setArtworkImages] = useState([])
+  const [artworkMockups, setArtworkMockups] = useState([])
   const [form, setForm] = useState(EMPTY_FORM)
   const [uploading, setUploading] = useState(false)
   const [saving, setSaving] = useState(false)
   const [msg, setMsg] = useState('')
   const fileRef = useRef()
   const galleryFileRef = useRef()
+  const mockupFileRef = useRef()
 
   // --- Çerçeve ---
   const [frames, setFrames] = useState([])
@@ -253,12 +263,13 @@ function Admin() {
 
   function selectArtwork(aw) {
     setSelected(aw.id)
-    setForm({ ...aw, tags: (aw.tags || []).join(', '), sizes: aw.sizes?.length ? aw.sizes : [{ label: 'A4', price: '' }] })
+    setForm({ ...aw, tags: (aw.tags || []).join(', '), sizes: aw.sizes?.length ? aw.sizes : DEFAULT_SIZES.map(s => ({ ...s })) })
     setMsg('')
     loadArtworkImages(aw.id)
+    loadArtworkMockups(aw.id)
   }
 
-  function newArtwork() { setSelected(null); setForm(EMPTY_FORM); setMsg(''); setArtworkImages([]) }
+  function newArtwork() { setSelected(null); setForm(EMPTY_FORM); setMsg(''); setArtworkImages([]); setArtworkMockups([]) }
 
   async function loadArtworkImages(artworkId) {
     const { data } = await supabase.from('artwork_images').select('*').eq('artwork_id', artworkId).order('sort_order')
@@ -282,6 +293,35 @@ function Admin() {
     const { error } = await supabase.from('artwork_images').delete().eq('id', id)
     if (error) { alert('Görsel silinemedi: ' + error.message); return }
     loadArtworkImages(selected)
+  }
+
+  // Mockup görselleri — ürünün duvarda/mekanda gösterildiği ayrı görsel seti,
+  // artwork_images'tan bağımsız. En fazla 4 adet, aşamalı yükleniyor: bir
+  // öncekine görsel eklenene kadar bir sonraki slot gösterilmiyor.
+  const MAX_MOCKUPS = 4
+
+  async function loadArtworkMockups(artworkId) {
+    const { data } = await supabase.from('artwork_mockups').select('*').eq('artwork_id', artworkId).order('sort_order')
+    setArtworkMockups(data || [])
+  }
+
+  async function uploadArtworkMockup(file) {
+    if (!selected || artworkMockups.length >= MAX_MOCKUPS) return
+    const ext = file.name.split('.').pop()
+    const path = `mockup-${Date.now()}-${Math.random().toString(36).slice(2, 7)}.${ext}`
+    const { error } = await supabase.storage.from('artwork-images').upload(path, file)
+    if (error) { alert('Mockup görseli yüklenemedi: ' + error.message); return }
+    const { data } = supabase.storage.from('artwork-images').getPublicUrl(path)
+    const nextOrder = artworkMockups.length ? Math.max(...artworkMockups.map(i => i.sort_order)) + 1 : 0
+    const { error: insertError } = await supabase.from('artwork_mockups').insert({ artwork_id: selected, image_url: data.publicUrl, sort_order: nextOrder })
+    if (insertError) { alert('Mockup görseli kaydedilemedi: ' + insertError.message); return }
+    loadArtworkMockups(selected)
+  }
+
+  async function deleteArtworkMockup(id) {
+    const { error } = await supabase.from('artwork_mockups').delete().eq('id', id)
+    if (error) { alert('Mockup görseli silinemedi: ' + error.message); return }
+    loadArtworkMockups(selected)
   }
 
   function autoSlug(title) {
@@ -1165,6 +1205,43 @@ function Admin() {
                 )}
               </div>
 
+              <div style={{ marginBottom: '1.5rem' }}>
+                <span style={label}>Mockup Görselleri (mekanda/duvarda gösterim, en fazla {MAX_MOCKUPS})</span>
+                {!selected ? (
+                  <p style={{ fontSize: '.72rem', color: '#aaa', marginTop: '.4rem' }}>
+                    Önce eseri kaydet, sonra mockup görsellerini ekleyebilirsin.
+                  </p>
+                ) : (
+                  <>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '.7rem', marginTop: '.6rem' }}>
+                      {artworkMockups.map(img => (
+                        <div key={img.id} style={{ position: 'relative', width: 90, height: 90 }}>
+                          <img src={img.image_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', border: '1px solid #eee' }} />
+                          <button
+                            onClick={() => deleteArtworkMockup(img.id)}
+                            style={{ position: 'absolute', top: -6, right: -6, background: '#cc4444', color: '#fff', border: 'none', borderRadius: '50%', width: 20, height: 20, cursor: 'pointer', fontSize: '.72rem', lineHeight: 1 }}
+                          >×</button>
+                        </div>
+                      ))}
+                      {/* Aşamalı: bir öncekine görsel yüklenene kadar bir sonraki
+                          slot gösterilmez — MAX_MOCKUPS'a ulaşınca hiç gösterilmez. */}
+                      {artworkMockups.length < MAX_MOCKUPS && (
+                        <div
+                          onClick={() => mockupFileRef.current.click()}
+                          style={{
+                            width: 90, height: 90, border: '2px dashed #ddd', cursor: 'pointer',
+                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                            color: '#bbb', fontSize: '1.4rem', background: '#fafafa',
+                          }}
+                        >+</div>
+                      )}
+                    </div>
+                    <input ref={mockupFileRef} type="file" accept="image/*" style={{ display: 'none' }}
+                      onChange={e => e.target.files[0] && uploadArtworkMockup(e.target.files[0])} />
+                  </>
+                )}
+              </div>
+
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: '1rem', marginBottom: '1rem' }}>
                 <div><span style={label}>Başlık</span><input style={inp} value={form.title} onChange={e => handleTitle(e.target.value)} placeholder="Kırağı Botanik I" /></div>
                 <div><span style={label}>Slug (otomatik)</span><input style={{ ...inp, color: '#aaa' }} value={form.slug} onChange={e => setForm(f => ({ ...f, slug: e.target.value }))} /></div>
@@ -1173,7 +1250,18 @@ function Admin() {
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '1rem', marginBottom: '1rem' }}>
                 <div><span style={label}>Sanatçı</span><input style={inp} value={form.artist} onChange={e => setForm(f => ({ ...f, artist: e.target.value }))} /></div>
                 <div><span style={label}>Yıl</span><input style={inp} type="number" value={form.year} onChange={e => setForm(f => ({ ...f, year: Number(e.target.value) }))} /></div>
-                <div><span style={label}>Medium</span><input style={inp} value={form.medium} onChange={e => setForm(f => ({ ...f, medium: e.target.value }))} placeholder="Fotoğraf" /></div>
+                <div><span style={label}>Medium (kategori)</span><input style={inp} value={form.medium} onChange={e => setForm(f => ({ ...f, medium: e.target.value }))} placeholder="Fotoğraf" /></div>
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '1rem', marginBottom: '1rem' }}>
+                <div>
+                  <span style={label}>Tür (kart başlığında "Başlık / Tür" olarak görünür)</span>
+                  <input style={inp} value={form.type} onChange={e => setForm(f => ({ ...f, type: e.target.value }))} placeholder="Photograph" />
+                </div>
+                <div>
+                  <span style={label}>Malzeme satırı</span>
+                  <input style={inp} value={form.material} onChange={e => setForm(f => ({ ...f, material: e.target.value }))} placeholder="Black & White · Hahnemühle Museum Etching" />
+                </div>
               </div>
 
               <div style={{ marginBottom: '1rem' }}>
