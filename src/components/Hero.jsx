@@ -47,13 +47,21 @@ export default function Hero() {
           .hero-section { height: 100dvh; }
         }
       `}</style>
+      {/* object-fit: cover, geniş/panoramik (yatay) fotoğrafları uzun
+          telefon ekranına sığdırmak için ortadan dar bir dikey şerit
+          kırpıyordu — fotoğrafın asıl konusu (ör. çerçeveli baskı) küçük
+          bir alanda kalıp etrafındaki boş duvar/zemin öne çıkıyordu,
+          "ekrana sığmıyor" hissi buradan geliyordu. contain ile fotoğrafın
+          tamamı her zaman ekrana sığıyor, kırpılmıyor; boşta kalan üst/alt
+          (veya sağ/sol) şeritler zaten var olan koyu zemin + gradient ile
+          dolduruluyor. */}
       {heroUrls.map((url, i) => (
         <img
           key={url}
           src={url}
           alt="Artı Poz"
           style={{
-            position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover',
+            position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'contain',
             opacity: i === index ? 1 : 0, transition: 'opacity 1s ease',
           }}
         />
