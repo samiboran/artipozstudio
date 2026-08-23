@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
 import { useCart } from '../hooks/useCart'
 import CheckoutModal from './CheckoutModal'
 
 export default function CartSidebar({ open, onClose }) {
-  const { items, removeItem, updateQty, total, clearCart } = useCart()
+  const { items, removeItem, updateQty, total, clearCart, loggedIn } = useCart()
   const [checkoutOpen, setCheckoutOpen] = useState(false)
   const [success, setSuccess] = useState(false)
 
@@ -60,6 +61,22 @@ export default function CartSidebar({ open, onClose }) {
             }}>
               ✓ Siparişiniz alındı!<br />
               <span style={{ fontSize: '.85rem', color: '#aaa', fontStyle: 'normal' }}>En kısa sürede sizinle iletişime geçeceğiz.</span>
+            </div>
+          ) : !loggedIn ? (
+            <div style={{ textAlign: 'center', paddingTop: '4rem' }}>
+              <div style={{
+                fontFamily: "'Archivo Black', sans-serif",
+                fontSize: '1.2rem', color: 'var(--muted)', fontStyle: 'italic', marginBottom: '1rem'
+              }}>
+                Sepete eklemek için giriş yap
+              </div>
+              <Link to="/login" onClick={onClose} style={{
+                display: 'inline-block', padding: '.65rem 1.4rem',
+                background: 'var(--ink)', color: '#fff',
+                fontSize: '.68rem', letterSpacing: '.16em', textTransform: 'uppercase',
+              }}>
+                Giriş Yap
+              </Link>
             </div>
           ) : items.length === 0 ? (
             <div style={{

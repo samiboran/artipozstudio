@@ -14,8 +14,14 @@ function setCart(newCart) {
 supabase.auth.getSession().then(({ data: { session } }) => { currentUserId = session?.user?.id || null })
 // setTimeout: onAuthStateChange callback'i içinde senkron supabase çağrısı
 // auth-lock deadlock'una yol açıyor (bu oturumda tespit edilip düzeltilen bug).
+// CartSidebar App.jsx'te sayfa değişse de hep aynı örnekte kaldığı için,
+// currentUserId güncellendikten sonra listeners'ı da tetikleyip (loggedIn'i
+// okuyan bileşenlerin) yeniden render olmasını sağlıyoruz.
 supabase.auth.onAuthStateChange((_event, session) => {
-  setTimeout(() => { currentUserId = session?.user?.id || null }, 0)
+  setTimeout(() => {
+    currentUserId = session?.user?.id || null
+    listeners.forEach(l => l([...cartState]))
+  }, 0)
 })
 
 // Sepete ekleme olayını arka planda kaydeder — sepetin kendi çalışmasını
