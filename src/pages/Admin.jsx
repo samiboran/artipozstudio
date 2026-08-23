@@ -604,89 +604,100 @@ function Admin() {
   // Bir sayfaya ait tüm görsel slotlarını render eder — Ana Sayfa, Çerçeve,
   // Fine Art Baskı ve Fotoğraf Baskı sekmelerinde, o sayfanın kendi
   // içerik/fiyat düzenleyicisinin altında tek bir yerde gösterilsin diye
-  // ortak fonksiyon olarak çıkarıldı.
+  // ortak fonksiyon olarak çıkarıldı. Kompakt grid: slot sayısı arttıkça
+  // (10 kağıt + hizmetler + ... gibi) tek sütunda alt alta uzayıp
+  // gitmesin diye her slot küçük bir kart olarak yan yana diziliyor.
   function renderPageImageSlots(pageKey) {
-    return IMAGE_SLOTS.filter(slot => slot.page === pageKey).map(slot => {
-      const key = `${slot.page}:${slot.section}`
-      const rows = pageImages[key] || []
-      const singleImage = !slot.multiple && rows[0]
-      // Admin hiç görsel yüklemediyse (satır yok) sitede hâlâ sayfanın kendi
-      // hardcoded fallback görseli gösteriliyor — Sami "eskisini de göreyim"
-      // dedi, o yüzden satır yoksa bunu önizlemede gösteriyoruz.
-      const showingDefault = !slot.multiple && !rows[0] && slot.defaultImg
-      return (
-        <div key={key} style={{ marginBottom: '2.5rem', borderBottom: '1px solid #eee', paddingBottom: '2rem' }}>
-          <span style={{ ...label, display: 'block', marginBottom: '.8rem' }}>{slot.label}</span>
-          <div
-            className="admin-slot-box"
-            onClick={() => triggerSlotUpload(slot)}
-            onDragOver={e => e.preventDefault()}
-            onDrop={e => { e.preventDefault(); uploadForSlot(e.dataTransfer.files[0], slot) }}
-            onMouseEnter={() => { hoveredSlotRef.current = slot }}
-            onMouseLeave={() => { if (hoveredSlotRef.current === slot) hoveredSlotRef.current = null }}
-            style={{
-              border: '2px dashed #ddd', padding: singleImage || showingDefault ? '.5rem' : '1.5rem', textAlign: 'center',
-              cursor: 'pointer', background: '#fafafa',
-              minHeight: 160, display: 'flex', alignItems: 'center', justifyContent: 'center'
-            }}
-          >
-            {singleImage ? (
-              <div style={{ position: 'relative', width: '100%', maxWidth: 360, aspectRatio: slot.aspect, overflow: 'hidden' }}>
-                <img src={rows[0].image_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
-                <button
-                  onClick={e => { e.stopPropagation(); deletePageImage(rows[0].id) }}
-                  style={{ position: 'absolute', top: 6, right: 6, background: '#cc4444', color: '#fff', border: 'none', borderRadius: '50%', width: 22, height: 22, cursor: 'pointer', fontSize: '.8rem', lineHeight: 1 }}
-                >×</button>
+    const slots = IMAGE_SLOTS.filter(slot => slot.page === pageKey)
+    return (
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))', gap: '1.2rem' }}>
+        {slots.map(slot => {
+          const key = `${slot.page}:${slot.section}`
+          const rows = pageImages[key] || []
+          const singleImage = !slot.multiple && rows[0]
+          // Admin hiç görsel yüklemediyse (satır yok) sitede hâlâ sayfanın
+          // kendi hardcoded fallback görseli gösteriliyor.
+          const showingDefault = !slot.multiple && !rows[0] && slot.defaultImg
+          return (
+            <div key={key}>
+              <div
+                className="admin-slot-box"
+                onClick={() => triggerSlotUpload(slot)}
+                onDragOver={e => e.preventDefault()}
+                onDrop={e => { e.preventDefault(); uploadForSlot(e.dataTransfer.files[0], slot) }}
+                onMouseEnter={() => { hoveredSlotRef.current = slot }}
+                onMouseLeave={() => { if (hoveredSlotRef.current === slot) hoveredSlotRef.current = null }}
+                style={{
+                  border: '2px dashed #ddd', textAlign: 'center', cursor: 'pointer', background: '#fafafa',
+                  aspectRatio: slot.aspect, position: 'relative', overflow: 'hidden',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                }}
+              >
+                {singleImage ? (
+                  <>
+                    <img src={rows[0].image_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+                    <button
+                      onClick={e => { e.stopPropagation(); deletePageImage(rows[0].id) }}
+                      style={{ position: 'absolute', top: 4, right: 4, background: '#cc4444', color: '#fff', border: 'none', borderRadius: '50%', width: 20, height: 20, cursor: 'pointer', fontSize: '.72rem', lineHeight: 1 }}
+                    >×</button>
+                  </>
+                ) : showingDefault ? (
+                  <>
+                    <img src={slot.defaultImg} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block', opacity: .85 }} />
+                    <span style={{
+                      position: 'absolute', bottom: 4, left: 4, right: 4, background: 'rgba(0,0,0,.65)', color: '#fff',
+                      fontSize: '.56rem', padding: '.2rem .35rem', letterSpacing: '.02em',
+                    }}>
+                      Şu an bu — değiştir
+                    </span>
+                  </>
+                ) : slot.multiple && rows.length > 0 ? (
+                  <>
+                    <img src={rows[0].image_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+                    <span style={{
+                      position: 'absolute', bottom: 4, right: 4, background: 'rgba(0,0,0,.65)', color: '#fff',
+                      fontSize: '.6rem', padding: '.15rem .4rem',
+                    }}>
+                      {rows.length}
+                    </span>
+                  </>
+                ) : slot.multiple && rows.length === 0 && slot.defaultImgs?.length > 0 ? (
+                  <>
+                    <img src={slot.defaultImgs[0]} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block', opacity: .85 }} />
+                    <span style={{
+                      position: 'absolute', bottom: 4, left: 4, right: 4, background: 'rgba(0,0,0,.65)', color: '#fff',
+                      fontSize: '.56rem', padding: '.2rem .35rem', letterSpacing: '.02em',
+                    }}>
+                      Şu an bunlar ({slot.defaultImgs.length}) — değiştir
+                    </span>
+                  </>
+                ) : (
+                  <span style={{ color: '#bbb', fontSize: '.68rem', padding: '.6rem' }}>
+                    {slot.multiple ? '+ Görsel Ekle' : 'Boş — Yükle'}
+                  </span>
+                )}
               </div>
-            ) : showingDefault ? (
-              <div style={{ position: 'relative', width: '100%', maxWidth: 360, aspectRatio: slot.aspect, overflow: 'hidden' }}>
-                <img src={slot.defaultImg} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block', opacity: .85 }} />
-                <span style={{
-                  position: 'absolute', bottom: 6, left: 6, background: 'rgba(0,0,0,.65)', color: '#fff',
-                  fontSize: '.62rem', padding: '.2rem .5rem', letterSpacing: '.03em',
-                }}>
-                  Sitede şu an bu görünüyor — değiştirmek için tıkla
-                </span>
-              </div>
-            ) : (
-              <span style={{ color: '#bbb', fontSize: '.85rem' }}>
-                {slot.multiple
-                  ? 'Görsel eklemek için sürükle & bırak, tıkla veya üzerine gelip yapıştır (Ctrl+V)'
-                  : 'Henüz görsel yok — sürükle & bırak, tıkla veya üzerine gelip yapıştır (Ctrl+V)'}
-              </span>
-            )}
-          </div>
-          <p style={{ fontSize: '.66rem', color: '#bbb', marginTop: '.4rem' }}>
-            Önizleme, sitede gerçekte nasıl kırpılacağını (oran: {slot.aspect}) gösteriyor.
-          </p>
-          {slot.multiple && rows.length > 0 && (
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '.8rem', marginTop: '.8rem' }}>
-              {rows.map(row => (
-                <div key={row.id} style={{ position: 'relative', width: 130, aspectRatio: slot.aspect, overflow: 'hidden' }}>
-                  <img src={row.image_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block', border: '1px solid #eee' }} />
-                  <button
-                    onClick={() => deletePageImage(row.id)}
-                    style={{ position: 'absolute', top: 4, right: 4, background: '#cc4444', color: '#fff', border: 'none', borderRadius: '50%', width: 20, height: 20, cursor: 'pointer', fontSize: '.72rem', lineHeight: 1 }}
-                  >×</button>
+              <p style={{ fontSize: '.66rem', color: '#888', marginTop: '.4rem', lineHeight: 1.35 }}>
+                {slot.label}
+              </p>
+              {slot.multiple && rows.length > 0 && (
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '.4rem', marginTop: '.4rem' }}>
+                  {rows.map(row => (
+                    <div key={row.id} style={{ position: 'relative', width: 44, aspectRatio: slot.aspect, overflow: 'hidden' }}>
+                      <img src={row.image_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block', border: '1px solid #eee' }} />
+                      <button
+                        onClick={() => deletePageImage(row.id)}
+                        style={{ position: 'absolute', top: 1, right: 1, background: '#cc4444', color: '#fff', border: 'none', borderRadius: '50%', width: 14, height: 14, cursor: 'pointer', fontSize: '.58rem', lineHeight: 1 }}
+                      >×</button>
+                    </div>
+                  ))}
                 </div>
-              ))}
+              )}
             </div>
-          )}
-          {slot.multiple && rows.length === 0 && slot.defaultImgs?.length > 0 && (
-            <>
-              <p style={{ fontSize: '.66rem', color: '#bbb', margin: '.6rem 0 .3rem' }}>Sitede şu an bunlar görünüyor:</p>
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '.8rem' }}>
-                {slot.defaultImgs.map((src, i) => (
-                  <div key={i} style={{ width: 130, aspectRatio: slot.aspect, overflow: 'hidden', opacity: .85 }}>
-                    <img src={src} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block', border: '1px solid #eee' }} />
-                  </div>
-                ))}
-              </div>
-            </>
-          )}
-        </div>
-      )
-    })
+          )
+        })}
+      </div>
+    )
   }
 
   async function loadPageContent() {

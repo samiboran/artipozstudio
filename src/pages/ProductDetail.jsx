@@ -1,10 +1,11 @@
 import { useState, useEffect, useRef } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { fetchArtworkBySlug, SIZE_MM } from '../lib/artworks'
+import { fetchArtworkBySlug, fetchArtworks, SIZE_MM } from '../lib/artworks'
 import { makeSVG } from '../lib/makeSVG'
 import { useCart } from '../hooks/useCart'
 import { useFavorites } from '../hooks/useFavorites'
 import { supabase } from '../lib/supabase'
+import ArtCard from '../components/ArtCard'
 
 // Mobilde tek görsel yerine, kapak + galeri + mockup görsellerinin hepsini
 // tek bir kaydırmalı (scroll-snap) şeritte, alt nokta göstergesiyle sunan
@@ -39,7 +40,7 @@ function MobileImageCarousel({ images, alt }) {
       >
         {images.map((img, i) => (
           <div key={img.id || i} style={{ flex: '0 0 100%', scrollSnapAlign: 'start', aspectRatio: '4/5', background: 'var(--surface)' }}>
-            <img src={img.image_url} alt={alt} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+            <img src={img.image_url} alt={alt} style={{ width: '100%', height: '100%', objectFit: 'contain', display: 'block' }} />
           </div>
         ))}
       </div>
@@ -70,6 +71,9 @@ function ProductDetail() {
   const [openAcc, setOpenAcc] = useState('desc')
   const [artistInfo, setArtistInfo] = useState(null)
   const [activeImage, setActiveImage] = useState(null)
+  const [moreFromSeller, setMoreFromSeller] = useState([])
+  const [favShake, setFavShake] = useState(false)
+  const [cartShake, setCartShake] = useState(false)
 
   useEffect(() => {
     fetchArtworkBySlug(slug)
@@ -78,6 +82,11 @@ function ProductDetail() {
         if (data?.sizes?.length) setActiveSize(data.sizes[0].label)
         if (data?.title) document.title = `${data.title} — Artı Poz`
         setActiveImage(data?.image_url || null)
+        if (data?.artist) {
+          fetchArtworks({})
+            .then(all => setMoreFromSeller((all || []).filter(a => a.artist === data.artist && a.id !== data.id).slice(0, 4)))
+            .catch(err => console.error('Sanatçının diğer eserleri yüklenemedi:', err))
+        }
       })
       .catch(err => console.error('Eser yüklenemedi:', err))
       .finally(() => setLoading(false))
@@ -112,7 +121,7 @@ function ProductDetail() {
   const accs = [
     { key: 'desc', label: 'Eser Hakkında', content: artwork.description },
     { key: 'specs', label: 'Teknik Detaylar', content: `${artwork.type || artwork.medium || '—'} · ${artwork.material || '—'} · ${artwork.year || '—'}` },
-    { key: 'ship', label: 'Kargo & İade', content: 'Yurt içi kargo ücretsiz, 3–5 iş günü. Eserler özel ambalajla gönderilir. 14 gün içinde iade edilebilir.' },
+    { key: 'ship', label: 'Kargo', content: 'Yurt içi kargo ücretsiz, 3–5 iş günü içinde teslim edilir. Eserler köşe korumalı özel ambalajla gönderilir. İade koşulları için yukarıdaki "14 Gün İade Garantisi"ne bakabilirsiniz.' },
     { key: 'cert', label: 'Baskı Kalitesi', content: 'Fine art baskılarımız için Hahnemühle ve Awagami kağıtları, arşivsel pigment mürekkeplerle kullanılır.' },
   ]
 
@@ -224,7 +233,7 @@ function ProductDetail() {
 
             {view === 'print' ? (
               activeImage
-                ? <img src={activeImage} alt={artwork.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                ? <img src={activeImage} alt={artwork.title} style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
                 : <div dangerouslySetInnerHTML={{ __html: makeSVG(0) }} style={{ width: '100%', height: '100%' }} />
             ) : (
               /* Duvar mockup sahnesi */
@@ -321,18 +330,21 @@ function ProductDetail() {
           </div>
 
           <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '1rem' }}>
-            <h1 style={{ fontFamily: "'Archivo Black', sans-serif", fontSize: 'clamp(1.9rem, 2.8vw, 2.8rem)', fontWeight: 300, lineHeight: 1.1, marginBottom: '.3rem' }}>
+            <h1 style={{ fontFamily: "'Playfair Display', serif", fontWeight: 600, fontSize: 'clamp(1.9rem, 2.8vw, 2.8rem)', lineHeight: 1.15, marginBottom: '.3rem' }}>
               {artwork.title}
             </h1>
             <button
-              onClick={() => toggle(artwork.id)}
+              onClick={async () => {
+                const ok = await toggle(artwork.id)
+                if (!ok) { setFavShake(true); setTimeout(() => setFavShake(false), 500) }
+              }}
               aria-label="Favorilere ekle"
               style={{
                 background: 'none', border: `1px solid ${isFav(artwork.id) ? 'var(--red)' : 'var(--border)'}`,
                 width: 38, height: 38, flexShrink: 0, marginTop: '.3rem',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 fontSize: '1.05rem', color: isFav(artwork.id) ? 'var(--red)' : 'var(--muted)',
-                cursor: 'pointer'
+                cursor: 'pointer', animation: favShake ? 'needsLogin .5s' : 'none',
               }}
             >
               {isFav(artwork.id) ? '♥' : '♡'}
@@ -351,7 +363,7 @@ function ProductDetail() {
 
           {activePrice && (
             <div style={{ display: 'flex', alignItems: 'baseline', gap: '.8rem', marginBottom: '1.3rem' }}>
-              <div style={{ fontFamily: "'Archivo Black', sans-serif", fontSize: '2.1rem' }}>
+              <div style={{ fontFamily: "'Archivo', sans-serif", fontWeight: 600, fontSize: '1.7rem', color: 'var(--ink)' }}>
                 ₺{activePrice.toLocaleString('tr-TR')}
               </div>
               <div style={{ fontSize: '.6rem', letterSpacing: '.1em', textTransform: 'uppercase', color: 'var(--muted)' }}>
@@ -387,17 +399,18 @@ function ProductDetail() {
           {/* CTA */}
           <button
   onClick={() => {
-    addItem(artwork, activeSize, Number(activePrice) || 0)
-setAdded(true)
-setTimeout(() => setAdded(false), 1800)
-    
+    const ok = addItem(artwork, activeSize, Number(activePrice) || 0)
+    if (!ok) { setCartShake(true); setTimeout(() => setCartShake(false), 500); return }
+    setAdded(true)
+    setTimeout(() => setAdded(false), 1800)
   }}
   style={{
     width: '100%', padding: '.9rem',
     background: added ? 'var(--gold)' : 'var(--ink)',
     color: '#fff', border: 'none',
     fontSize: '.68rem', letterSpacing: '.2em', textTransform: 'uppercase',
-    cursor: 'pointer', transition: 'background .3s'
+    cursor: 'pointer', transition: 'background .3s',
+    animation: cartShake ? 'needsLogin .5s' : 'none',
   }}
 >
   {added ? '✓ Sepete Eklendi' : 'Sepete Ekle'}
@@ -456,6 +469,20 @@ setTimeout(() => setAdded(false), 1800)
 
         </div>
       </div>
+
+      {/* Bu sanatçıdan diğer eserler */}
+      {moreFromSeller.length > 0 && (
+        <section style={{ maxWidth: 1300, margin: '0 auto', padding: '0 2rem 4rem', borderTop: '1px solid var(--border)' }}>
+          <h2 style={{ fontFamily: "'Playfair Display', serif", fontWeight: 600, fontSize: '1.4rem', margin: '2.5rem 0 1.5rem' }}>
+            {artwork.artist}'dan Diğer Eserler
+          </h2>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '1.5rem' }}>
+            {moreFromSeller.map((a, i) => (
+              <ArtCard key={a.id} artwork={a} index={i} onClick={() => navigate(`/product/${a.slug}`)} />
+            ))}
+          </div>
+        </section>
+      )}
 
       {/* Sanatçı Hakkında */}
       {artistInfo && (

@@ -24,8 +24,8 @@ function Isler() {
 
       <div style={{ maxWidth: 1300, margin: '0 auto', padding: '3rem 2rem 1.5rem' }}>
         <h1 style={{
-          fontFamily: "'Archivo Black', sans-serif", fontWeight: 300,
-          fontSize: '2rem', margin: '0 0 .4rem'
+          fontFamily: "'Playfair Display', serif", fontWeight: 600,
+          fontSize: '2.2rem', margin: '0 0 .4rem'
         }}>
           İşler
         </h1>
