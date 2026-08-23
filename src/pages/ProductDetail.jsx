@@ -87,6 +87,12 @@ function ProductDetail() {
             .then(all => setMoreFromSeller((all || []).filter(a => a.artist === data.artist && a.id !== data.id).slice(0, 4)))
             .catch(err => console.error('Sanatçının diğer eserleri yüklenemedi:', err))
         }
+        // Ana Sayfa'daki "Fine Art Seçkisi" vitrini en çok görüntülenen
+        // eserleri otomatik gösteriyor — arka planda, sayfayı bekletmeden.
+        if (data?.id) {
+          supabase.rpc('increment_artwork_view', { artwork_id: data.id })
+            .then(({ error }) => { if (error) console.error('Görüntülenme sayılamadı:', error.message) })
+        }
       })
       .catch(err => console.error('Eser yüklenemedi:', err))
       .finally(() => setLoading(false))

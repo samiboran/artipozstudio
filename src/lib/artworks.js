@@ -9,11 +9,13 @@ export const SIZE_MM = {
   A2: '420 × 594 mm',
 }
 
-export async function fetchArtworks({ tag, search } = {}) {
-  let query = supabase
-    .from('artworks')
-    .select('*')
-    .order('created_at', { ascending: false })
+export async function fetchArtworks({ tag, search, orderBy } = {}) {
+  let query = supabase.from('artworks').select('*')
+  query = orderBy === 'view_count'
+    // Eşit görüntülenmede (ör. hepsi 0) en yeni eser öne çıksın diye
+    // ikincil sıralama created_at.
+    ? query.order('view_count', { ascending: false }).order('created_at', { ascending: false })
+    : query.order('created_at', { ascending: false })
 
   if (tag) {
     const mainCats = ['fotoğraf', 'resim', 'baskı', 'heykel']

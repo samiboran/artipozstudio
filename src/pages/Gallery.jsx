@@ -328,7 +328,10 @@ function Gallery() {
   }, [])
 
   useEffect(() => {
-    fetchArtworks({})
+    // En çok görüntülenen eserler otomatik öne çıksın diye — Admin'de elle
+    // seçim yapmaya gerek yok, ürün sayfası her ziyaret edildiğinde
+    // view_count artıyor (bkz. ProductDetail.jsx).
+    fetchArtworks({ orderBy: 'view_count' })
       .then(data => setSeckiArtworks((data || []).slice(0, 10)))
       .catch(err => console.error('Fine Art Seçkisi yüklenemedi:', err))
   }, [])
