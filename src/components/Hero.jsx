@@ -3,7 +3,12 @@ import { supabase } from '../lib/supabase'
 import heroImgDefault from '../assets/fine-art/hero.jpg'
 
 export default function Hero() {
-  const [heroUrls, setHeroUrls] = useState([heroImgDefault])
+  // Başlangıçta boş — Admin'de gerçek hero görselleri zaten yüklüyse,
+  // paketlenmiş varsayılan görseli bir an için gösterip sonra gerçek
+  // görsele geçmek (flash/titreme) yerine, veri gelene kadar sadece koyu
+  // zemin görünür. Supabase'den hiç satır dönmezse (Sami henüz hiç
+  // görsel yüklemediyse) varsayılana geri düşülür.
+  const [heroUrls, setHeroUrls] = useState([])
   const [index, setIndex] = useState(0)
 
   useEffect(() => {
@@ -14,8 +19,8 @@ export default function Hero() {
       .eq('section', 'hero')
       .order('sort_order')
       .order('id')
-      .then(({ data }) => { if (data?.length) setHeroUrls(data.map(row => row.image_url)) })
-      .catch(err => console.error('Hero görselleri yüklenemedi:', err))
+      .then(({ data }) => setHeroUrls(data?.length ? data.map(row => row.image_url) : [heroImgDefault]))
+      .catch(err => { console.error('Hero görselleri yüklenemedi:', err); setHeroUrls([heroImgDefault]) })
   }, [])
 
   useEffect(() => {
@@ -58,16 +63,6 @@ export default function Hero() {
         position: 'absolute', inset: 0,
         background: 'linear-gradient(180deg, rgba(0,0,0,.4), rgba(0,0,0,.6))'
       }} />
-
-      <div style={{ position: 'relative', zIndex: 1 }}>
-        <h1 style={{
-          fontFamily: "'Archivo', sans-serif", fontWeight: 300,
-          fontSize: 'clamp(3.5rem, 11vw, 8rem)', letterSpacing: '.14em',
-          textTransform: 'lowercase', color: 'var(--blue)', margin: 0,
-        }}>
-          artı poz
-        </h1>
-      </div>
     </section>
   )
 }
