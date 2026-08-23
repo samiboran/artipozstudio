@@ -25,11 +25,23 @@ export default function Hero() {
   }, [heroUrls])
 
   return (
-    <section style={{
-      position: 'relative', height: '100vh', minHeight: 520,
+    <section className="hero-section" style={{
+      position: 'relative', minHeight: 520,
       display: 'flex', alignItems: 'center', justifyContent: 'center',
       textAlign: 'center', overflow: 'hidden', background: '#2b2f28',
     }}>
+      {/* Mobil tarayıcılarda (özellikle Android/Chrome) adres çubuğu ilk
+          açılışta görünürken 100vh, tarayıcı çubuğu gizliyken hesaplanan
+          en büyük yüksekliği baz alıyor — bu yüzden Hero, ekranın
+          gerçekte görünen kısmından daha kısa/"küçük" kalıyordu. 100dvh
+          (dynamic viewport height) tarayıcı arayüzünü hesaba katıyor;
+          desteklenmeyen tarayıcılarda @supports ile 100vh'ye düşüyor. */}
+      <style>{`
+        .hero-section { height: 100vh; }
+        @supports (height: 100dvh) {
+          .hero-section { height: 100dvh; }
+        }
+      `}</style>
       {heroUrls.map((url, i) => (
         <img
           key={url}
