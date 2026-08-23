@@ -27,7 +27,7 @@ function Isler() {
           fontFamily: "'Playfair Display', serif", fontWeight: 600,
           fontSize: '2.2rem', margin: '0 0 .4rem'
         }}>
-          İşler
+          <span lang="en">Fine Art</span> Seçkisi
         </h1>
         {search && (
           <p style={{ fontFamily: "'Archivo', sans-serif", fontSize: '.82rem', color: 'var(--muted)' }}>

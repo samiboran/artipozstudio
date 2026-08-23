@@ -40,7 +40,7 @@ const NAV_LINKS = [
   { label: 'Fine Art Baskı', to: '/fine-art-baski', lang: 'en' },
   { label: 'Kağıt Rehberi', to: '/kagit-rehberi' },
   { label: 'Çerçeve', to: '/cerceve' },
-  { label: 'İşler', to: '/isler' },
+  { label: <><span lang="en">Fine Art</span> Seçkisi</>, to: '/isler' },
 ]
 
 function Navbar({ cartCount = 0, onCartClick }) {
