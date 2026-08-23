@@ -1,10 +1,10 @@
 import { useState, useEffect } from 'react'
-import { Link } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import heroImgDefault from '../assets/fine-art/hero.jpg'
 
 export default function Hero() {
-  const [heroUrl, setHeroUrl] = useState(heroImgDefault)
+  const [heroUrls, setHeroUrls] = useState([heroImgDefault])
+  const [index, setIndex] = useState(0)
 
   useEffect(() => {
     supabase
@@ -14,10 +14,15 @@ export default function Hero() {
       .eq('section', 'hero')
       .order('sort_order')
       .order('id')
-      .limit(1)
-      .then(({ data }) => { if (data?.[0]) setHeroUrl(data[0].image_url) })
-      .catch(err => console.error('Hero görseli yüklenemedi:', err))
+      .then(({ data }) => { if (data?.length) setHeroUrls(data.map(row => row.image_url)) })
+      .catch(err => console.error('Hero görselleri yüklenemedi:', err))
   }, [])
+
+  useEffect(() => {
+    if (heroUrls.length < 2) return
+    const id = setInterval(() => setIndex(i => (i + 1) % heroUrls.length), 3000)
+    return () => clearInterval(id)
+  }, [heroUrls])
 
   return (
     <section style={{
@@ -25,11 +30,17 @@ export default function Hero() {
       display: 'flex', alignItems: 'center', justifyContent: 'center',
       textAlign: 'center', overflow: 'hidden', background: '#2b2f28',
     }}>
-      <img
-        src={heroUrl}
-        alt="Artı Poz"
-        style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }}
-      />
+      {heroUrls.map((url, i) => (
+        <img
+          key={url}
+          src={url}
+          alt="Artı Poz"
+          style={{
+            position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover',
+            opacity: i === index ? 1 : 0, transition: 'opacity 1s ease',
+          }}
+        />
+      ))}
 
       <div style={{
         position: 'absolute', inset: 0,
@@ -44,15 +55,6 @@ export default function Hero() {
         }}>
           artı poz
         </h1>
-
-        <Link to="/fine-art-baski" style={{
-          display: 'inline-block', marginTop: '2.5rem',
-          padding: '.85rem 2.2rem', border: '1px solid rgba(255,255,255,.7)',
-          color: '#fff', fontFamily: "'Archivo', sans-serif",
-          fontSize: '.72rem', letterSpacing: '.22em', textTransform: 'uppercase',
-        }}>
-          Sipariş
-        </Link>
       </div>
     </section>
   )
