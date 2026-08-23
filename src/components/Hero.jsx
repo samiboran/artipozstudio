@@ -40,28 +40,35 @@ export default function Hero() {
           en büyük yüksekliği baz alıyor — bu yüzden Hero, ekranın
           gerçekte görünen kısmından daha kısa/"küçük" kalıyordu. 100dvh
           (dynamic viewport height) tarayıcı arayüzünü hesaba katıyor;
-          desteklenmeyen tarayıcılarda @supports ile 100vh'ye düşüyor. */}
+          desteklenmeyen tarayıcılarda @supports ile 100vh'ye düşüyor.
+
+          object-fit: cover + tam ekran (100dvh) yükseklik, geniş/panoramik
+          fotoğrafları dar bir telefon ekranına sığdırmak için çok agresif
+          kırpıp konuyu (ör. çerçeveli baskı) küçültüyordu. object-fit:
+          contain ise kırpmıyordu ama görseli küçültüp etrafını koyu
+          boşlukla dolduruyordu. İkisi arasında bir denge için mobilde
+          Hero'nun yüksekliği düşürüldü (cover + daha kısa kutu = daha az
+          agresif kırpma, gri/boş şerit yok çünkü cover her zaman kutuyu
+          dolduruyor). */}
       <style>{`
         .hero-section { height: 100vh; }
         @supports (height: 100dvh) {
           .hero-section { height: 100dvh; }
         }
+        @media (max-width: 640px) {
+          .hero-section { height: 55vh; }
+          @supports (height: 100dvh) {
+            .hero-section { height: 55dvh; }
+          }
+        }
       `}</style>
-      {/* object-fit: cover, geniş/panoramik (yatay) fotoğrafları uzun
-          telefon ekranına sığdırmak için ortadan dar bir dikey şerit
-          kırpıyordu — fotoğrafın asıl konusu (ör. çerçeveli baskı) küçük
-          bir alanda kalıp etrafındaki boş duvar/zemin öne çıkıyordu,
-          "ekrana sığmıyor" hissi buradan geliyordu. contain ile fotoğrafın
-          tamamı her zaman ekrana sığıyor, kırpılmıyor; boşta kalan üst/alt
-          (veya sağ/sol) şeritler zaten var olan koyu zemin + gradient ile
-          dolduruluyor. */}
       {heroUrls.map((url, i) => (
         <img
           key={url}
           src={url}
           alt="Artı Poz"
           style={{
-            position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'contain',
+            position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover',
             opacity: i === index ? 1 : 0, transition: 'opacity 1s ease',
           }}
         />
