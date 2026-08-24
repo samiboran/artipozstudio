@@ -362,7 +362,10 @@ function FilePrepCards({ images, content }) {
               src={images[`${card.key}-gorsel`]}
               alt={card.title}
               loading="lazy" decoding="async"
-              style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }}
+              // Bazı referans fotoğraflar (ör. Photoshop ekran görüntüsü, masa
+              // üstü çekimler) çok boş alan bırakıyor — hafif zoom bu boşluğu
+              // üstten/alttan kırpıyor.
+              style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', transform: 'scale(1.18)' }}
             />
           ) : (
             <div style={{
@@ -535,12 +538,16 @@ function Gallery() {
             return (
             <Link key={h.key} to={h.to} className="hizmet-card">
               {imgSrc ? (
-                <img
-                  src={imgSrc}
-                  alt={title}
-                  loading="lazy" decoding="async"
-                  style={{ width: '100%', aspectRatio: '4 / 3', objectFit: 'cover', display: 'block' }}
-                />
+                <div style={{ width: '100%', aspectRatio: '4 / 3', overflow: 'hidden' }}>
+                  <img
+                    src={imgSrc}
+                    alt={title}
+                    loading="lazy" decoding="async"
+                    // Bazı hizmet fotoğrafları konunun etrafında çok boş alan
+                    // bırakıyor — hafif zoom bu boşluğu üstten/alttan kırpıyor.
+                    style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block', transform: 'scale(1.18)' }}
+                  />
+                </div>
               ) : (
                 <div style={{
                   width: '100%', aspectRatio: '4 / 3', background: '#e4e2db',
