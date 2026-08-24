@@ -56,10 +56,9 @@ export default function Hero() {
   }, [])
 
   // Meltem'in mobil için ayrıca hazırladığı dikey/portre kırpımlar
-  // yüklenmişse onlar kullanılıyor (tam ekran, kırpma sorunu yok — zaten
-  // mobile için hazırlanmışlar). Henüz yüklenmemişse, masaüstü için
-  // hazırlanan yatay görsellere geri düşülüyor; o durumda agresif
-  // kırpmayı azaltmak için Hero'nun boyu kısaltılıyor.
+  // yüklenmişse onlar kullanılıyor. Henüz yüklenmemişse, masaüstü için
+  // hazırlanan yatay görsellere geri düşülüyor — Hero artık kısa/sabit
+  // boyda (52vh) olduğu için ikisi de bu boyda makul görünüyor.
   const hasMobileSet = mobileUrls.length > 0
   const mobileStackUrls = hasMobileSet ? mobileUrls : desktopUrls
   // page_images sorgusu dönene kadar (desktopUrls henüz boş) koyu/siyah bir
@@ -68,34 +67,17 @@ export default function Hero() {
   const loading = desktopUrls.length === 0
 
   return (
-    <section className={`hero-section${hasMobileSet ? ' hero-section--mobile-set' : ''}${loading ? ' hero-section--loading' : ''}`} style={{
-      position: 'relative', minHeight: 520,
+    <section className={`hero-section${loading ? ' hero-section--loading' : ''}`} style={{
+      position: 'relative',
       display: 'flex', alignItems: 'center', justifyContent: 'center',
       textAlign: 'center', overflow: 'hidden', background: 'var(--surface)',
     }}>
-      {/* Mobil tarayıcılarda (özellikle Android/Chrome) adres çubuğu ilk
-          açılışta görünürken 100vh, tarayıcı çubuğu gizliyken hesaplanan
-          en büyük yüksekliği baz alıyor — bu yüzden Hero, ekranın
-          gerçekte görünen kısmından daha kısa/"küçük" kalıyordu. 100dvh
-          (dynamic viewport height) tarayıcı arayüzünü hesaba katıyor;
-          desteklenmeyen tarayıcılarda @supports ile 100vh'ye düşüyor.
-
-          Mobil için özel (dikey/portre) hero görselleri yüklenmişse
-          (.hero-section--mobile-set) mobilde de tam ekran gösteriliyor —
-          zaten o ekran için hazırlanmışlar, kırpma sorunu yok. Henüz
-          yüklenmemişse masaüstü görselleri kullanılıyor ve agresif
-          kırpmayı azaltmak için Hero'nun boyu kısaltılıyor. */}
+      {/* Ana Sayfa hero'su artık Çerçeve/Fine Art Baskı/Fotoğraf Baskı
+          sayfalarındaki hero'larla aynı boyda (Çerçeve ile birebir aynı
+          değer, 52vh/340px — önceden tam ekran (100vh) kapladığı için
+          site genelinde tutarsız duruyordu). */}
       <style>{`
-        .hero-section { height: 100vh; }
-        @supports (height: 100dvh) {
-          .hero-section { height: 100dvh; }
-        }
-        @media (max-width: 640px) {
-          .hero-section:not(.hero-section--mobile-set) { height: 55vh; }
-          @supports (height: 100dvh) {
-            .hero-section:not(.hero-section--mobile-set) { height: 55dvh; }
-          }
-        }
+        .hero-section { height: 52vh; min-height: 340px; }
         .hero-desktop-imgs { display: block; }
         .hero-mobile-imgs { display: none; }
         @media (max-width: 640px) {
