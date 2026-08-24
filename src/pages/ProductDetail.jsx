@@ -129,7 +129,7 @@ function ProductDetail() {
   const accs = [
     { key: 'desc', label: 'Eser Hakkında', content: artwork.description },
     { key: 'specs', label: 'Teknik Detaylar', content: `${artwork.type || artwork.medium || '—'} · ${artwork.material || '—'} · ${artwork.year || '—'}` },
-    { key: 'ship', label: 'Kargo', content: 'Yurt içi kargo ücretsiz, 3–5 iş günü içinde teslim edilir. Eserler köşe korumalı özel ambalajla gönderilir. İade koşulları için yukarıdaki "14 Gün İade Garantisi"ne bakabilirsiniz.' },
+    { key: 'ship', label: 'Kargo', content: 'Yurt içi kargo ücretsiz, 3–5 iş günü içinde teslim edilir. Eserler köşe korumalı özel ambalajla gönderilir. 14 gün içinde ücretsiz iade edilebilir.' },
     { key: 'cert', label: 'Baskı Kalitesi', content: 'Fine art baskılarımız için Hahnemühle ve Awagami kağıtları, arşivsel pigment mürekkeplerle kullanılır.' },
   ]
 
@@ -221,7 +221,7 @@ function ProductDetail() {
                 }}>
                   <div style={{ width: '100%', height: '100%', background: '#fbfaf7', padding: '9%', boxSizing: 'border-box' }}>
                     {activeImage
-                      ? <img src={activeImage} alt={artwork.title} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+                      ? <img src={activeImage} alt={artwork.title} style={{ width: '100%', height: '100%', objectFit: 'contain', display: 'block' }} />
                       : <div dangerouslySetInnerHTML={{ __html: makeSVG(0) }} style={{ width: '100%', height: '100%' }} />
                     }
                   </div>
@@ -261,7 +261,7 @@ function ProductDetail() {
                   {/* Paspartu */}
                   <div style={{ width: '100%', height: '100%', background: '#fbfaf7', padding: '9%', boxSizing: 'border-box' }}>
                     {activeImage
-                      ? <img src={activeImage} alt={artwork.title} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+                      ? <img src={activeImage} alt={artwork.title} style={{ width: '100%', height: '100%', objectFit: 'contain', display: 'block' }} />
                       : <div dangerouslySetInnerHTML={{ __html: makeSVG(0) }} style={{ width: '100%', height: '100%' }} />
                     }
                   </div>
@@ -413,7 +413,7 @@ function ProductDetail() {
     setTimeout(() => setAdded(false), 1800)
   }}
   style={{
-    width: '100%', padding: '.9rem',
+    width: '100%', padding: '.9rem', marginBottom: '1.6rem',
     background: added ? 'var(--gold)' : 'var(--ink)',
     color: '#fff', border: 'none',
     fontSize: '.68rem', letterSpacing: '.2em', textTransform: 'uppercase',
@@ -423,15 +423,6 @@ function ProductDetail() {
 >
   {added ? '✓ Sepete Eklendi' : 'Sepete Ekle'}
 </button>
-
-          {/* Garanti */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '.85rem', padding: '.85rem 1rem', background: 'var(--surface)', borderLeft: '2px solid var(--gold)', marginBottom: '1.6rem' }}>
-            <span style={{ fontSize: '1.1rem' }}>🛡</span>
-            <div style={{ fontSize: '.64rem', lineHeight: 1.7 }}>
-              <strong style={{ display: 'block', fontSize: '.68rem' }}>14 Gün İade Garantisi</strong>
-              Ücretsiz iade · Arşiv kalitesinde baskı · Güvenli ödeme
-            </div>
-          </div>
 
           {/* Etiketler */}
           {artwork.tags?.length > 0 && (
