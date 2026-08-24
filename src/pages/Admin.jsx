@@ -524,10 +524,46 @@ function Admin() {
   // ============================================================
   // GÖRSELLER — sayfa görselleri (hero, örnek galeriler)
   // ============================================================
+  // Telefon kameralarından gelen ham fotoğraflar (çoğunlukla birkaç MB)
+  // olduğu gibi yükleniyordu, bu da siteyi yavaş açıyordu. Yüklemeden önce
+  // tarayıcıda en uzun kenarı 2200px'e indirip JPEG kalitesini %85'e
+  // sıkıştırıyoruz — gözle fark edilmeyecek kadar küçük bir kalite kaybıyla
+  // dosya boyutu genelde 5-10 kat küçülüyor. Zaten küçük bir görsel
+  // yüklenirse dokunmadan olduğu gibi bırakılıyor.
+  function resizeImageFile(file, maxDim = 2200, quality = 0.85) {
+    return new Promise(resolve => {
+      if (!file.type.startsWith('image/')) { resolve(file); return }
+      const reader = new FileReader()
+      reader.onload = () => {
+        const img = new Image()
+        img.onload = () => {
+          let { width, height } = img
+          if (width <= maxDim && height <= maxDim) { resolve(file); return }
+          const scale = maxDim / Math.max(width, height)
+          width = Math.round(width * scale)
+          height = Math.round(height * scale)
+          const canvas = document.createElement('canvas')
+          canvas.width = width
+          canvas.height = height
+          canvas.getContext('2d').drawImage(img, 0, 0, width, height)
+          canvas.toBlob(blob => {
+            if (!blob) { resolve(file); return }
+            resolve(new File([blob], file.name.replace(/\.\w+$/, '.jpg'), { type: 'image/jpeg' }))
+          }, 'image/jpeg', quality)
+        }
+        img.onerror = () => resolve(file)
+        img.src = reader.result
+      }
+      reader.onerror = () => resolve(file)
+      reader.readAsDataURL(file)
+    })
+  }
+
   async function uploadToStorage(file) {
-    const ext = file.name.split('.').pop()
+    const resized = await resizeImageFile(file)
+    const ext = resized.name.split('.').pop()
     const path = `${Date.now()}-${Math.random().toString(36).slice(2, 7)}.${ext}`
-    const { error } = await supabase.storage.from('site-images').upload(path, file)
+    const { error } = await supabase.storage.from('site-images').upload(path, resized)
     if (error) { alert('Görsel yüklenemedi: ' + error.message); return null }
     const { data } = supabase.storage.from('site-images').getPublicUrl(path)
     return data.publicUrl

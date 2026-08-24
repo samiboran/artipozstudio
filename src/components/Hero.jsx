@@ -105,9 +105,15 @@ export default function Hero() {
         <HeroSlideStack urls={mobileStackUrls} />
       </div>
 
+      {/* Önceden burada "artı poz" başlığı ve "Sipariş" butonu vardı, bu
+          yüzden okunabilirlik için görselin üstüne koyu bir katman
+          konmuştu. İkisi de kaldırıldığından artık koyulaştırmaya gerek
+          yok — sadece altta hafif bir derinlik hissi için çok hafif bir
+          gölge bırakıyoruz, fotoğrafın kendi ışığı/rengi olduğu gibi
+          görünsün diye. */}
       <div style={{
         position: 'absolute', inset: 0,
-        background: 'linear-gradient(180deg, rgba(0,0,0,.4), rgba(0,0,0,.6))'
+        background: 'linear-gradient(180deg, rgba(0,0,0,0) 55%, rgba(0,0,0,.18) 100%)'
       }} />
     </section>
   )
