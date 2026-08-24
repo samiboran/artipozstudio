@@ -176,6 +176,8 @@ function Admin() {
   const [uploadTarget, setUploadTarget] = useState(null)
   const genericFileRef = useRef()
   const hoveredSlotRef = useRef(null)
+  const [compressing, setCompressing] = useState(false)
+  const [compressLog, setCompressLog] = useState([])
 
   // --- Site Ayarları ---
   const [fontPair, setFontPairState] = useState('archivo')
@@ -279,9 +281,10 @@ function Admin() {
 
   async function uploadArtworkImage(file) {
     if (!selected) return
-    const ext = file.name.split('.').pop()
+    const resized = await resizeImageFile(file, 1800)
+    const ext = resized.name.split('.').pop()
     const path = `gallery-${Date.now()}-${Math.random().toString(36).slice(2, 7)}.${ext}`
-    const { error } = await supabase.storage.from('artwork-images').upload(path, file)
+    const { error } = await supabase.storage.from('artwork-images').upload(path, resized)
     if (error) { alert('Görsel yüklenemedi: ' + error.message); return }
     const { data } = supabase.storage.from('artwork-images').getPublicUrl(path)
     const nextOrder = artworkImages.length ? Math.max(...artworkImages.map(i => i.sort_order)) + 1 : 0
@@ -308,9 +311,10 @@ function Admin() {
 
   async function uploadArtworkMockup(file) {
     if (!selected || artworkMockups.length >= MAX_MOCKUPS) return
-    const ext = file.name.split('.').pop()
+    const resized = await resizeImageFile(file, 1800)
+    const ext = resized.name.split('.').pop()
     const path = `mockup-${Date.now()}-${Math.random().toString(36).slice(2, 7)}.${ext}`
-    const { error } = await supabase.storage.from('artwork-images').upload(path, file)
+    const { error } = await supabase.storage.from('artwork-images').upload(path, resized)
     if (error) { alert('Mockup görseli yüklenemedi: ' + error.message); return }
     const { data } = supabase.storage.from('artwork-images').getPublicUrl(path)
     const nextOrder = artworkMockups.length ? Math.max(...artworkMockups.map(i => i.sort_order)) + 1 : 0
@@ -345,9 +349,10 @@ function Admin() {
 
   async function uploadImage(file) {
     setUploading(true)
-    const ext = file.name.split('.').pop()
+    const resized = await resizeImageFile(file, 1800)
+    const ext = resized.name.split('.').pop()
     const path = `${Date.now()}.${ext}`
-    const { error } = await supabase.storage.from('artwork-images').upload(path, file)
+    const { error } = await supabase.storage.from('artwork-images').upload(path, resized)
     if (error) { setMsg('Görsel yüklenemedi: ' + error.message); setUploading(false); return }
     const { data } = supabase.storage.from('artwork-images').getPublicUrl(path)
     setForm(f => ({ ...f, image_url: data.publicUrl }))
@@ -526,11 +531,12 @@ function Admin() {
   // ============================================================
   // Telefon kameralarından gelen ham fotoğraflar (çoğunlukla birkaç MB)
   // olduğu gibi yükleniyordu, bu da siteyi yavaş açıyordu. Yüklemeden önce
-  // tarayıcıda en uzun kenarı 2200px'e indirip JPEG kalitesini %85'e
-  // sıkıştırıyoruz — gözle fark edilmeyecek kadar küçük bir kalite kaybıyla
-  // dosya boyutu genelde 5-10 kat küçülüyor. Zaten küçük bir görsel
-  // yüklenirse dokunmadan olduğu gibi bırakılıyor.
-  function resizeImageFile(file, maxDim = 2200, quality = 0.85) {
+  // tarayıcıda en uzun kenarı sınırlayıp WebP'ye çevirip sıkıştırıyoruz —
+  // gözle fark edilmeyecek kadar küçük bir kalite kaybıyla dosya boyutu
+  // genelde 5-10 kat küçülüyor. Zaten küçük bir görsel yüklenirse
+  // dokunmadan olduğu gibi bırakılıyor. Hero gibi tam ekran görseller daha
+  // büyük kalabilsin diye maxDim çağıran yere göre ayarlanabilir.
+  function resizeImageFile(file, maxDim = 2200, quality = 0.8) {
     return new Promise(resolve => {
       if (!file.type.startsWith('image/')) { resolve(file); return }
       const reader = new FileReader()
@@ -548,8 +554,8 @@ function Admin() {
           canvas.getContext('2d').drawImage(img, 0, 0, width, height)
           canvas.toBlob(blob => {
             if (!blob) { resolve(file); return }
-            resolve(new File([blob], file.name.replace(/\.\w+$/, '.jpg'), { type: 'image/jpeg' }))
-          }, 'image/jpeg', quality)
+            resolve(new File([blob], file.name.replace(/\.\w+$/, '.webp'), { type: 'image/webp' }))
+          }, 'image/webp', quality)
         }
         img.onerror = () => resolve(file)
         img.src = reader.result
@@ -567,6 +573,74 @@ function Admin() {
     if (error) { alert('Görsel yüklenemedi: ' + error.message); return null }
     const { data } = supabase.storage.from('site-images').getPublicUrl(path)
     return data.publicUrl
+  }
+
+  // Bakım aracı: sıkıştırma sadece bundan sonra yüklenecek görseller için
+  // geçerli — sistemde daha önce yüklenmiş, hâlâ büyük boyutlu görseller
+  // için bir seferlik geçiş. Her görseli indirip aynı resizeImageFile
+  // fonksiyonuyla sıkıştırıp yeni bir dosya olarak tekrar yüklüyor, ilgili
+  // tablodaki image_url'i güncelliyor, sonra eski (büyük) dosyayı Storage'dan
+  // siliyor. Zaten küçük olan görseller dokunulmadan atlanıyor.
+  async function compressExisting(bucket, table, id, imageUrl, maxDim, column = 'image_url') {
+    const res = await fetch(imageUrl)
+    const blob = await res.blob()
+    if (blob.size < 300 * 1024) return 'skip' // zaten küçük, atla
+    const original = new File([blob], 'x', { type: blob.type || 'image/jpeg' })
+    const resized = await resizeImageFile(original, maxDim)
+    if (resized === original) return 'skip' // resize yapılmadı (maxDim altında)
+    const path = `compressed-${Date.now()}-${Math.random().toString(36).slice(2, 7)}.webp`
+    const { error: upErr } = await supabase.storage.from(bucket).upload(path, resized)
+    if (upErr) throw new Error(`${table} #${id}: ${upErr.message}`)
+    const { data } = supabase.storage.from(bucket).getPublicUrl(path)
+    const { error: dbErr } = await supabase.from(table).update({ [column]: data.publicUrl }).eq('id', id)
+    if (dbErr) throw new Error(`${table} #${id} (db): ${dbErr.message}`)
+    // Eski dosyayı sil — public URL'den bucket sonrası yolu ayıklıyoruz.
+    const marker = `/public/${bucket}/`
+    const idx = imageUrl.indexOf(marker)
+    if (idx !== -1) {
+      const oldPath = imageUrl.slice(idx + marker.length)
+      supabase.storage.from(bucket).remove([oldPath]).catch(() => {})
+    }
+    return 'done'
+  }
+
+  async function compressAllExistingImages() {
+    if (compressing) return
+    if (!confirm('Sistemde şu anda kayıtlı tüm görseller (hero, eser, kağıt vb.) indirilip sıkıştırılıp yeniden yüklenecek. Görsel sayısına göre birkaç dakika sürebilir, sayfadan ayrılma. Devam edilsin mi?')) return
+    setCompressing(true)
+    setCompressLog(['Başlıyor…'])
+    const log = msg => setCompressLog(l => [...l, msg])
+    let done = 0, skipped = 0, failed = 0
+
+    const jobs = []
+    const { data: pImgs } = await supabase.from('page_images').select('id, image_url')
+    ;(pImgs || []).forEach(r => jobs.push(['site-images', 'page_images', r.id, r.image_url, 2200, 'image_url']))
+    const { data: arts } = await supabase.from('artworks').select('id, image_url').not('image_url', 'is', null)
+    ;(arts || []).forEach(r => jobs.push(['artwork-images', 'artworks', r.id, r.image_url, 1800, 'image_url']))
+    const { data: aImgs } = await supabase.from('artwork_images').select('id, image_url')
+    ;(aImgs || []).forEach(r => jobs.push(['artwork-images', 'artwork_images', r.id, r.image_url, 1800, 'image_url']))
+    const { data: aMockups } = await supabase.from('artwork_mockups').select('id, image_url')
+    ;(aMockups || []).forEach(r => jobs.push(['artwork-images', 'artwork_mockups', r.id, r.image_url, 1800, 'image_url']))
+    const { data: papers } = await supabase.from('papers').select('id, texture_photo_url, preview_photo_url')
+    ;(papers || []).forEach(r => {
+      if (r.texture_photo_url) jobs.push(['site-images', 'papers', r.id, r.texture_photo_url, 2000, 'texture_photo_url'])
+      if (r.preview_photo_url) jobs.push(['site-images', 'papers', r.id, r.preview_photo_url, 2000, 'preview_photo_url'])
+    })
+
+    log(`${jobs.length} görsel bulundu, işleniyor…`)
+    for (const [bucket, table, id, url, maxDim, column] of jobs) {
+      try {
+        const result = await compressExisting(bucket, table, id, url, maxDim, column)
+        if (result === 'done') { done++; log(`✓ ${table} #${id} (${column}) sıkıştırıldı`) }
+        else skipped++
+      } catch (err) {
+        failed++
+        log(`✗ ${err.message}`)
+      }
+    }
+    log(`Tamamlandı — ${done} sıkıştırıldı, ${skipped} zaten küçüktü, ${failed} hata.`)
+    setCompressing(false)
+    loadPageImages()
   }
 
   async function loadPageImages() {
@@ -1577,6 +1651,29 @@ function Admin() {
                 Diğer sayfaları da aynı sisteme bağlamamız gerekiyor — sırada o var. Sanatçı Hakkında
                 editörü İşler sekmesine taşındı.
               </p>
+
+              <div style={{ marginTop: '3rem', borderTop: '1px solid #eee', paddingTop: '2rem' }}>
+                <h2 style={{ ...sectionHeading, fontSize: '1.4rem', marginBottom: '.8rem' }}>Bakım: Mevcut Görselleri Sıkıştır</h2>
+                <p style={{ fontSize: '.78rem', color: '#888', marginBottom: '1.2rem', lineHeight: 1.6, maxWidth: 620 }}>
+                  Bundan sonra Admin'den yüklenen görseller otomatik sıkıştırılıyor, ama daha önce
+                  yüklenmiş büyük dosyalar (özellikle ham telefon fotoğrafları) sistemde hâlâ olduğu
+                  gibi duruyor. Bu buton, sistemdeki tüm görselleri (hero, eserler, kağıtlar) tek
+                  seferde indirip sıkıştırıp yeniden yükler ve eski büyük dosyaları siler. Görsel
+                  sayısına göre birkaç dakika sürebilir, işlem bitene kadar sayfadan ayrılma.
+                </p>
+                <button onClick={compressAllExistingImages} disabled={compressing} style={btnPrimary}>
+                  {compressing ? 'Sıkıştırılıyor…' : 'Mevcut Görselleri Sıkıştır'}
+                </button>
+                {compressLog.length > 0 && (
+                  <div style={{
+                    marginTop: '1rem', maxHeight: 220, overflowY: 'auto', background: '#fafafa',
+                    border: '1px solid #eee', padding: '.8rem 1rem', fontFamily: 'monospace',
+                    fontSize: '.72rem', lineHeight: 1.7, color: '#555',
+                  }}>
+                    {compressLog.map((line, i) => <div key={i}>{line}</div>)}
+                  </div>
+                )}
+              </div>
             </>
           )}
 

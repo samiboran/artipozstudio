@@ -92,7 +92,7 @@ function PaperBlock({ paper, reverse }) {
     }}>
       <div style={{ order: reverse ? 2 : 1, aspectRatio: '4 / 3', overflow: 'hidden' }}>
         {img
-          ? <img src={img} alt={paper.name} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+          ? <img src={img} alt={paper.name} loading="lazy" decoding="async" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
           : placeholderBox(`${paper.name} — Admin'den yükle`)}
       </div>
       <div style={{ order: reverse ? 1 : 2 }}>
@@ -172,7 +172,7 @@ export default function KagitRehberi() {
         position: 'relative', minHeight: 420, display: 'flex', alignItems: 'center',
         justifyContent: 'center', textAlign: 'center', overflow: 'hidden', background: '#0d0f14',
       }}>
-        <img src={heroUrl} alt="Fine art kağıt numuneleri" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', opacity: .5 }} />
+        <img src={heroUrl} alt="Fine art kağıt numuneleri" loading="eager" fetchPriority="high" decoding="async" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', opacity: .5 }} />
         <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(180deg, rgba(13,15,20,.55), rgba(13,15,20,.85))' }} />
         <div style={{ position: 'relative', zIndex: 1, padding: '0 1.5rem', maxWidth: 640 }}>
           <p style={{ ...eyebrow, color: '#fff', opacity: .85, marginBottom: '1rem' }}>Her esere uygun kağıt</p>
@@ -197,7 +197,7 @@ export default function KagitRehberi() {
           alignItems: 'center', marginBottom: '3rem',
         }}>
           <div style={{ aspectRatio: '4 / 3', overflow: 'hidden' }}>
-            <img src={sanatBaskisiImgDefault} alt="Sanat baskısı kağıtlar" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+            <img src={sanatBaskisiImgDefault} alt="Sanat baskısı kağıtlar" loading="lazy" decoding="async" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
           </div>
           <div>
             <h2 style={{ ...heading, fontSize: '1.8rem', margin: '0 0 .6rem' }}>{SANAT_BASKISI.title}</h2>
@@ -223,7 +223,7 @@ export default function KagitRehberi() {
             <div key={c.key}>
               <div style={{ aspectRatio: '4 / 3', overflow: 'hidden' }}>
                 {finishImages[`${c.key}-1`]
-                  ? <img src={finishImages[`${c.key}-1`]} alt={c.label} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+                  ? <img src={finishImages[`${c.key}-1`]} alt={c.label} loading="lazy" decoding="async" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
                   : placeholderBox(`${c.label} — Admin'den yükle`)}
               </div>
               <p style={{ ...eyebrow, textAlign: 'center', marginTop: '.9rem' }}>{c.label}</p>
@@ -262,7 +262,7 @@ export default function KagitRehberi() {
                 <div key={p.id} style={{ flex: '0 0 200px', width: 200 }}>
                   <div style={{ aspectRatio: '4 / 5', overflow: 'hidden' }}>
                     {img
-                      ? <img src={img} alt={p.name} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+                      ? <img src={img} alt={p.name} loading="lazy" decoding="async" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
                       : placeholderBox(p.name)}
                   </div>
                   <p style={{ ...label, textAlign: 'center', marginTop: '.7rem' }}>{p.name}</p>

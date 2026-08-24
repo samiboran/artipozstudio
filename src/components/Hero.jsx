@@ -20,6 +20,8 @@ function HeroSlideStack({ urls }) {
       key={url}
       src={url}
       alt="Artı Poz"
+      loading="eager"
+      fetchPriority={i === 0 ? 'high' : 'auto'}
       style={{
         position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover',
         opacity: i === index ? 1 : 0, transition: 'opacity 1s ease',
@@ -60,12 +62,16 @@ export default function Hero() {
   // kırpmayı azaltmak için Hero'nun boyu kısaltılıyor.
   const hasMobileSet = mobileUrls.length > 0
   const mobileStackUrls = hasMobileSet ? mobileUrls : desktopUrls
+  // page_images sorgusu dönene kadar (desktopUrls henüz boş) koyu/siyah bir
+  // zemin yerine site paletine uygun nötr bir yüzey + hafif bir "shimmer"
+  // gösteriyoruz, "siyah ekran" hissi yaratmasın diye.
+  const loading = desktopUrls.length === 0
 
   return (
-    <section className={`hero-section${hasMobileSet ? ' hero-section--mobile-set' : ''}`} style={{
+    <section className={`hero-section${hasMobileSet ? ' hero-section--mobile-set' : ''}${loading ? ' hero-section--loading' : ''}`} style={{
       position: 'relative', minHeight: 520,
       display: 'flex', alignItems: 'center', justifyContent: 'center',
-      textAlign: 'center', overflow: 'hidden', background: '#2b2f28',
+      textAlign: 'center', overflow: 'hidden', background: 'var(--surface)',
     }}>
       {/* Mobil tarayıcılarda (özellikle Android/Chrome) adres çubuğu ilk
           açılışta görünürken 100vh, tarayıcı çubuğu gizliyken hesaplanan
@@ -95,6 +101,15 @@ export default function Hero() {
         @media (max-width: 640px) {
           .hero-desktop-imgs { display: none; }
           .hero-mobile-imgs { display: block; }
+        }
+        .hero-section--loading {
+          background: linear-gradient(100deg, #efeee9 30%, #f6f5f1 50%, #efeee9 70%);
+          background-size: 200% 100%;
+          animation: heroShimmer 1.6s ease-in-out infinite;
+        }
+        @keyframes heroShimmer {
+          0% { background-position: 200% 0; }
+          100% { background-position: -200% 0; }
         }
       `}</style>
 

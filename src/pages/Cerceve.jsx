@@ -219,6 +219,7 @@ export default function Cerceve() {
         <img
           src={images.hero}
           alt="Çerçeveli fotoğraflardan oluşan galeri duvarı"
+          loading="eager" fetchPriority="high" decoding="async"
           style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }}
         />
         <div style={{
@@ -256,12 +257,14 @@ export default function Cerceve() {
         <img
           src={images['renk-secenekleri']}
           alt="Siyah, beyaz ve doğal ahşap çerçeve renk seçenekleri"
-          style={{ width: '100%', height: 'auto', display: 'block', marginBottom: '1rem' }}
+          loading="lazy" decoding="async"
+          style={{ width: '100%', aspectRatio: '4 / 3', objectFit: 'contain', display: 'block', marginBottom: '1rem' }}
         />
         <img
           src={images['renk-detay']}
           alt="Ahşap çerçeve köşe detayı"
-          style={{ width: '100%', height: 'auto', display: 'block' }}
+          loading="lazy" decoding="async"
+          style={{ width: '100%', aspectRatio: '4 / 3', objectFit: 'contain', display: 'block' }}
         />
       </section>
 
@@ -274,6 +277,7 @@ export default function Cerceve() {
               <img
                 src={img.image_url}
                 alt={img.alt || 'Örnek çerçeveli eser'}
+                loading="lazy" decoding="async"
                 style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
               />
             </div>

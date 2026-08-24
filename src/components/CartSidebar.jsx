@@ -94,7 +94,7 @@ export default function CartSidebar({ open, onClose }) {
               }}>
                 <div style={{ width: 72, height: 90, flexShrink: 0, background: 'var(--surface)', overflow: 'hidden' }}>
                   {item.artwork.image_url
-                    ? <img src={item.artwork.image_url} alt={item.artwork.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                    ? <img src={item.artwork.image_url} alt={item.artwork.title} loading="lazy" decoding="async" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                     : <div style={{ width: '100%', height: '100%', background: '#eee' }} />
                   }
                 </div>

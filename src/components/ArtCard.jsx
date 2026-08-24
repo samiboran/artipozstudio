@@ -57,6 +57,7 @@ function ArtCard({ artwork, index, onClick }) {
       }}>
         {artwork.image_url
           ? <img src={artwork.image_url} alt={artwork.title}
+              loading={index < 4 ? 'eager' : 'lazy'} decoding="async"
               style={{ width: '100%', height: 'auto', display: 'block' }} />
           : <div dangerouslySetInnerHTML={{ __html: makeSVG(index) }}
               style={{ width: '100%', height: '100%' }} />

@@ -177,6 +177,7 @@ function PaperCarousel({ papers, images }) {
                 <img
                   src={images[paper.key]}
                   alt={paper.name}
+                  loading="lazy" decoding="async"
                   style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
                 />
               ) : (
@@ -440,6 +441,7 @@ function Gallery() {
                 <img
                   src={imgSrc}
                   alt={title}
+                  loading="lazy" decoding="async"
                   style={{ width: '100%', aspectRatio: '4 / 3', objectFit: 'cover', display: 'block' }}
                 />
               ) : (
@@ -579,6 +581,7 @@ function Gallery() {
             <img
               src={images['iletisim-gorsel']}
               alt="İletişim"
+              loading="lazy" decoding="async"
               style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
             />
           </div>
