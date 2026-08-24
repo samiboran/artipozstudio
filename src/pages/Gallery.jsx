@@ -53,15 +53,17 @@ const PAYMENT_LOGOS = [
 ]
 const PAYMENT_TEXT_BADGES = ['TROY', 'Havale / EFT']
 
-// Ana Sayfa'daki "Baskı İçin Dosya Hazırlığı" görsel-kart bölümü — ilk 4
-// kart bir fotoğraf + köşede başlık/ok ikonuyla, sonuncusu (Dosya
-// Gönderimi) daha geniş, metin ağırlıklı bir kart. Görseller Admin >
-// Görseller'den yüklenecek (section: ...-gorsel).
+// Ana Sayfa'daki "Baskı İçin Dosya Hazırlığı" görsel-kart bölümü — 5 eşit
+// genişlikte fotoğraf kartı, hepsi aynı tasarımda (fotoğraf + alt-sol
+// başlık + altında ok). Sonuncusu (Dosya Gönderimi) aynı tasarımda ama
+// ok yerine kısa bir açıklama + "Detayları Gör" linki gösteriyor.
+// Görseller Admin > Görseller'den yüklenecek (section: ...-gorsel).
 const FILE_PREP_CARDS = [
   { key: 'dosya-format', title: 'Dosya Formatı' },
   { key: 'renk-profili', title: 'Renk Profili' },
   { key: 'cozunurluk-olcu', title: 'Çözünürlük ve Ölçü' },
   { key: 'tasma-payi', title: 'Taşma Payı ve Kesim' },
+  { key: 'dosya-gonderimi', title: 'Dosya Gönderimi', hasDesc: true },
 ]
 
 const displayHeading = { fontFamily: "'Playfair Display', serif", fontWeight: 600, color: 'var(--ink)' }
@@ -299,11 +301,11 @@ function FineArtCarousel({ artworks }) {
   )
 }
 
-// "Baskı İçin Dosya Hazırlığı" kartları — masaüstünde tek satırda 5 kart
-// (ilk 4 eşit, sonuncusu daha geniş), toplam genişlik yeterli olduğu için
-// ok/loop mantığına gerek yok. Dar ekranlarda satır sığmadığından
-// (max-width: 900px) parmakla kaydırılan, her seferinde tek tam genişlikte
-// kart gösteren bir şeride dönüşüyor — aynı sayfadaki diğer carousel'lerde
+// "Baskı İçin Dosya Hazırlığı" kartları — masaüstünde tek satırda 5 eşit
+// genişlikte fotoğraf kartı, toplam genişlik yeterli olduğu için ok/loop
+// mantığına gerek yok. Dar ekranlarda satır sığmadığından (max-width:
+// 900px) parmakla kaydırılan, her seferinde tek tam genişlikte kart
+// gösteren bir şeride dönüşüyor — aynı sayfadaki diğer carousel'lerde
 // "bir sonraki kartın kenardaki dilimi" karışıklığa yol açtığı için
 // buradan başlayarak hep tam genişlik kart kullanılıyor.
 function FilePrepCards({ images, content }) {
@@ -312,11 +314,10 @@ function FilePrepCards({ images, content }) {
       <style>{`
         .fp-track { display: flex; gap: 1rem; }
         .fp-card { flex: 1 1 0; min-width: 0; height: 420px; position: relative; overflow: hidden; background: var(--surface); }
-        .fp-card-wide { flex: 1.7 1 0; }
         @media (max-width: 900px) {
           .fp-track { overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; -ms-overflow-style: none; }
           .fp-track::-webkit-scrollbar { display: none; }
-          .fp-card, .fp-card-wide { flex: 0 0 100%; height: 340px; scroll-snap-align: start; }
+          .fp-card { flex: 0 0 100%; height: 340px; scroll-snap-align: start; }
         }
       `}</style>
 
@@ -338,42 +339,36 @@ function FilePrepCards({ images, content }) {
               {`${card.title} — Admin'den yükle`}
             </div>
           )}
-          <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(180deg, rgba(0,0,0,0) 48%, rgba(0,0,0,.68) 100%)' }} />
-          <div style={{
-            position: 'absolute', left: '1rem', bottom: '1rem', right: '2.8rem',
-            fontFamily: "'Archivo', sans-serif", fontWeight: 700, fontSize: '.82rem',
-            letterSpacing: '.04em', textTransform: 'uppercase', color: '#fff', lineHeight: 1.3,
-          }}>
-            {card.title}
-          </div>
-          <div style={{
-            position: 'absolute', right: '.9rem', bottom: '.9rem', width: 30, height: 30, borderRadius: '50%',
-            border: '1px solid rgba(255,255,255,.55)', display: 'flex', alignItems: 'center',
-            justifyContent: 'center', color: '#fff', fontSize: '.85rem',
-          }}>
-            →
+          <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(180deg, rgba(0,0,0,0) 42%, rgba(0,0,0,.72) 100%)' }} />
+          <div style={{ position: 'absolute', left: '1rem', right: '1rem', bottom: '1rem' }}>
+            <div style={{
+              fontFamily: "'Archivo', sans-serif", fontWeight: 700, fontSize: '.82rem',
+              letterSpacing: '.04em', textTransform: 'uppercase', color: '#fff', lineHeight: 1.3,
+            }}>
+              {card.title}
+            </div>
+            {card.hasDesc ? (
+              <>
+                <p style={{
+                  fontFamily: "'Archivo', sans-serif", fontSize: '.72rem', lineHeight: 1.6,
+                  color: 'rgba(255,255,255,.85)', margin: '.5rem 0 0',
+                }}>
+                  {content['dosya-gonderimi-aciklama'] || 'Dosyalarınızı güvenli ve hızlı şekilde bize ulaştırın. Desteklenen büyük boyut seçenekleriyle yükleme yapabilirsiniz.'}
+                </p>
+                <a href="#siparis-iletisim" style={{
+                  display: 'inline-flex', alignItems: 'center', gap: '.35rem', marginTop: '.6rem',
+                  fontFamily: "'Archivo', sans-serif", fontSize: '.7rem', letterSpacing: '.06em',
+                  color: '#fff', textDecoration: 'underline', textUnderlineOffset: 3,
+                }}>
+                  Detayları Gör <span>→</span>
+                </a>
+              </>
+            ) : (
+              <div style={{ color: '#fff', fontSize: '.95rem', marginTop: '.3rem' }}>→</div>
+            )}
           </div>
         </div>
       ))}
-
-      <div className="fp-card fp-card-wide" style={{ padding: '1.6rem', display: 'flex', flexDirection: 'column', justifyContent: 'flex-end' }}>
-        <div style={{
-          fontFamily: "'Archivo', sans-serif", fontWeight: 700, fontSize: '.82rem',
-          letterSpacing: '.04em', textTransform: 'uppercase', color: 'var(--ink)', marginBottom: '.8rem',
-        }}>
-          Dosya Gönderimi
-        </div>
-        <p style={{ fontFamily: "'Archivo', sans-serif", fontSize: '.8rem', lineHeight: 1.7, color: 'var(--muted)', margin: '0 0 1.1rem' }}>
-          {content['dosya-gonderimi-aciklama'] || 'Dosyalarınızı WeTransfer üzerinden paylaşabilir, aynı gün değerlendirme için son dosya iletim saati 15.00’a kadar iletebilirsiniz.'}
-        </p>
-        <a href="#siparis-iletisim" style={{
-          display: 'inline-flex', alignItems: 'center', gap: '.4rem',
-          fontFamily: "'Archivo', sans-serif", fontSize: '.7rem', letterSpacing: '.12em',
-          textTransform: 'uppercase', color: 'var(--ink)',
-        }}>
-          Detayları Gör <span>→</span>
-        </a>
-      </div>
     </div>
   )
 }

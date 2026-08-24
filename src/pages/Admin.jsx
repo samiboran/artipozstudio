@@ -56,6 +56,7 @@ const IMAGE_SLOTS = [
   { page: 'gallery', section: 'renk-profili-gorsel', label: 'Ana Sayfa — Dosya Hazırlığı: Renk Profili', multiple: false, aspect: '3 / 4' },
   { page: 'gallery', section: 'cozunurluk-olcu-gorsel', label: 'Ana Sayfa — Dosya Hazırlığı: Çözünürlük ve Ölçü', multiple: false, aspect: '3 / 4' },
   { page: 'gallery', section: 'tasma-payi-gorsel', label: 'Ana Sayfa — Dosya Hazırlığı: Taşma Payı ve Kesim', multiple: false, aspect: '3 / 4' },
+  { page: 'gallery', section: 'dosya-gonderimi-gorsel', label: 'Ana Sayfa — Dosya Hazırlığı: Dosya Gönderimi', multiple: false, aspect: '3 / 4' },
   { page: 'gallery', section: 'sertifikali-kagit-1', label: 'Ana Sayfa — Sertifikalı Kağıt 1: Museum Etching', multiple: false, aspect: '4 / 5' },
   { page: 'gallery', section: 'sertifikali-kagit-2', label: 'Ana Sayfa — Sertifikalı Kağıt 2: German Etching', multiple: false, aspect: '4 / 5' },
   { page: 'gallery', section: 'sertifikali-kagit-3', label: 'Ana Sayfa — Sertifikalı Kağıt 3: Photo Rag Ultra Smooth', multiple: false, aspect: '4 / 5' },
