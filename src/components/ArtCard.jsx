@@ -4,7 +4,7 @@ import { useFavorites } from '../hooks/useFavorites'
 import { useCart } from '../hooks/useCart'
 import { SIZE_MM } from '../lib/artworks'
 
-function ArtCard({ artwork, index, onClick }) {
+function ArtCard({ artwork, index, onClick, noBottomGap = false }) {
   const { isFav, toggle } = useFavorites()
   const { addItem } = useCart()
   const liked = isFav(artwork.id)
@@ -47,7 +47,7 @@ function ArtCard({ artwork, index, onClick }) {
       style={{
         cursor: 'pointer',
         breakInside: 'avoid',
-        marginBottom: '1.8rem',
+        marginBottom: noBottomGap ? 0 : '1.8rem',
       }}
     >
       {/* Görsel — gerçek fotoğraflarda kendi en/boy oranı korunur (masonry) */}

@@ -486,7 +486,7 @@ function ProductDetail() {
           </h2>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '1.5rem' }}>
             {moreFromSeller.map((a, i) => (
-              <ArtCard key={a.id} artwork={a} index={i} onClick={() => navigate(`/product/${a.slug}`)} />
+              <ArtCard key={a.id} artwork={a} index={i} noBottomGap onClick={() => navigate(`/product/${a.slug}`)} />
             ))}
           </div>
         </section>
