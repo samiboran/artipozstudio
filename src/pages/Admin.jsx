@@ -53,7 +53,8 @@ const PHOTO_FINISHES = ['Mat', 'Parlak']
 // Görseller sekmesinde yönetilen sabit alanlar. multiple:false => tek görsel (yeni yükleme
 // eskisinin yerine geçer). multiple:true => istenildiği kadar görsel eklenip silinebilir.
 const IMAGE_SLOTS = [
-  { page: 'gallery', section: 'hero', label: 'Ana Sayfa — Hero Görselleri (3 görsel önerilir, sırayla dönen slayt)', multiple: true, aspect: '21 / 9', defaultImgs: [galleryHeroDefault] },
+  { page: 'gallery', section: 'hero', label: 'Ana Sayfa — Hero Görselleri, Masaüstü (yatay, 3 görsel önerilir, sırayla dönen slayt)', multiple: true, aspect: '21 / 9', defaultImgs: [galleryHeroDefault] },
+  { page: 'gallery', section: 'hero-mobile', label: 'Ana Sayfa — Hero Görselleri, Mobil (dikey/portre, 3 görsel önerilir)', multiple: true, aspect: '9 / 16' },
   { page: 'gallery', section: 'hizmet-fotograf', label: 'Ana Sayfa — Hizmetlerimiz: Fotoğraf Baskı', multiple: false, aspect: '4 / 3', defaultImg: galleryFotografDefault },
   { page: 'gallery', section: 'hizmet-fine-art', label: 'Ana Sayfa — Hizmetlerimiz: Fine Art / Giclée Baskı', multiple: false, aspect: '4 / 3', defaultImg: galleryFineArtDefault },
   { page: 'gallery', section: 'hizmet-edisyon', label: 'Ana Sayfa — Hizmetlerimiz: Edisyon & Art Print Üretimi', multiple: false, aspect: '4 / 3' },
