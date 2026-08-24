@@ -24,11 +24,6 @@ const CERTIFIED_PAPERS = [
   { key: 'sertifikali-kagit-10', name: 'Photo Rag®', info: '308 gsm · 100% Cotton · White · Matt' },
 ]
 
-const PRINT_PRICES = [
-  { size: 'A4', mm: '210×297', price: 1240 },
-  { size: 'A3', mm: '297×420', price: 2240 },
-  { size: 'A2', mm: '420×594', price: 3640 },
-]
 // Marka isimlerini yazı yerine tanınabilir, basitleştirilmiş logo işaretleriyle
 // gösteriyoruz (gerçek marka dosyaları değil, stilize inline SVG'ler).
 const PAYMENT_LOGOS = [
@@ -529,79 +524,6 @@ function Gallery() {
           <PaperCarousel papers={CERTIFIED_PAPERS} images={images} />
         </div>
       </div>
-
-      {/* Baskı Ölçüleri ve Fiyatları */}
-      <section style={{ maxWidth: 1100, margin: '0 auto', padding: '2rem 2rem 5rem', textAlign: 'center' }}>
-        <h2 style={{ ...displayHeading, fontSize: '2.4rem', margin: '0 0 1.2rem' }}>
-          Baskı Ölçüleri ve Fiyatları
-        </h2>
-        <p style={{
-          fontFamily: "'Archivo', sans-serif", fontSize: '.92rem', fontWeight: 600,
-          color: 'var(--ink)', margin: '0 0 .6rem',
-        }}>
-          Tüm fine art kağıt seçeneklerinde sabit fiyat avantajı
-        </p>
-        <p style={{
-          fontFamily: "'Archivo', sans-serif", fontSize: '.85rem', lineHeight: 1.8,
-          color: 'var(--muted)', maxWidth: 700, margin: '0 auto 2.5rem',
-        }}>
-          Aynı ölçü ve aynı kağıt türünde hazırlanan baskılarda, farklı görseller için de aynı
-          fiyat geçerlidir. Baskılarınızı 1 mm hassasiyetle özel ölçülerde de sipariş edebilirsiniz.
-        </p>
-
-        <div style={{ overflowX: 'auto', marginBottom: '2rem' }}>
-          <table style={{ width: '100%', maxWidth: 480, margin: '0 auto', borderCollapse: 'collapse', fontFamily: "'Archivo', sans-serif", fontSize: '.82rem' }}>
-            <thead>
-              <tr style={{ background: 'var(--ink)' }}>
-                <th style={{ padding: '.7rem .9rem', textAlign: 'left', color: '#fff', fontWeight: 600 }}>Boy</th>
-                <th style={{ padding: '.7rem .9rem', textAlign: 'left', color: '#fff', fontWeight: 600 }}>mm</th>
-                <th style={{ padding: '.7rem .9rem', textAlign: 'left', color: '#fff', fontWeight: 600 }}>Fiyat</th>
-              </tr>
-            </thead>
-            <tbody>
-              {PRINT_PRICES.map(row => (
-                <tr key={row.size} style={{ borderBottom: '1px solid var(--border)' }}>
-                  <td style={{ padding: '.7rem .9rem', textAlign: 'left', color: 'var(--ink)', fontWeight: 600 }}>{row.size}</td>
-                  <td style={{ padding: '.7rem .9rem', textAlign: 'left', color: 'var(--muted)' }}>{row.mm}</td>
-                  <td style={{ padding: '.7rem .9rem', textAlign: 'left', color: 'var(--ink)' }}>
-                    {row.price.toLocaleString('tr-TR')} TL
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-
-        <div style={{
-          textAlign: 'left', fontFamily: "'Archivo', sans-serif", fontSize: '.76rem',
-          lineHeight: 1.9, color: 'var(--muted)', marginBottom: '2rem',
-        }}>
-          <p style={{ margin: 0 }}>Belirtilen fiyatlara KDV, kargo ve özel paketleme hizmeti dahil değildir.</p>
-          <p style={{ margin: 0 }}>Baskılarınız, ödeme onayını takiben 2–3 iş günü içerisinde özenle hazırlanır.</p>
-          <p style={{ margin: 0 }}>Aynı gün üretim planlaması için dosyaların 15:00'e kadar iletilmesi tavsiye edilir.</p>
-          <p style={{ margin: 0 }}>Ödeme: havale/EFT ve online ödeme yöntemleriyle kabul edilmektedir.</p>
-        </div>
-
-        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '.9rem', flexWrap: 'wrap' }}>
-          {PAYMENT_LOGOS.map(p => (
-            <span key={p.key} style={{
-              padding: '.55rem 1.1rem', border: '1px solid var(--border)',
-              display: 'flex', alignItems: 'center',
-            }}>
-              {p.node}
-            </span>
-          ))}
-          {PAYMENT_TEXT_BADGES.map(b => (
-            <span key={b} style={{
-              padding: '.55rem 1.1rem', border: '1px solid var(--border)',
-              fontFamily: "'Archivo', sans-serif", fontSize: '.72rem',
-              fontWeight: 600, color: 'var(--muted)',
-            }}>
-              {b}
-            </span>
-          ))}
-        </div>
-      </section>
 
       {/* Baskı İçin Dosya Hazırlığı */}
       <section style={{ maxWidth: 900, margin: '0 auto', padding: '2rem 2rem 5rem' }}>
