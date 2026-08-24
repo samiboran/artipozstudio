@@ -35,9 +35,13 @@ function ArtCard({ artwork, index, onClick, noBottomGap = false }) {
   const sizeLabel = firstSize ? (SIZE_MM[firstSize.label] || firstSize.label) : null
   const titleLine = artwork.type ? `${artwork.title} / ${artwork.type}` : artwork.title
 
+  // justifyContent 'center' glifi 26px'lik kutunun ortasına alıyordu, bu da
+  // altındaki fiyat/isim/ölçü metniyle (aynı .2rem sol padding'i paylaşıyor)
+  // aynı hizada durmasını engelliyordu — 'flex-start' ile glif kutunun sol
+  // kenarına, metinle aynı hizaya yaslanıyor.
   const iconBtn = {
     background: 'none', border: 'none', padding: 0, cursor: 'pointer',
-    display: 'flex', alignItems: 'center', justifyContent: 'center',
+    display: 'flex', alignItems: 'center', justifyContent: 'flex-start',
     width: 26, height: 26, fontSize: '1rem',
   }
 
@@ -97,7 +101,7 @@ function ArtCard({ artwork, index, onClick, noBottomGap = false }) {
         </div>
 
         {priceLabel && (
-          <div style={{ fontFamily: "'Archivo', sans-serif", fontWeight: 500, fontSize: '.82rem', color: 'var(--ink)', marginBottom: '.3rem' }}>
+          <div style={{ fontFamily: "'Archivo', sans-serif", fontWeight: 400, fontSize: '.82rem', color: 'var(--ink)', marginBottom: '.3rem' }}>
             {priceLabel}
           </div>
         )}
@@ -110,7 +114,7 @@ function ArtCard({ artwork, index, onClick, noBottomGap = false }) {
           </div>
         )}
         {sizeLabel && (
-          <div style={{ fontFamily: "'Archivo', sans-serif", fontSize: '.7rem', color: 'var(--muted)' }}>
+          <div style={{ fontFamily: "'Archivo', sans-serif", fontWeight: 400, fontSize: '.7rem', color: 'var(--muted)' }}>
             {sizeLabel}
           </div>
         )}
