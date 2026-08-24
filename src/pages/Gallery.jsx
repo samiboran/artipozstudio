@@ -140,7 +140,11 @@ function PaperCarousel({ papers, images }) {
           .paper-carousel-card { flex: 0 0 calc((100% - 1 * 1.2rem) / 2); }
         }
         @media (max-width: 640px) {
-          .paper-carousel-card { flex: 0 0 80%; }
+          /* Önceden %80 idi — bir sonraki kartın küçük bir dilimi ekranın
+             kenarında görünüyordu, bu da "kutucuklar farklı boyda" gibi
+             bir bug izlenimi veriyordu. Her seferinde tek, tam ekran
+             genişliğinde kart göstermek bu karışıklığı ortadan kaldırıyor. */
+          .paper-carousel-card { flex: 0 0 100%; }
           .paper-carousel-arrow { display: none; }
         }
       `}</style>
@@ -278,7 +282,10 @@ function FineArtCarousel({ artworks }) {
           .fa-carousel-card { flex: 0 0 calc((100% - 1 * 1.5rem) / 2); }
         }
         @media (max-width: 640px) {
-          .fa-carousel-card { flex: 0 0 80%; }
+          /* Aynı sebep: bir sonraki kartın kenarda görünen dilimi
+             "kutucuklar farklı boyda" izlenimi veriyordu — tek, tam
+             genişlikte kart göstermek bunu ortadan kaldırıyor. */
+          .fa-carousel-card { flex: 0 0 100%; }
           .fa-carousel-arrow { display: none; }
         }
       `}</style>
