@@ -398,21 +398,37 @@ function Gallery() {
     <div>
       <Hero />
 
+      {/* Bölümler arası dikey boşluk — masaüstü ve mobil için ayrı ayrı.
+          Önceden her bölümün kendi padding'i (bazıları 5rem) art arda
+          gelince toplamda 7rem+'a çıkıyordu; artık hem tekil değerler hem
+          de mobildeki toplam boşluk azaltıldı. */}
+      <style>{`
+        .gs-services { padding: 3.5rem 2rem 3rem; }
+        .gs-showcase { padding: 2rem 2rem 3.5rem; }
+        .gs-papers-intro { padding: 2rem 2rem 2.5rem; }
+        .gs-papers-band { padding: 3rem 2.5rem; margin-bottom: 3rem; }
+        .gs-fileprep { padding: 2rem 2rem 3.5rem; }
+        .gs-contact { padding: 3rem 2rem 3.5rem; }
+        @media (max-width: 768px) {
+          .gs-services { padding: 2.2rem 1.5rem 2rem; }
+          .gs-showcase { padding: 1.5rem 1.5rem 2.2rem; }
+          .gs-papers-intro { padding: 1.5rem 1.5rem 1.8rem; }
+          .gs-papers-band { padding: 2rem 1.5rem; margin-bottom: 2rem; }
+          .gs-fileprep { padding: 1.5rem 1.5rem 2.2rem; }
+          .gs-contact { padding: 2rem 1.5rem 2.2rem; }
+        }
+      `}</style>
+
       {/* Hizmetlerimiz */}
-      <section style={{ maxWidth: 1500, margin: '0 auto', padding: '5rem 2rem' }}>
-        <div style={{
-          display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between',
-          alignItems: 'flex-end', gap: '2rem', marginBottom: '3rem',
-        }}>
-          <div>
-            <h2 style={{ ...displayHeading, fontSize: '2.2rem', margin: 0 }}>
-              Hizmetlerimiz
-            </h2>
-            <div style={{ width: 46, height: 1, background: 'var(--border)', marginTop: '.9rem' }} />
-          </div>
+      <section className="gs-services" style={{ maxWidth: 1500, margin: '0 auto', textAlign: 'center' }}>
+        <div style={{ marginBottom: '3rem' }}>
+          <h2 style={{ ...displayHeading, fontSize: '2.2rem', margin: 0 }}>
+            Hizmetlerimiz
+          </h2>
+          <div style={{ width: 46, height: 1, background: 'var(--border)', margin: '.9rem auto 0' }} />
           <p style={{
             fontFamily: "'Archivo', sans-serif", fontSize: '.88rem', lineHeight: 1.7,
-            color: 'var(--muted)', maxWidth: 420, margin: 0,
+            color: 'var(--muted)', maxWidth: 520, margin: '1.2rem auto 0',
           }}>
             {content['hizmetlerimiz-aciklama'] || 'Sanatçılar, fotoğrafçılar, galeriler ve kurumlar için yüksek kalite, arşiv değeri taşıyan baskı çözümleri sunuyoruz.'}
           </p>
@@ -478,20 +494,15 @@ function Gallery() {
           çeken birkaç eseri gösterip tıklayınca doğrudan o eserin sayfasına,
           "Tümünü Gör" ile de Fine Art Seçkisi'nin (İşler) tamamına götürür. */}
       {seckiArtworks.length > 0 && (
-        <section style={{ maxWidth: 1500, margin: '0 auto', padding: '2rem 2rem 5rem' }}>
-          <div style={{
-            display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between',
-            alignItems: 'flex-end', gap: '2rem', marginBottom: '3rem',
-          }}>
-            <div>
-              <p style={{ ...eyebrow, marginBottom: '.6rem' }}>Artı Poz Editions</p>
-              <h2 style={{ ...displayHeading, fontSize: '2.2rem', margin: 0 }}>
-                Fine Art Seçkisi
-              </h2>
-              <div style={{ width: 46, height: 1, background: 'var(--border)', marginTop: '.9rem' }} />
-            </div>
+        <section className="gs-showcase" style={{ maxWidth: 1500, margin: '0 auto', textAlign: 'center' }}>
+          <div style={{ marginBottom: '3rem' }}>
+            <p style={{ ...eyebrow, marginBottom: '.6rem' }}>Artı Poz Editions</p>
+            <h2 style={{ ...displayHeading, fontSize: '2.2rem', margin: 0 }}>
+              Fine Art Seçkisi
+            </h2>
+            <div style={{ width: 46, height: 1, background: 'var(--border)', margin: '.9rem auto 0' }} />
             <Link to="/isler" style={{
-              display: 'inline-flex', alignItems: 'center', gap: '.5rem',
+              display: 'inline-flex', alignItems: 'center', gap: '.5rem', marginTop: '1.2rem',
               fontFamily: "'Archivo', sans-serif", fontSize: '.68rem',
               letterSpacing: '.14em', textTransform: 'uppercase', color: 'var(--ink)',
             }}>
@@ -504,7 +515,7 @@ function Gallery() {
       )}
 
       {/* Sertifikalı Fine Art Kağıtları */}
-      <section style={{ maxWidth: 1200, margin: '0 auto', padding: '2rem 2rem 3rem', textAlign: 'center' }}>
+      <section className="gs-papers-intro" style={{ maxWidth: 1200, margin: '0 auto', textAlign: 'center' }}>
         <h2 style={{ ...displayHeading, fontSize: '2.4rem', margin: '0 0 1.2rem' }}>
           Sertifikalı Fine Art Kağıtları
         </h2>
@@ -521,14 +532,14 @@ function Gallery() {
       {/* Kağıt carousel'i — referans tasarımdaki gibi koyu zeminde, sayfa
           genişliğinin dışına taşıp tam ekran genişliğinde (full-bleed),
           sağ/sol oklarla kaydırılan ve mobilde parmakla kaydırılabilen şerit. */}
-      <div style={{ width: '100vw', marginLeft: 'calc(50% - 50vw)', background: '#111', padding: '3rem 2.5rem', marginBottom: '5rem' }}>
+      <div className="gs-papers-band" style={{ width: '100vw', marginLeft: 'calc(50% - 50vw)', background: '#111' }}>
         <div style={{ maxWidth: 1800, margin: '0 auto' }}>
           <PaperCarousel papers={CERTIFIED_PAPERS} images={images} />
         </div>
       </div>
 
       {/* Baskı İçin Dosya Hazırlığı */}
-      <section style={{ maxWidth: 900, margin: '0 auto', padding: '2rem 2rem 5rem' }}>
+      <section className="gs-fileprep" style={{ maxWidth: 900, margin: '0 auto' }}>
         <div style={{ textAlign: 'center', marginBottom: '3rem' }}>
           <h2 style={{ ...displayHeading, fontSize: '2.4rem', margin: '0 0 1.2rem' }}>
             Baskı İçin Dosya Hazırlığı
@@ -598,7 +609,7 @@ function Gallery() {
       </div>
 
       {/* Sipariş & İletişim */}
-      <section style={{ maxWidth: 640, margin: '0 auto', padding: '4rem 2rem 5rem' }}>
+      <section className="gs-contact" style={{ maxWidth: 640, margin: '0 auto' }}>
         <div style={{ textAlign: 'center', marginBottom: '2.5rem' }}>
           <h2 style={{ ...displayHeading, fontSize: '2.4rem', margin: '0 0 1.5rem' }}>
             Sipariş &amp; İletişim
