@@ -4,9 +4,6 @@ import { supabase } from '../lib/supabase'
 import { fetchArtworks } from '../lib/artworks'
 import Hero from '../components/Hero'
 import ArtCard from '../components/ArtCard'
-import fotografDefault from '../assets/fine-art/ornek-botanik.jpg'
-import fineArtDefault from '../assets/process/baski-sureci.jpg'
-import cerceveDefault from '../assets/cerceve/ornek-ahsap-cerceve.jpg'
 
 // "Sertifikalı Fine Art Kağıtları" grid'i — Sami'nin mailde gönderdiği 9
 // kağıdın adı ve kısa bilgisi, mail/WhatsApp referansındaki sırayla (1→9).
@@ -56,49 +53,18 @@ const PAYMENT_LOGOS = [
 ]
 const PAYMENT_TEXT_BADGES = ['TROY', 'Havale / EFT']
 
-const FILE_PREP = [
-  {
-    title: 'Dosya Formatı', badges: ['TIFF', 'JPG', 'PDF'],
-    text: <>Önerilen formatlar: <b>TIFF, PSD, JPG ve PDF.</b> RGB dosyalarda gömülü renk profili bulunması önerilir.</>,
-  },
-  {
-    title: 'Renk Profili', badges: [],
-    text: <><b>RGB çalışma alanında sRGB veya Adobe RGB</b> tercih edilebilir. Renk profili gömülmemiş dosyalar, varsayılan profil ile değerlendirilerek baskıya alınabilir.</>,
-  },
-  {
-    title: 'Taşma Payı ve Kesim', badges: [],
-    text: <>Kenara kadar baskı istenen çalışmalarda, dosyanıza her kenardan <b>3 mm taşma payı</b> eklenmelidir. Taşma payı bulunmayan dosyalarda kesim sırasında görselde çok küçük kayıplar oluşabilir. Beyaz kenarlıklı işler için net ölçü ve boşlukların dosyada doğru tanımlanması önemlidir.</>,
-  },
+// Ana Sayfa'daki "Baskı İçin Dosya Hazırlığı" görsel-kart bölümü — ilk 4
+// kart bir fotoğraf + köşede başlık/ok ikonuyla, sonuncusu (Dosya
+// Gönderimi) daha geniş, metin ağırlıklı bir kart. Görseller Admin >
+// Görseller'den yüklenecek (section: ...-gorsel).
+const FILE_PREP_CARDS = [
+  { key: 'dosya-format', title: 'Dosya Formatı' },
+  { key: 'renk-profili', title: 'Renk Profili' },
+  { key: 'cozunurluk-olcu', title: 'Çözünürlük ve Ölçü' },
+  { key: 'tasma-payi', title: 'Taşma Payı ve Kesim' },
 ]
 
 const displayHeading = { fontFamily: "'Playfair Display', serif", fontWeight: 600, color: 'var(--ink)' }
-
-const HIZMETLER = [
-  {
-    key: 'hizmet-fotograf', to: '/fotograf-baski', title: 'Fotoğraf Baskı', defaultImg: fotografDefault,
-    desc: 'Kodak ve profesyonel fotoğraf kağıtları ile mat, parlak veya saten yüzey seçenekleri.',
-  },
-  {
-    key: 'hizmet-fine-art', to: '/fine-art-baski', title: 'Fine Art / Giclée Baskı', defaultImg: fineArtDefault,
-    desc: 'Hahnemühle arşiv kağıtları ve pigment mürekkeplerle, müze kalitesinde fine art baskılar.',
-  },
-  {
-    key: 'hizmet-edisyon', to: '/fine-art-baski', title: 'Edisyon & Art Print Üretimi',
-    desc: 'Sanatçılar için sınırlı sayıda edisyon, numaralandırma, imza ve sertifika desteği.',
-  },
-  {
-    key: 'hizmet-poster', to: '/fotograf-baski', title: 'Poster & Kartpostal Baskı',
-    desc: 'Poster, kartpostal ve küçük format baskılarınız için yüksek kaliteli çözümler.',
-  },
-  {
-    key: 'hizmet-sergi', to: '/fine-art-baski', title: 'Sergi & Portfolyo Baskıları',
-    desc: 'Sergiler, portfolyolar ve projeleriniz için büyük format baskı ve sunum çözümleri.',
-  },
-  {
-    key: 'hizmet-cerceve', to: '/cerceve', title: 'Çerçeveleme', defaultImg: cerceveDefault,
-    desc: 'Eserlerinizi estetik ve koruyucu çerçeve çözümleriyle tamamlıyoruz. Özel ölçü seçenekleriyle.',
-  },
-]
 
 const eyebrow = { fontFamily: "'Archivo', sans-serif", fontSize: '.68rem', letterSpacing: '.14em', textTransform: 'uppercase', color: 'var(--muted)' }
 
@@ -333,6 +299,85 @@ function FineArtCarousel({ artworks }) {
   )
 }
 
+// "Baskı İçin Dosya Hazırlığı" kartları — masaüstünde tek satırda 5 kart
+// (ilk 4 eşit, sonuncusu daha geniş), toplam genişlik yeterli olduğu için
+// ok/loop mantığına gerek yok. Dar ekranlarda satır sığmadığından
+// (max-width: 900px) parmakla kaydırılan, her seferinde tek tam genişlikte
+// kart gösteren bir şeride dönüşüyor — aynı sayfadaki diğer carousel'lerde
+// "bir sonraki kartın kenardaki dilimi" karışıklığa yol açtığı için
+// buradan başlayarak hep tam genişlik kart kullanılıyor.
+function FilePrepCards({ images, content }) {
+  return (
+    <div className="fp-track">
+      <style>{`
+        .fp-track { display: flex; gap: 1rem; }
+        .fp-card { flex: 1 1 0; min-width: 0; height: 420px; position: relative; overflow: hidden; background: var(--surface); }
+        .fp-card-wide { flex: 1.7 1 0; }
+        @media (max-width: 900px) {
+          .fp-track { overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; -ms-overflow-style: none; }
+          .fp-track::-webkit-scrollbar { display: none; }
+          .fp-card, .fp-card-wide { flex: 0 0 100%; height: 340px; scroll-snap-align: start; }
+        }
+      `}</style>
+
+      {FILE_PREP_CARDS.map(card => (
+        <div key={card.key} className="fp-card">
+          {images[`${card.key}-gorsel`] ? (
+            <img
+              src={images[`${card.key}-gorsel`]}
+              alt={card.title}
+              loading="lazy" decoding="async"
+              style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }}
+            />
+          ) : (
+            <div style={{
+              position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center',
+              textAlign: 'center', padding: '1rem',
+              fontFamily: "'Archivo', sans-serif", fontSize: '.68rem', color: 'var(--muted)',
+            }}>
+              {`${card.title} — Admin'den yükle`}
+            </div>
+          )}
+          <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(180deg, rgba(0,0,0,0) 48%, rgba(0,0,0,.68) 100%)' }} />
+          <div style={{
+            position: 'absolute', left: '1rem', bottom: '1rem', right: '2.8rem',
+            fontFamily: "'Archivo', sans-serif", fontWeight: 700, fontSize: '.82rem',
+            letterSpacing: '.04em', textTransform: 'uppercase', color: '#fff', lineHeight: 1.3,
+          }}>
+            {card.title}
+          </div>
+          <div style={{
+            position: 'absolute', right: '.9rem', bottom: '.9rem', width: 30, height: 30, borderRadius: '50%',
+            border: '1px solid rgba(255,255,255,.55)', display: 'flex', alignItems: 'center',
+            justifyContent: 'center', color: '#fff', fontSize: '.85rem',
+          }}>
+            →
+          </div>
+        </div>
+      ))}
+
+      <div className="fp-card fp-card-wide" style={{ padding: '1.6rem', display: 'flex', flexDirection: 'column', justifyContent: 'flex-end' }}>
+        <div style={{
+          fontFamily: "'Archivo', sans-serif", fontWeight: 700, fontSize: '.82rem',
+          letterSpacing: '.04em', textTransform: 'uppercase', color: 'var(--ink)', marginBottom: '.8rem',
+        }}>
+          Dosya Gönderimi
+        </div>
+        <p style={{ fontFamily: "'Archivo', sans-serif", fontSize: '.8rem', lineHeight: 1.7, color: 'var(--muted)', margin: '0 0 1.1rem' }}>
+          {content['dosya-gonderimi-aciklama'] || 'Dosyalarınızı WeTransfer üzerinden paylaşabilir, aynı gün değerlendirme için son dosya iletim saati 15.00’a kadar iletebilirsiniz.'}
+        </p>
+        <a href="#siparis-iletisim" style={{
+          display: 'inline-flex', alignItems: 'center', gap: '.4rem',
+          fontFamily: "'Archivo', sans-serif", fontSize: '.7rem', letterSpacing: '.12em',
+          textTransform: 'uppercase', color: 'var(--ink)',
+        }}>
+          Detayları Gör <span>→</span>
+        </a>
+      </div>
+    </div>
+  )
+}
+
 function Gallery() {
   const [images, setImages] = useState({})
   const [content, setContent] = useState({})
@@ -414,87 +459,32 @@ function Gallery() {
         .gs-showcase { padding: 2rem 2rem 2.5rem; }
         .gs-papers-intro { padding: 1.5rem 2rem 2.5rem; }
         .gs-papers-band { padding: 3rem 2.5rem; margin-bottom: 3rem; }
-        .gs-fileprep { padding: 2rem 2rem 3.5rem; }
         .gs-contact { padding: 3rem 2rem 3.5rem; }
         @media (max-width: 768px) {
           .gs-services { padding: 2.2rem 1.5rem 2rem; }
           .gs-showcase { padding: 1.5rem 1.5rem 1.6rem; }
           .gs-papers-intro { padding: 1.2rem 1.5rem 1.6rem; }
           .gs-papers-band { padding: 2rem 1.5rem; margin-bottom: 2rem; }
-          .gs-fileprep { padding: 1.5rem 1.5rem 2.2rem; }
           .gs-contact { padding: 2rem 1.5rem 2.2rem; }
         }
       `}</style>
 
-      {/* Hizmetlerimiz */}
-      <section className="gs-services" style={{ maxWidth: 1500, margin: '0 auto', textAlign: 'center' }}>
-        <div style={{ marginBottom: '3rem' }}>
+      {/* Baskı İçin Dosya Hazırlığı — görsel kartlar */}
+      <section className="gs-services" style={{ maxWidth: 1500, margin: '0 auto' }}>
+        <div style={{ textAlign: 'center', marginBottom: '3rem' }}>
           <h2 style={{ ...displayHeading, fontSize: '2.2rem', margin: 0 }}>
-            Hizmetlerimiz
+            Baskı İçin Dosya Hazırlığı
           </h2>
           <div style={{ width: 46, height: 1, background: 'var(--border)', margin: '.9rem auto 0' }} />
           <p style={{
             fontFamily: "'Archivo', sans-serif", fontSize: '.88rem', lineHeight: 1.7,
-            color: 'var(--muted)', maxWidth: 520, margin: '1.2rem auto 0',
+            color: 'var(--muted)', maxWidth: 560, margin: '1.2rem auto 0',
           }}>
-            {content['hizmetlerimiz-aciklama'] || 'Sanatçılar, fotoğrafçılar, galeriler ve kurumlar için yüksek kalite, arşiv değeri taşıyan baskı çözümleri sunuyoruz.'}
+            {content['baski-hazirlik-aciklama'] || 'En iyi baskı sonucunu alabilmek için dosyalarınızı aşağıdaki teknik kriterlere göre hazırlayabilirsiniz.'}
           </p>
         </div>
 
-        <style>{`
-          .hizmetlerimiz-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
-          @media (max-width: 860px) {
-            .hizmetlerimiz-grid { grid-template-columns: repeat(2, 1fr); }
-          }
-          @media (max-width: 560px) {
-            .hizmetlerimiz-grid { grid-template-columns: 1fr; }
-          }
-          .hizmet-card { color: inherit; text-decoration: none; display: block; }
-          .hizmet-card .hizmet-ok { transition: transform .2s ease; display: inline-block; }
-          .hizmet-card:hover .hizmet-ok { transform: translateX(4px); }
-        `}</style>
-        <div className="hizmetlerimiz-grid">
-          {HIZMETLER.map((h, i) => {
-            const title = content[`${h.key}-baslik`] || h.title
-            const desc = content[`${h.key}-aciklama`] || h.desc
-            const imgSrc = images[h.key] || h.defaultImg
-            return (
-            <Link key={h.key} to={h.to} className="hizmet-card">
-              {imgSrc ? (
-                <img
-                  src={imgSrc}
-                  alt={title}
-                  loading="lazy" decoding="async"
-                  style={{ width: '100%', aspectRatio: '4 / 3', objectFit: 'cover', display: 'block' }}
-                />
-              ) : (
-                <div style={{
-                  width: '100%', aspectRatio: '4 / 3', background: '#e4e2db',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  fontFamily: "'Archivo', sans-serif", fontSize: '.68rem',
-                  letterSpacing: '.08em', textTransform: 'uppercase', color: 'var(--muted)', textAlign: 'center', padding: '1rem',
-                }}>
-                  Görsel — Admin'den yükle
-                </div>
-              )}
-              <div style={{ background: 'var(--surface)', padding: '1.3rem 1.4rem 1.5rem' }}>
-                <p style={{ fontFamily: "'Playfair Display', serif", fontWeight: 600, fontSize: '1.08rem', color: 'var(--ink)', margin: '0 0 .6rem' }}>
-                  {String(i + 1).padStart(2, '0')} — {title}
-                </p>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', gap: '1rem' }}>
-                  <p style={{
-                    fontFamily: "'Archivo', sans-serif", fontSize: '.78rem', lineHeight: 1.6,
-                    color: 'var(--muted)', margin: 0,
-                  }}>
-                    {desc}
-                  </p>
-                  <span className="hizmet-ok" style={{ fontSize: '1.1rem', color: 'var(--ink)', flexShrink: 0 }}>→</span>
-                </div>
-              </div>
-            </Link>
-            )
-          })}
-        </div>
+        <FilePrepCards images={images} content={content} />
       </section>
 
       {/* Artı Poz Editions — Fine Art Seçkisi vitrini. Ana Sayfa'da ilgi
@@ -548,53 +538,6 @@ function Gallery() {
         </div>
       </div>
 
-      {/* Baskı İçin Dosya Hazırlığı */}
-      <section className="gs-fileprep" style={{ maxWidth: 900, margin: '0 auto' }}>
-        <div style={{ textAlign: 'center', marginBottom: '3rem' }}>
-          <h2 style={{ ...displayHeading, fontSize: '2.4rem', margin: '0 0 1.2rem' }}>
-            Baskı İçin Dosya Hazırlığı
-          </h2>
-          <p style={{
-            fontFamily: "'Archivo', sans-serif", fontSize: '.88rem', lineHeight: 1.8,
-            color: 'var(--muted)', maxWidth: 640, margin: '0 auto',
-          }}>
-            En iyi baskı sonucunu alabilmek için dosyalarınızı aşağıdaki teknik kriterlere göre
-            hazırlayabilirsiniz. Özel bir durum varsa sipariş öncesinde bizimle iletişime geçebilirsiniz.
-          </p>
-        </div>
-
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '2.2rem' }}>
-          {FILE_PREP.map((item, i) => {
-            const n = i + 1
-            const title = content[`dosya-hazirlik-${n}-baslik`] || item.title
-            const desc = content[`dosya-hazirlik-${n}-aciklama`]
-            return (
-            <div key={item.title} style={{ textAlign: 'left', borderTop: '1px solid var(--border)', paddingTop: '2.2rem' }}>
-              <h3 style={{ fontFamily: "'Archivo', sans-serif", fontSize: '.95rem', fontWeight: 600, color: 'var(--ink)', margin: '0 0 .9rem' }}>
-                {title}
-              </h3>
-              {item.badges.length > 0 && (
-                <div style={{ display: 'flex', gap: '.6rem', marginBottom: '.9rem' }}>
-                  {item.badges.map(b => (
-                    <span key={b} style={{
-                      padding: '.4rem .8rem', border: '1px solid var(--border)',
-                      fontFamily: "'Archivo', sans-serif", fontSize: '.68rem',
-                      fontWeight: 600, color: 'var(--muted)',
-                    }}>
-                      {b}
-                    </span>
-                  ))}
-                </div>
-              )}
-              <p style={{ fontFamily: "'Archivo', sans-serif", fontSize: '.85rem', lineHeight: 1.8, color: 'var(--muted)', margin: 0 }}>
-                {desc || item.text}
-              </p>
-            </div>
-            )
-          })}
-        </div>
-      </section>
-
       {/* İletişim üstü görsel alanı — telifli olabilecek referans görsel kullanılmadı, Admin'den yüklenebilir */}
       <div style={{ maxWidth: 1100, margin: '0 auto', padding: '0 2rem' }}>
         {images['iletisim-gorsel'] ? (
@@ -619,7 +562,7 @@ function Gallery() {
       </div>
 
       {/* Sipariş & İletişim */}
-      <section className="gs-contact" style={{ maxWidth: 640, margin: '0 auto' }}>
+      <section id="siparis-iletisim" className="gs-contact" style={{ maxWidth: 640, margin: '0 auto' }}>
         <div style={{ textAlign: 'center', marginBottom: '2.5rem' }}>
           <h2 style={{ ...displayHeading, fontSize: '2.4rem', margin: '0 0 1.5rem' }}>
             Sipariş &amp; İletişim
