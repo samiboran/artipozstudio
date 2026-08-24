@@ -304,7 +304,7 @@ function FineArtCarousel({ artworks }) {
       >
         {artworks.map((artwork, i) => (
           <div key={artwork.id} className="fa-carousel-card" style={{ scrollSnapAlign: 'start', minWidth: 0 }}>
-            <ArtCard artwork={artwork} index={i} onClick={() => navigate(`/product/${artwork.slug}`)} />
+            <ArtCard artwork={artwork} index={i} noBottomGap onClick={() => navigate(`/product/${artwork.slug}`)} />
           </div>
         ))}
       </div>
@@ -404,15 +404,15 @@ function Gallery() {
           de mobildeki toplam boşluk azaltıldı. */}
       <style>{`
         .gs-services { padding: 3.5rem 2rem 3rem; }
-        .gs-showcase { padding: 2rem 2rem 3.5rem; }
-        .gs-papers-intro { padding: 2rem 2rem 2.5rem; }
+        .gs-showcase { padding: 2rem 2rem 2.5rem; }
+        .gs-papers-intro { padding: 1.5rem 2rem 2.5rem; }
         .gs-papers-band { padding: 3rem 2.5rem; margin-bottom: 3rem; }
         .gs-fileprep { padding: 2rem 2rem 3.5rem; }
         .gs-contact { padding: 3rem 2rem 3.5rem; }
         @media (max-width: 768px) {
           .gs-services { padding: 2.2rem 1.5rem 2rem; }
-          .gs-showcase { padding: 1.5rem 1.5rem 2.2rem; }
-          .gs-papers-intro { padding: 1.5rem 1.5rem 1.8rem; }
+          .gs-showcase { padding: 1.5rem 1.5rem 1.6rem; }
+          .gs-papers-intro { padding: 1.2rem 1.5rem 1.6rem; }
           .gs-papers-band { padding: 2rem 1.5rem; margin-bottom: 2rem; }
           .gs-fileprep { padding: 1.5rem 1.5rem 2.2rem; }
           .gs-contact { padding: 2rem 1.5rem 2.2rem; }
@@ -494,15 +494,18 @@ function Gallery() {
           çeken birkaç eseri gösterip tıklayınca doğrudan o eserin sayfasına,
           "Tümünü Gör" ile de Fine Art Seçkisi'nin (İşler) tamamına götürür. */}
       {seckiArtworks.length > 0 && (
-        <section className="gs-showcase" style={{ maxWidth: 1500, margin: '0 auto', textAlign: 'center' }}>
-          <div style={{ marginBottom: '3rem' }}>
+        <section className="gs-showcase" style={{ maxWidth: 1500, margin: '0 auto' }}>
+          {/* Sadece başlık bloğu ortalı — textAlign burada, section'ın tamamında
+              değil, yoksa carousel kartlarındaki fiyat/başlık/ölçü metni de
+              (ArtCard varsayılan olarak sola yaslı) yanlışlıkla ortalanıyordu. */}
+          <div style={{ textAlign: 'center', marginBottom: '1.6rem' }}>
             <p style={{ ...eyebrow, marginBottom: '.6rem' }}>Artı Poz Editions</p>
             <h2 style={{ ...displayHeading, fontSize: '2.2rem', margin: 0 }}>
               Fine Art Seçkisi
             </h2>
             <div style={{ width: 46, height: 1, background: 'var(--border)', margin: '.9rem auto 0' }} />
             <Link to="/isler" style={{
-              display: 'inline-flex', alignItems: 'center', gap: '.5rem', marginTop: '1.2rem',
+              display: 'inline-flex', alignItems: 'center', gap: '.5rem', marginTop: '.9rem',
               fontFamily: "'Archivo', sans-serif", fontSize: '.68rem',
               letterSpacing: '.14em', textTransform: 'uppercase', color: 'var(--ink)',
             }}>
