@@ -9,6 +9,9 @@ import { FONT_PRESETS, setFont } from '../lib/siteFonts'
 // bilmiyordu, sadece düz metin gösteriyordu. Aynı fallback görselleri burada
 // da import edip önizlemede göstermek için.
 import galleryHeroDefault from '../assets/fine-art/hero.jpg'
+import galleryFotografDefault from '../assets/fine-art/ornek-botanik.jpg'
+import galleryFineArtDefault from '../assets/process/baski-sureci.jpg'
+import galleryCerceveDefault from '../assets/cerceve/ornek-ahsap-cerceve.jpg'
 import cerceveHeroDefault from '../assets/cerceve/hero.jpg'
 import cerceveRenkSecenekleriDefault from '../assets/cerceve/renk-secenekleri.jpg'
 import cerceveRenkDetayDefault from '../assets/cerceve/renk-secenekleri-detay.jpg'
@@ -52,6 +55,12 @@ const PHOTO_FINISHES = ['Mat', 'Parlak']
 const IMAGE_SLOTS = [
   { page: 'gallery', section: 'hero', label: 'Ana Sayfa — Hero Görselleri, Masaüstü (yatay, 3 görsel önerilir, sırayla dönen slayt)', multiple: true, aspect: '21 / 9', defaultImgs: [galleryHeroDefault] },
   { page: 'gallery', section: 'hero-mobile', label: 'Ana Sayfa — Hero Görselleri, Mobil (dikey/portre, 3 görsel önerilir)', multiple: true, aspect: '9 / 16' },
+  { page: 'gallery', section: 'hizmet-fotograf', label: 'Ana Sayfa — Hizmetlerimiz: Fotoğraf Baskı', multiple: false, aspect: '4 / 3', defaultImg: galleryFotografDefault },
+  { page: 'gallery', section: 'hizmet-fine-art', label: 'Ana Sayfa — Hizmetlerimiz: Fine Art / Giclée Baskı', multiple: false, aspect: '4 / 3', defaultImg: galleryFineArtDefault },
+  { page: 'gallery', section: 'hizmet-edisyon', label: 'Ana Sayfa — Hizmetlerimiz: Edisyon & Art Print Üretimi', multiple: false, aspect: '4 / 3' },
+  { page: 'gallery', section: 'hizmet-poster', label: 'Ana Sayfa — Hizmetlerimiz: Poster & Kartpostal Baskı', multiple: false, aspect: '4 / 3' },
+  { page: 'gallery', section: 'hizmet-sergi', label: 'Ana Sayfa — Hizmetlerimiz: Sergi & Portfolyo Baskıları', multiple: false, aspect: '4 / 3' },
+  { page: 'gallery', section: 'hizmet-cerceve', label: 'Ana Sayfa — Hizmetlerimiz: Çerçeveleme', multiple: false, aspect: '4 / 3', defaultImg: galleryCerceveDefault },
   { page: 'gallery', section: 'dosya-format-gorsel', label: 'Ana Sayfa — Dosya Hazırlığı: Dosya Formatı', multiple: false, aspect: '3 / 4' },
   { page: 'gallery', section: 'renk-profili-gorsel', label: 'Ana Sayfa — Dosya Hazırlığı: Renk Profili', multiple: false, aspect: '3 / 4' },
   { page: 'gallery', section: 'cozunurluk-olcu-gorsel', label: 'Ana Sayfa — Dosya Hazırlığı: Çözünürlük ve Ölçü', multiple: false, aspect: '3 / 4' },
@@ -88,6 +97,19 @@ const IMAGE_SLOTS = [
 // fallback'in aynısı — admin boş kutuya bakınca sitede şu an ne yazdığını görsün diye.
 const PAGE_TEXT_FIELDS = {
   gallery: [
+    { section: 'hizmetlerimiz-aciklama', label: 'Hizmetlerimiz — Bölüm Açıklaması (başlığın sağında)', placeholder: 'Sanatçılar, fotoğrafçılar, galeriler ve kurumlar için yüksek kalite, arşiv değeri taşıyan baskı çözümleri sunuyoruz.', tall: true },
+    { section: 'hizmet-fotograf-baslik', label: 'Hizmetlerimiz — Fotoğraf Baskı Kart Başlığı', placeholder: 'Fotoğraf Baskı' },
+    { section: 'hizmet-fotograf-aciklama', label: 'Hizmetlerimiz — Fotoğraf Baskı Kart Açıklaması', placeholder: 'Kodak ve profesyonel fotoğraf kağıtları ile mat, parlak veya saten yüzey seçenekleri.', tall: true },
+    { section: 'hizmet-fine-art-baslik', label: 'Hizmetlerimiz — Fine Art / Giclée Baskı Kart Başlığı', placeholder: 'Fine Art / Giclée Baskı' },
+    { section: 'hizmet-fine-art-aciklama', label: 'Hizmetlerimiz — Fine Art / Giclée Baskı Kart Açıklaması', placeholder: 'Hahnemühle arşiv kağıtları ve pigment mürekkeplerle, müze kalitesinde fine art baskılar.', tall: true },
+    { section: 'hizmet-edisyon-baslik', label: 'Hizmetlerimiz — Edisyon & Art Print Üretimi Kart Başlığı', placeholder: 'Edisyon & Art Print Üretimi' },
+    { section: 'hizmet-edisyon-aciklama', label: 'Hizmetlerimiz — Edisyon & Art Print Üretimi Kart Açıklaması', placeholder: 'Sanatçılar için sınırlı sayıda edisyon, numaralandırma, imza ve sertifika desteği.', tall: true },
+    { section: 'hizmet-poster-baslik', label: 'Hizmetlerimiz — Poster & Kartpostal Baskı Kart Başlığı', placeholder: 'Poster & Kartpostal Baskı' },
+    { section: 'hizmet-poster-aciklama', label: 'Hizmetlerimiz — Poster & Kartpostal Baskı Kart Açıklaması', placeholder: 'Poster, kartpostal ve küçük format baskılarınız için yüksek kaliteli çözümler.', tall: true },
+    { section: 'hizmet-sergi-baslik', label: 'Hizmetlerimiz — Sergi & Portfolyo Baskıları Kart Başlığı', placeholder: 'Sergi & Portfolyo Baskıları' },
+    { section: 'hizmet-sergi-aciklama', label: 'Hizmetlerimiz — Sergi & Portfolyo Baskıları Kart Açıklaması', placeholder: 'Sergiler, portfolyolar ve projeleriniz için büyük format baskı ve sunum çözümleri.', tall: true },
+    { section: 'hizmet-cerceve-baslik', label: 'Hizmetlerimiz — Çerçeveleme Kart Başlığı', placeholder: 'Çerçeveleme' },
+    { section: 'hizmet-cerceve-aciklama', label: 'Hizmetlerimiz — Çerçeveleme Kart Açıklaması', placeholder: 'Eserlerinizi estetik ve koruyucu çerçeve çözümleriyle tamamlıyoruz. Özel ölçü seçenekleriyle.', tall: true },
     { section: 'baski-hazirlik-aciklama', label: 'Baskı İçin Dosya Hazırlığı — Bölüm Açıklaması', placeholder: 'En iyi baskı sonucunu alabilmek için dosyalarınızı aşağıdaki teknik kriterlere göre hazırlayabilirsiniz.', tall: true },
     { section: 'dosya-gonderimi-aciklama', label: 'Dosya Hazırlığı — Dosya Gönderimi Kartı Açıklaması', placeholder: 'Dosyalarınızı WeTransfer üzerinden paylaşabilir, aynı gün değerlendirme için son dosya iletim saati 15.00’a kadar iletebilirsiniz.', tall: true },
     { section: 'sertifikali-kagit-aciklama', label: 'Sertifikalı Fine Art Kağıtları — Açıklama', placeholder: "Hahnemühle'nin arşivsel kalitedeki fine art kağıtlarıyla, eserlerinizde üstün renk doğruluğu, derin tonlar ve yüksek detay elde edilir. Her baskı, uzun yıllar boyunca ilk günkü etkisini koruyacak kalıcılık ve premium sunum anlayışıyla üretilir.", tall: true },

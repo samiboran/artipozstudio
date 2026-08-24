@@ -4,6 +4,9 @@ import { supabase } from '../lib/supabase'
 import { fetchArtworks } from '../lib/artworks'
 import Hero from '../components/Hero'
 import ArtCard from '../components/ArtCard'
+import fotografDefault from '../assets/fine-art/ornek-botanik.jpg'
+import fineArtDefault from '../assets/process/baski-sureci.jpg'
+import cerceveDefault from '../assets/cerceve/ornek-ahsap-cerceve.jpg'
 
 // "Sertifikalı Fine Art Kağıtları" grid'i — Sami'nin mailde gönderdiği 9
 // kağıdın adı ve kısa bilgisi, mail/WhatsApp referansındaki sırayla (1→9).
@@ -23,6 +26,10 @@ const CERTIFIED_PAPERS = [
 
 // Marka isimlerini yazı yerine tanınabilir, basitleştirilmiş logo işaretleriyle
 // gösteriyoruz (gerçek marka dosyaları değil, stilize inline SVG'ler).
+// Not: Sami "ödeme yöntemi ve visa/troy vs. şimdilik kaldırılsın, sonra
+// ihtiyacımız olduğunda ekleriz" dedi — İletişim formundaki Ödeme Yöntemi
+// seçimi kaldırıldı, bu sabitler şu an kullanılmıyor ama ileride tekrar
+// eklenebilsin diye burada duruyor.
 const PAYMENT_LOGOS = [
   {
     key: 'visa', label: 'Visa',
@@ -67,6 +74,33 @@ const FILE_PREP_CARDS = [
 ]
 
 const displayHeading = { fontFamily: "'Playfair Display', serif", fontWeight: 600, color: 'var(--ink)' }
+
+const HIZMETLER = [
+  {
+    key: 'hizmet-fotograf', to: '/fotograf-baski', title: 'Fotoğraf Baskı', defaultImg: fotografDefault,
+    desc: 'Kodak ve profesyonel fotoğraf kağıtları ile mat, parlak veya saten yüzey seçenekleri.',
+  },
+  {
+    key: 'hizmet-fine-art', to: '/fine-art-baski', title: 'Fine Art / Giclée Baskı', defaultImg: fineArtDefault,
+    desc: 'Hahnemühle arşiv kağıtları ve pigment mürekkeplerle, müze kalitesinde fine art baskılar.',
+  },
+  {
+    key: 'hizmet-edisyon', to: '/fine-art-baski', title: 'Edisyon & Art Print Üretimi',
+    desc: 'Sanatçılar için sınırlı sayıda edisyon, numaralandırma, imza ve sertifika desteği.',
+  },
+  {
+    key: 'hizmet-poster', to: '/fotograf-baski', title: 'Poster & Kartpostal Baskı',
+    desc: 'Poster, kartpostal ve küçük format baskılarınız için yüksek kaliteli çözümler.',
+  },
+  {
+    key: 'hizmet-sergi', to: '/fine-art-baski', title: 'Sergi & Portfolyo Baskıları',
+    desc: 'Sergiler, portfolyolar ve projeleriniz için büyük format baskı ve sunum çözümleri.',
+  },
+  {
+    key: 'hizmet-cerceve', to: '/cerceve', title: 'Çerçeveleme', defaultImg: cerceveDefault,
+    desc: 'Eserlerinizi estetik ve koruyucu çerçeve çözümleriyle tamamlıyoruz. Özel ölçü seçenekleriyle.',
+  },
+]
 
 const eyebrow = { fontFamily: "'Archivo', sans-serif", fontSize: '.68rem', letterSpacing: '.14em', textTransform: 'uppercase', color: 'var(--muted)' }
 
@@ -380,7 +414,7 @@ function Gallery() {
   const [seckiArtworks, setSeckiArtworks] = useState([])
   const [contact, setContact] = useState({
     isim: '', postaKodu: '', adres: '', email: '', telefon: '',
-    odemeYontemi: '', numune: '', mesaj: '',
+    numune: '', mesaj: '',
   })
   const [contactStatus, setContactStatus] = useState('idle') // idle | sent
 
@@ -454,32 +488,87 @@ function Gallery() {
         .gs-showcase { padding: 2rem 2rem 2.5rem; }
         .gs-papers-intro { padding: 1.5rem 2rem 2.5rem; }
         .gs-papers-band { padding: 3rem 2.5rem; margin-bottom: 3rem; }
+        .gs-fileprep { padding: 2rem 2rem 2.5rem; }
         .gs-contact { padding: 3rem 2rem 3.5rem; }
         @media (max-width: 768px) {
           .gs-services { padding: 2.2rem 1.5rem 2rem; }
           .gs-showcase { padding: 1.5rem 1.5rem 1.6rem; }
           .gs-papers-intro { padding: 1.2rem 1.5rem 1.6rem; }
           .gs-papers-band { padding: 2rem 1.5rem; margin-bottom: 2rem; }
+          .gs-fileprep { padding: 1.5rem 1.5rem 1.8rem; }
           .gs-contact { padding: 2rem 1.5rem 2.2rem; }
         }
       `}</style>
 
-      {/* Baskı İçin Dosya Hazırlığı — görsel kartlar */}
-      <section className="gs-services" style={{ maxWidth: 1500, margin: '0 auto' }}>
-        <div style={{ textAlign: 'center', marginBottom: '3rem' }}>
+      {/* Hizmetlerimiz */}
+      <section className="gs-services" style={{ maxWidth: 1500, margin: '0 auto', textAlign: 'center' }}>
+        <div style={{ marginBottom: '3rem' }}>
           <h2 style={{ ...displayHeading, fontSize: '2.2rem', margin: 0 }}>
-            Baskı İçin Dosya Hazırlığı
+            Hizmetlerimiz
           </h2>
           <div style={{ width: 46, height: 1, background: 'var(--border)', margin: '.9rem auto 0' }} />
           <p style={{
             fontFamily: "'Archivo', sans-serif", fontSize: '.88rem', lineHeight: 1.7,
-            color: 'var(--muted)', maxWidth: 560, margin: '1.2rem auto 0',
+            color: 'var(--muted)', maxWidth: 520, margin: '1.2rem auto 0',
           }}>
-            {content['baski-hazirlik-aciklama'] || 'En iyi baskı sonucunu alabilmek için dosyalarınızı aşağıdaki teknik kriterlere göre hazırlayabilirsiniz.'}
+            {content['hizmetlerimiz-aciklama'] || 'Sanatçılar, fotoğrafçılar, galeriler ve kurumlar için yüksek kalite, arşiv değeri taşıyan baskı çözümleri sunuyoruz.'}
           </p>
         </div>
 
-        <FilePrepCards images={images} content={content} />
+        <style>{`
+          .hizmetlerimiz-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
+          @media (max-width: 860px) {
+            .hizmetlerimiz-grid { grid-template-columns: repeat(2, 1fr); }
+          }
+          @media (max-width: 560px) {
+            .hizmetlerimiz-grid { grid-template-columns: 1fr; }
+          }
+          .hizmet-card { color: inherit; text-decoration: none; display: block; }
+          .hizmet-card .hizmet-ok { transition: transform .2s ease; display: inline-block; }
+          .hizmet-card:hover .hizmet-ok { transform: translateX(4px); }
+        `}</style>
+        <div className="hizmetlerimiz-grid">
+          {HIZMETLER.map((h, i) => {
+            const title = content[`${h.key}-baslik`] || h.title
+            const desc = content[`${h.key}-aciklama`] || h.desc
+            const imgSrc = images[h.key] || h.defaultImg
+            return (
+            <Link key={h.key} to={h.to} className="hizmet-card">
+              {imgSrc ? (
+                <img
+                  src={imgSrc}
+                  alt={title}
+                  loading="lazy" decoding="async"
+                  style={{ width: '100%', aspectRatio: '4 / 3', objectFit: 'cover', display: 'block' }}
+                />
+              ) : (
+                <div style={{
+                  width: '100%', aspectRatio: '4 / 3', background: '#e4e2db',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  fontFamily: "'Archivo', sans-serif", fontSize: '.68rem',
+                  letterSpacing: '.08em', textTransform: 'uppercase', color: 'var(--muted)', textAlign: 'center', padding: '1rem',
+                }}>
+                  Görsel — Admin'den yükle
+                </div>
+              )}
+              <div style={{ background: 'var(--surface)', padding: '1.3rem 1.4rem 1.5rem' }}>
+                <p style={{ fontFamily: "'Playfair Display', serif", fontWeight: 600, fontSize: '1.08rem', color: 'var(--ink)', margin: '0 0 .6rem' }}>
+                  {String(i + 1).padStart(2, '0')} — {title}
+                </p>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', gap: '1rem' }}>
+                  <p style={{
+                    fontFamily: "'Archivo', sans-serif", fontSize: '.78rem', lineHeight: 1.6,
+                    color: 'var(--muted)', margin: 0,
+                  }}>
+                    {desc}
+                  </p>
+                  <span className="hizmet-ok" style={{ fontSize: '1.1rem', color: 'var(--ink)', flexShrink: 0 }}>→</span>
+                </div>
+              </div>
+            </Link>
+            )
+          })}
+        </div>
       </section>
 
       {/* Artı Poz Editions — Fine Art Seçkisi vitrini. Ana Sayfa'da ilgi
@@ -532,6 +621,25 @@ function Gallery() {
           <PaperCarousel papers={CERTIFIED_PAPERS} images={images} />
         </div>
       </div>
+
+      {/* Baskı İçin Dosya Hazırlığı — görsel kartlar. Sertifikalı Kağıtlar
+          ile İletişim arasında konumlandırıldı. */}
+      <section className="gs-fileprep" style={{ maxWidth: 1500, margin: '0 auto' }}>
+        <div style={{ textAlign: 'center', marginBottom: '3rem' }}>
+          <h2 style={{ ...displayHeading, fontSize: '2.2rem', margin: 0 }}>
+            Baskı İçin Dosya Hazırlığı
+          </h2>
+          <div style={{ width: 46, height: 1, background: 'var(--border)', margin: '.9rem auto 0' }} />
+          <p style={{
+            fontFamily: "'Archivo', sans-serif", fontSize: '.88rem', lineHeight: 1.7,
+            color: 'var(--muted)', maxWidth: 560, margin: '1.2rem auto 0',
+          }}>
+            {content['baski-hazirlik-aciklama'] || 'En iyi baskı sonucunu alabilmek için dosyalarınızı aşağıdaki teknik kriterlere göre hazırlayabilirsiniz.'}
+          </p>
+        </div>
+
+        <FilePrepCards images={images} content={content} />
+      </section>
 
       {/* İletişim üstü görsel alanı — telifli olabilecek referans görsel kullanılmadı, Admin'den yüklenebilir */}
       <div style={{ maxWidth: 1100, margin: '0 auto', padding: '0 2rem' }}>
@@ -629,21 +737,12 @@ function Gallery() {
               </div>
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: '1rem' }}>
-              <div>
-                <label style={contactLabel}>Ödeme Yöntemi</label>
-                <select name="odemeYontemi" value={contact.odemeYontemi} onChange={updateContact} style={contactInput}>
-                  <option value="">Ödeme yöntemi seçin</option>
-                  {[...PAYMENT_LOGOS.map(p => p.label), ...PAYMENT_TEXT_BADGES].map(b => <option key={b} value={b}>{b}</option>)}
-                </select>
-              </div>
-              <div>
-                <label style={contactLabel}><span lang="en">Fine</span> Art Kağıt Numune Seti</label>
-                <select name="numune" value={contact.numune} onChange={updateContact} style={contactInput}>
-                  <option value="">Numune seçin</option>
-                  {papers.map(p => <option key={p.name} value={p.name}>{p.name}</option>)}
-                </select>
-              </div>
+            <div>
+              <label style={contactLabel}><span lang="en">Fine</span> Art Kağıt Numune Seti</label>
+              <select name="numune" value={contact.numune} onChange={updateContact} style={contactInput}>
+                <option value="">Numune seçin</option>
+                {papers.map(p => <option key={p.name} value={p.name}>{p.name}</option>)}
+              </select>
             </div>
 
             <div>
