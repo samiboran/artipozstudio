@@ -56,9 +56,11 @@ export default function Hero() {
   }, [])
 
   // Meltem'in mobil için ayrıca hazırladığı dikey/portre kırpımlar
-  // yüklenmişse onlar kullanılıyor. Henüz yüklenmemişse, masaüstü için
-  // hazırlanan yatay görsellere geri düşülüyor — Hero artık kısa/sabit
-  // boyda (52vh) olduğu için ikisi de bu boyda makul görünüyor.
+  // yüklenmişse onlar kullanılıyor (tam ekran, kırpma sorunu yok — zaten
+  // mobil için hazırlanmışlar). Henüz yüklenmemişse, masaüstü için
+  // hazırlanan yatay görsellere geri düşülüyor; o durumda aşırı
+  // kırpmayı azaltmak için Hero'nun boyu kısaltılıyor (bkz. aşağıdaki
+  // .hero-section CSS'i).
   const hasMobileSet = mobileUrls.length > 0
   const mobileStackUrls = hasMobileSet ? mobileUrls : desktopUrls
   // page_images sorgusu dönene kadar (desktopUrls henüz boş) koyu/siyah bir
@@ -67,17 +69,31 @@ export default function Hero() {
   const loading = desktopUrls.length === 0
 
   return (
-    <section className={`hero-section${loading ? ' hero-section--loading' : ''}`} style={{
+    <section className={`hero-section${hasMobileSet ? ' hero-section--mobile-set' : ''}${loading ? ' hero-section--loading' : ''}`} style={{
       position: 'relative',
       display: 'flex', alignItems: 'center', justifyContent: 'center',
       textAlign: 'center', overflow: 'hidden', background: 'var(--surface)',
     }}>
-      {/* Ana Sayfa hero'su artık Çerçeve/Fine Art Baskı/Fotoğraf Baskı
-          sayfalarındaki hero'larla aynı boyda (Çerçeve ile birebir aynı
-          değer, 52vh/340px — önceden tam ekran (100vh) kapladığı için
-          site genelinde tutarsız duruyordu). */}
+      {/* Masaüstünde görseller (21:9 için hazırlanmış) 52vh'lik kısa bir
+          kutuya sığdırılınca aşırı yakınlaştırılmış/kırpılmış
+          görünüyordu — kutu, görselin oranından çok daha geniş/kısa
+          kalıyordu. 68vh bu kırpmayı büyük ölçüde azaltıyor.
+
+          Mobilde, dikey/portre hero görselleri henüz yüklenmemişse
+          (.hero-section--mobile-set yoksa) aynı yatay (21:9) görseller
+          kullanılıyor — bu sefer tam tersi sorun oluyor: dar bir dikey
+          ekranda 68vh'lik uzun bir kutuyu kaplamak için görsel çok daha
+          fazla yakınlaştırılıp yanlardan kırpılıyor. Bu yüzden mobilde,
+          henüz kendi portre görselleri olmayan hero için kutu daha kısa
+          tutuluyor (42vh) — kırpma/yakınlaştırma daha az agresif oluyor.
+          Meltem'in hazırladığı portre görseller yüklenince
+          (.hero-section--mobile-set) o görseller zaten dikey ekran için
+          kesildiği için mobilde tekrar 68vh'ye çıkılabiliyor. */}
       <style>{`
-        .hero-section { height: 52vh; min-height: 340px; }
+        .hero-section { height: 68vh; min-height: 460px; }
+        @media (max-width: 640px) {
+          .hero-section:not(.hero-section--mobile-set) { height: 42vh; min-height: 300px; }
+        }
         .hero-desktop-imgs { display: block; }
         .hero-mobile-imgs { display: none; }
         @media (max-width: 640px) {
