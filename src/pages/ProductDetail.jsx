@@ -40,7 +40,9 @@ function MobileImageCarousel({ images, alt }) {
       >
         {images.map((img, i) => (
           <div key={img.id || i} style={{ flex: '0 0 100%', scrollSnapAlign: 'start', aspectRatio: '4/5', background: 'var(--surface)' }}>
-            <img src={img.image_url} alt={alt} style={{ width: '100%', height: '100%', objectFit: 'contain', display: 'block' }} />
+            <img src={img.image_url} alt={alt}
+              loading={i === 0 ? 'eager' : 'lazy'} fetchPriority={i === 0 ? 'high' : 'auto'} decoding="async"
+              style={{ width: '100%', height: '100%', objectFit: 'contain', display: 'block' }} />
           </div>
         ))}
       </div>
@@ -239,7 +241,7 @@ function ProductDetail() {
 
             {view === 'print' ? (
               activeImage
-                ? <img src={activeImage} alt={artwork.title} style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+                ? <img src={activeImage} alt={artwork.title} loading="eager" fetchPriority="high" decoding="async" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
                 : <div dangerouslySetInnerHTML={{ __html: makeSVG(0) }} style={{ width: '100%', height: '100%' }} />
             ) : (
               /* Duvar mockup sahnesi */
@@ -280,7 +282,7 @@ function ProductDetail() {
                     background: 'none', flexShrink: 0,
                   }}
                 >
-                  <img src={img.image_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+                  <img src={img.image_url} alt="" loading="lazy" decoding="async" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
                 </button>
               ))}
             </div>
@@ -305,7 +307,7 @@ function ProductDetail() {
                       background: 'none', flexShrink: 0,
                     }}
                   >
-                    <img src={img.image_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+                    <img src={img.image_url} alt="" loading="lazy" decoding="async" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
                   </button>
                 ))}
               </div>
@@ -500,6 +502,7 @@ function ProductDetail() {
           {artistInfo.artist_photo_url && (
             <img
               src={artistInfo.artist_photo_url} alt={artwork.artist}
+              loading="lazy" decoding="async"
               style={{ width: 120, height: 120, borderRadius: '50%', objectFit: 'cover', flexShrink: 0, marginTop: '2rem' }}
             />
           )}

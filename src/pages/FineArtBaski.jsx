@@ -104,6 +104,7 @@ export default function FineArtBaski() {
         <img
           src={images.hero}
           alt="Fine art baskı hazırlığı — eldivenli ellerle siyah-beyaz baskılar"
+          loading="eager" fetchPriority="high" decoding="async"
           style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }}
         />
         <div style={{
@@ -190,6 +191,7 @@ export default function FineArtBaski() {
               <img
                 src={img.image_url}
                 alt={img.alt || 'Fine art baskı örneği'}
+                loading="lazy" decoding="async"
                 style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
               />
             </div>
@@ -262,7 +264,8 @@ export default function FineArtBaski() {
           <img
             src={images['kagit-secenekleri']}
             alt="Hahnemühle fine art kağıt numuneleri"
-            style={{ width: '100%', height: 'auto', display: 'block' }}
+            loading="lazy" decoding="async"
+            style={{ width: '100%', aspectRatio: '4 / 3', objectFit: 'contain', display: 'block' }}
           />
         </div>
 
@@ -285,12 +288,12 @@ export default function FineArtBaski() {
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: '1rem', marginBottom: '1.2rem' }}>
                 <div style={{ aspectRatio: '4/3' }}>
                   {p.texturePhoto
-                    ? <img src={p.texturePhoto} alt={`${p.name} kağıt dokusu`} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+                    ? <img src={p.texturePhoto} alt={`${p.name} kağıt dokusu`} loading="lazy" decoding="async" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
                     : placeholderBox('Kağıt dokusu yakın çekim')}
                 </div>
                 <div style={{ aspectRatio: '4/3' }}>
                   {p.previewPhoto
-                    ? <img src={p.previewPhoto} alt={`${p.name} baskı önizlemesi`} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+                    ? <img src={p.previewPhoto} alt={`${p.name} baskı önizlemesi`} loading="lazy" decoding="async" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
                     : placeholderBox('Baskı önizlemesi')}
                 </div>
               </div>

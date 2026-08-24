@@ -51,10 +51,10 @@ function FinishCard({ label: cardLabel, img1, img2, onClick }) {
     <div onClick={onClick} style={{ cursor: onClick ? 'pointer' : 'default' }}>
       <div className="finish-card" style={{ width: '100%', aspectRatio: '4 / 3', overflow: 'hidden', position: 'relative', background: 'var(--surface)' }}>
         {img1 ? (
-          <img src={img1} alt={`${cardLabel} baskı örneği`} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+          <img src={img1} alt={`${cardLabel} baskı örneği`} loading="lazy" decoding="async" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
         ) : placeholderBox(`${cardLabel} — Admin'den yükle`)}
         {img2 && (
-          <img className="img-2" src={img2} alt={`${cardLabel} baskı örneği, yakın çekim`} style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />
+          <img className="img-2" src={img2} alt={`${cardLabel} baskı örneği, yakın çekim`} loading="lazy" decoding="async" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />
         )}
       </div>
       <p style={{ ...eyebrow, textAlign: 'center', marginTop: '.9rem' }}>{cardLabel}</p>
@@ -256,6 +256,7 @@ export default function FotografBaski() {
         <img
           src={images.hero}
           alt="Stüdyoda hazırlanan fotoğraf baskıları"
+          loading="eager" fetchPriority="high" decoding="async"
           style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }}
         />
         <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(180deg, rgba(17,17,17,.15), rgba(17,17,17,.55))' }} />
@@ -406,7 +407,7 @@ export default function FotografBaski() {
           <div style={{ display: 'flex', flexDirection: 'column', gap: '.8rem', marginTop: '1rem' }}>
             {list.map(item => (
               <div key={item.key} style={{ display: 'flex', alignItems: 'center', gap: '1rem', border: '1px solid var(--border)', padding: '.8rem' }}>
-                <img src={item.imageUrl} alt="" style={{ width: 56, height: 56, objectFit: 'cover', flexShrink: 0 }} />
+                <img src={item.imageUrl} alt="" loading="lazy" decoding="async" style={{ width: 56, height: 56, objectFit: 'cover', flexShrink: 0 }} />
                 <div style={{ flex: 1, ...body, fontSize: '.82rem' }}>
                   {item.size} · {item.finish} · {item.quantity} adet
                   {item.note && <div style={{ fontSize: '.7rem', color: 'var(--muted)', marginTop: '.2rem' }}>Not: {item.note}</div>}
