@@ -296,18 +296,15 @@ export default function Cerceve() {
               <h3 style={{ ...heading, fontSize: '1.1rem', margin: '0 0 .3rem' }}>{s.size}</h3>
               <p style={{ ...body, fontSize: '.78rem', marginBottom: '1rem' }}>{s.note}</p>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '.5rem', marginBottom: '1.2rem' }}>
-                {Object.entries(s.prices).map(([color, price]) => (
-                  <div key={color} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                    <span style={{ display: 'flex', alignItems: 'center', gap: '.5rem', ...body, fontSize: '.85rem' }}>
-                      <span style={{
-                        width: 14, height: 14, borderRadius: '50%',
-                        background: colorSwatch[color] || '#ccc',
-                        border: color === 'Beyaz' ? '1px solid var(--border)' : 'none',
-                        display: 'inline-block',
-                      }} />
-                      {color}
-                    </span>
-                    <span style={{ ...label, color: 'var(--ink)' }}>{price.toLocaleString('tr-TR')} TL</span>
+                {Object.keys(s.prices).map(color => (
+                  <div key={color} style={{ display: 'flex', alignItems: 'center', gap: '.5rem', ...body, fontSize: '.85rem' }}>
+                    <span style={{
+                      width: 14, height: 14, borderRadius: '50%',
+                      background: colorSwatch[color] || '#ccc',
+                      border: color === 'Beyaz' ? '1px solid var(--border)' : 'none',
+                      display: 'inline-block',
+                    }} />
+                    {color}
                   </div>
                 ))}
               </div>

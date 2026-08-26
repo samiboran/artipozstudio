@@ -20,7 +20,6 @@ import Legal from './pages/Legal'
 import FineArtBaski from './pages/FineArtBaski'
 import Cerceve from './pages/Cerceve'
 import FotografBaski from './pages/FotografBaski'
-import KagitRehberi from './pages/KagitRehberi'
 import WhatsAppButton from './components/WhatsAppButton'
 
 // React Router sayfa değiştirince scroll pozisyonunu KORUYOR, sıfırlamıyor —
@@ -75,7 +74,6 @@ function App() {
         <Route path="/fine-art-baski" element={<FineArtBaski />} />
         <Route path="/cerceve" element={<Cerceve />} />
         <Route path="/fotograf-baski" element={<FotografBaski />} />
-        <Route path="/kagit-rehberi" element={<KagitRehberi />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
       <CartSidebar open={cartOpen} onClose={() => setCartOpen(false)} />
