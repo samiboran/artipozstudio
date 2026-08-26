@@ -50,10 +50,12 @@ export function useCart() {
     listeners.push(setItems)
   }
 
-  // Dönüş değeri: true = gerçekten eklendi, false = giriş yapılmadığı için
-  // hiçbir şey yapılmadı (arayüz sadece görsel bir geri bildirim gösterebilir).
+  // Sepete ekleme artık üyelik gerektirmiyor — Etsy'deki gibi kayıt olmadan
+  // da sepete eklenip satın alınabilsin diye (satın alma sırasında "Üye Ol" /
+  // "Kayıt Olmadan Devam Et" seçeneği sunuluyor, bkz. CartSidebar). Dönüş
+  // değeri true/false kalsın diye korundu (ileride başka bir engelleme
+  // durumu için kullanılabilir).
   function addItem(artwork, size, price) {
-    if (!currentUserId) return false
     const key = `${artwork.id}-${size}`
     const exists = cartState.find(i => i.key === key)
     if (exists) {

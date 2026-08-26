@@ -7,7 +7,7 @@ import { useParams, Link } from 'react-router-dom'
 // ==============================================================
 
 const SELLER = {
-  name: '[AD SOYAD / ŞİRKET ÜNVANI]',
+  name: 'Meltem Sarı, Artı Poz Studio',
   address: '[AÇIK ADRES]',
   email: 'info@artipozstudio.com',
   phone: '[TELEFON]',
@@ -19,7 +19,7 @@ const PAGES = {
     sections: [
       ['1. Taraflar', `SATICI: ${SELLER.name}, ${SELLER.address}, ${SELLER.email}. ALICI: Sipariş formunda bilgileri yer alan kişi. İşbu sözleşme, ALICI'nın Artı Poz üzerinden sipariş verdiği ürünlerin satışı ve teslimi ile ilgili olarak 6502 sayılı Tüketicinin Korunması Hakkında Kanun ve Mesafeli Sözleşmeler Yönetmeliği hükümleri gereğince tarafların hak ve yükümlülüklerini düzenler.`],
       ['2. Sözleşme Konusu Ürün', `Ürünün türü, adedi, ebadı ve satış bedeli sipariş özetinde belirtildiği gibidir. Eserler fine art baskı veya orijinal eser niteliğindedir; her eser orijinallik sertifikası ile gönderilir.`],
-      ['3. Teslimat', `Ürünler, sipariş onayını takiben en geç 30 gün içinde, taahhüt edilen sürede (olağan koşullarda 3–5 iş günü) ALICI'nın bildirdiği adrese sigortalı kargo ile teslim edilir. Kargo ücreti sipariş özetinde belirtilir.`],
+      ['3. Teslimat', `Ürünler, sipariş onayını takiben en geç 30 gün içinde, taahhüt edilen sürede (olağan koşullarda 3–5 iş günü) ALICI'nın bildirdiği adrese teslim edilir; teslimat, istek doğrultusunda sigortalı kargo ile yollanabilir.`],
       ['4. Cayma Hakkı', `ALICI, ürünü teslim aldığı tarihten itibaren 14 gün içinde hiçbir gerekçe göstermeksizin cayma hakkını kullanabilir. Cayma bildirimi ${SELLER.email} adresine yazılı olarak yapılmalıdır. İade edilen ürünün, teslim edildiği haliyle, hasarsız ve orijinal ambalajında gönderilmesi gerekir. Kişiye özel üretilen (özel ölçü, özel çerçeve vb.) ürünlerde cayma hakkı bulunmamaktadır.`],
       ['5. Bedel İadesi', `Cayma hakkının kullanılması halinde, ürünün SATICI'ya ulaşmasını takiben 14 gün içinde ödenen bedel ALICI'ya iade edilir.`],
       ['6. Uyuşmazlıklar', `İşbu sözleşmeden doğan uyuşmazlıklarda, Ticaret Bakanlığı'nca ilan edilen değere kadar Tüketici Hakem Heyetleri, üzerindeki uyuşmazlıklarda Tüketici Mahkemeleri yetkilidir.`],
@@ -28,7 +28,7 @@ const PAGES = {
   'iade': {
     title: 'İade & Değişim Koşulları',
     sections: [
-      ['14 Gün Koşulsuz İade', `Teslim aldığınız eseri, teslim tarihinden itibaren 14 gün içinde gerekçe göstermeden iade edebilirsiniz. İade talebinizi ${SELLER.email} adresine, sipariş numaranızla birlikte iletin.`],
+      ['14 Gün Koşulsuz İade', `Teslim aldığınız eseri, teslim tarihinden itibaren 14 gün içinde koşulsuz olarak iade edebilirsiniz. İade talebinizi ${SELLER.email} adresine, sipariş numaranızla birlikte iletin.`],
       ['İade Şartları', `Eserin hasarsız, teslim edildiği haliyle ve orijinal ambalajında (silindir/kutu, köşe korumaları) gönderilmesi gerekir. Sertifika eserle birlikte iade edilmelidir.`],
       ['Hasarlı Teslimat', `Kargo tesliminde paketi kontrol edin. Gözle görülür hasar varsa kargo görevlisine tutanak tutturun ve aynı gün bize fotoğraflarıyla bildirin. Hasarlı ürünler ücretsiz olarak yenisiyle değiştirilir.`],
       ['Özel Üretim', `Kişiye özel ölçü veya özel çerçeve ile üretilen eserlerde, yasa gereği cayma hakkı bulunmamaktadır.`],
@@ -38,7 +38,7 @@ const PAGES = {
   'gizlilik': {
     title: 'Gizlilik ve Kişisel Verilerin Korunması (KVKK)',
     sections: [
-      ['Veri Sorumlusu', `6698 sayılı Kişisel Verilerin Korunması Kanunu kapsamında veri sorumlusu: ${SELLER.name}, ${SELLER.address}.`],
+      ['Veri Sorumlusu', `6698 sayılı Kişisel Verilerin Korunması Kanunu kapsamında veri sorumlusu: ${SELLER.name}.`],
       ['Toplanan Veriler', `Sipariş sürecinde ad soyad, e-posta, telefon ve teslimat adresi bilgileriniz toplanır. Sitede ödeme bilgisi (kart numarası vb.) toplanmaz ve saklanmaz.`],
       ['İşleme Amacı', `Verileriniz yalnızca siparişinizin oluşturulması, teslimatın sağlanması ve sizinle sipariş hakkında iletişim kurulması amacıyla işlenir. Pazarlama amaçlı kullanılmaz, üçüncü taraflarla paylaşılmaz (teslimat için kargo firmasına iletilen ad-adres-telefon bilgisi hariç).`],
       ['Saklama', `Veriler, yasal saklama süreleri boyunca güvenli sunucularda (Supabase) saklanır.`],
@@ -50,8 +50,8 @@ const PAGES = {
     sections: [
       ['Hazırlama Süresi', `Fine art baskılar sipariş üzerine üretilir. Baskı ve kalite kontrol süreci 1–3 iş günü sürer.`],
       ['Kargo Süresi', `Yurt içi teslimat, kargoya verildikten sonra 1–3 iş günüdür. Toplam teslim süresi olağan koşullarda 3–5 iş günüdür.`],
-      ['Ambalaj', `Baskılar asit içermeyen koruyucu kâğıda sarılır; sert silindir veya düz kutu ile, köşe korumalarıyla gönderilir. Tüm gönderiler sigortalıdır.`],
-      ['Kargo Ücreti', `Kargo ücreti sipariş özetinde belirtilir. [ÜCRETSİZ KARGO EŞİĞİ VARSA BURAYA YAZ, örn: ₺2.500 üzeri siparişlerde kargo ücretsizdir.]`],
+      ['Ambalaj', `Baskılar asit içermeyen koruyucu kâğıda sarılır; sert silindir veya düz kutu ile, köşe korumalarıyla, istek doğrultusunda sigortalı olarak gönderilebilir.`],
+      ['Kargo Ücreti', `Kargo ücreti sipariş özetinde belirtilir.`],
       ['Takip', `Siparişiniz kargoya verildiğinde e-posta ile takip numarası gönderilir.`],
     ],
   },
@@ -70,9 +70,11 @@ function Legal() {
   return (
     <div style={{ paddingTop: '4.2rem' }}>
       <div style={{ maxWidth: 720, margin: '0 auto', padding: '3.5rem 2rem 6rem' }}>
+        {/* Site genelindeki diğer sayfa başlıklarıyla (About.jsx vb.) aynı
+            font ve renk — önceden eski Archivo Black/ince stildeydi. */}
         <h1 style={{
-          fontFamily: "'Archivo Black', sans-serif",
-          fontSize: '2rem', fontWeight: 300, marginBottom: '2rem'
+          fontFamily: "'Playfair Display', serif", color: 'var(--blue)',
+          fontSize: '2.2rem', fontWeight: 600, marginBottom: '2rem'
         }}>
           {doc.title}
         </h1>

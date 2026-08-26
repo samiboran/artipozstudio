@@ -35,14 +35,13 @@ function ArtCard({ artwork, index, onClick, noBottomGap = false }) {
   const sizeLabel = firstSize ? (SIZE_MM[firstSize.label] || firstSize.label) : null
   const titleLine = artwork.type ? `${artwork.title} / ${artwork.type}` : artwork.title
 
-  // justifyContent 'center' glifi 26px'lik kutunun ortasına alıyordu, bu da
-  // altındaki fiyat/isim/ölçü metniyle (aynı .2rem sol padding'i paylaşıyor)
-  // aynı hizada durmasını engelliyordu — 'flex-start' ile glif kutunun sol
-  // kenarına, metinle aynı hizaya yaslanıyor.
+  // Fotoğrafın üzerine bindirilen dairesel ikon butonları — beyaz zemin,
+  // hangi fotoğrafın üstünde olursa olsun okunaklı kalsın diye.
   const iconBtn = {
-    background: 'none', border: 'none', padding: 0, cursor: 'pointer',
-    display: 'flex', alignItems: 'center', justifyContent: 'flex-start',
-    width: 26, height: 26, fontSize: '1rem',
+    background: 'rgba(255,255,255,.92)', border: 'none', padding: 0, cursor: 'pointer',
+    display: 'flex', alignItems: 'center', justifyContent: 'center',
+    width: 30, height: 30, borderRadius: '50%', fontSize: '.95rem',
+    boxShadow: '0 1px 5px rgba(0,0,0,.18)',
   }
 
   return (
@@ -79,29 +78,36 @@ function ArtCard({ artwork, index, onClick, noBottomGap = false }) {
             {artwork.edition}
           </div>
         )}
-      </div>
 
-      {/* Bilgi — İkonlar / Fiyat / Başlık / Malzeme / Ölçü */}
-      <div style={{ padding: '.6rem .2rem 0' }}>
-        {/* Favori + sepete ekle — her zaman görünür, fiyattan önce (mobilde
-            hover olmadığı için önceki hover-only overlay butonları görünmüyordu) */}
-        <div style={{ display: 'flex', gap: '.5rem', marginBottom: '.4rem' }}>
+        {/* Favori + sepete ekle — fotoğrafın sağ alt köşesinde */}
+        <div style={{ position: 'absolute', right: '.6rem', bottom: '.6rem', display: 'flex', gap: '.4rem' }}>
           <button
             onClick={handleFav}
             aria-label="Favorilere ekle"
-            style={{ ...iconBtn, color: liked ? 'var(--red)' : 'var(--muted)', animation: favShake ? 'needsLogin .5s' : 'none' }}
+            style={{ ...iconBtn, color: liked ? 'var(--red)' : 'var(--ink)', animation: favShake ? 'needsLogin .5s' : 'none' }}
           >
             {liked ? '♥' : '♡'}
           </button>
           <button
             onClick={quickAdd}
             aria-label="Sepete ekle"
-            style={{ ...iconBtn, fontSize: '1.05rem', color: added ? 'var(--gold)' : 'var(--muted)', animation: cartShake ? 'needsLogin .5s' : 'none' }}
+            style={{ ...iconBtn, color: added ? 'var(--gold)' : 'var(--ink)', animation: cartShake ? 'needsLogin .5s' : 'none' }}
           >
-            {added ? '✓' : '⊕'}
+            {added ? (
+              '✓'
+            ) : (
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+                <circle cx="9" cy="21" r="1.2" fill="currentColor" stroke="none" />
+                <circle cx="19" cy="21" r="1.2" fill="currentColor" stroke="none" />
+                <path d="M1 1h3l2.6 13.2a2 2 0 002 1.8h9.8a2 2 0 002-1.7L22 6H6" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            )}
           </button>
         </div>
+      </div>
 
+      {/* Bilgi — Fiyat / Başlık / Malzeme / Ölçü */}
+      <div style={{ padding: '.6rem .2rem 0' }}>
         {priceLabel && (
           <div style={{ fontFamily: "'Archivo', sans-serif", fontWeight: 400, fontSize: '.82rem', color: 'var(--ink)', marginBottom: '.3rem' }}>
             {priceLabel}
