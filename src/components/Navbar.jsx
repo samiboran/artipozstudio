@@ -38,7 +38,6 @@ const NAV_LINKS = [
   { label: 'Ana Sayfa', to: '/' },
   { label: 'Fotoğraf Baskı', to: '/fotograf-baski' },
   { label: 'Fine Art Baskı', to: '/fine-art-baski', lang: 'en' },
-  { label: 'Kağıt Rehberi', to: '/kagit-rehberi' },
   { label: 'Çerçeve', to: '/cerceve' },
   { label: <><span lang="en">Fine Art</span> Seçkisi</>, to: '/isler' },
 ]

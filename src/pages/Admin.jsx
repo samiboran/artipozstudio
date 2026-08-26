@@ -43,7 +43,7 @@ const EMPTY_FORM = {
 const EMPTY_FRAME = { size: '', note: '', prices: [{ color: '', price: '', swatch_hex: '#111111' }] }
 const EMPTY_PAPER = {
   name: '', surface: '', gsm: '', texture: '', color: '', composition: '', description: '',
-  texture_photo_url: '', preview_photo_url: '', guide_category: '', featured_in_guide: false,
+  texture_photo_url: '', preview_photo_url: '', featured_in_guide: false,
 }
 
 // Fotoğraf Baskı sayfasındaki boy/yüzey fiyat matrisi — sabit 5×2 ızgara.
@@ -1554,19 +1554,9 @@ function Admin() {
                 <textarea style={{ ...inp, minHeight: 80, resize: 'vertical' }} value={paperForm.description} onChange={e => setPaperForm(f => ({ ...f, description: e.target.value }))} />
               </div>
 
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: '1rem', marginBottom: '1.5rem' }}>
-                <div>
-                  <span style={label}>Kağıt Rehberi Bölümü</span>
-                  <select style={inp} value={paperForm.guide_category || ''} onChange={e => setPaperForm(f => ({ ...f, guide_category: e.target.value || null }))}>
-                    <option value="">Rehber'de gösterme</option>
-                    <option value="sanat-baskisi">Sanat Baskısı Kağıtlar</option>
-                    <option value="giclee">Giclee Kağıtlar</option>
-                  </select>
-                </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '.6rem', paddingTop: '1.4rem' }}>
-                  <input type="checkbox" id="featured-in-guide" checked={paperForm.featured_in_guide} onChange={e => setPaperForm(f => ({ ...f, featured_in_guide: e.target.checked }))} />
-                  <label htmlFor="featured-in-guide" style={{ fontSize: '.82rem', cursor: 'pointer' }}>"En Popüler" galerisinde göster</label>
-                </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '.6rem', marginBottom: '1.5rem' }}>
+                <input type="checkbox" id="featured-in-guide" checked={paperForm.featured_in_guide} onChange={e => setPaperForm(f => ({ ...f, featured_in_guide: e.target.checked }))} />
+                <label htmlFor="featured-in-guide" style={{ fontSize: '.82rem', cursor: 'pointer' }}>"En Popüler" galerisinde göster</label>
               </div>
 
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: '1rem', marginBottom: '2rem' }}>
