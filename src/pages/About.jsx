@@ -42,7 +42,7 @@ function About() {
         <h2 style={h2}>Güvenli Teslimat</h2>
         <p style={p}>
           Eserler, köşe korumaları ve sert silindir ya da düz kutu ambalajla,
-          sigortalı kargo ile gönderilir. Teslimat süresi yurt içinde 3–5 iş günüdür.
+          sigortalı kargo ile gönderilebilir. Teslimat süresi yurt içinde 3–5 iş günüdür.
           14 gün içinde koşulsuz iade hakkınız vardır.
         </p>
 

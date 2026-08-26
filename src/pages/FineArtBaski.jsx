@@ -185,7 +185,13 @@ export default function FineArtBaski() {
       {/* Örnek Baskılarımız */}
       <section style={{ maxWidth: 1000, margin: '0 auto', padding: '0 2rem 4rem' }}>
         <p style={{ ...eyebrow, textAlign: 'center', marginBottom: '1.5rem' }}>Örnek Baskılarımız</p>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1.2rem' }}>
+        {/* auto-fit yerine auto-fill — sadece 2-3 görsel yüklendiğinde
+            auto-fit boş sütunları kaldırıp kalan görselleri konteynerin
+            tamamına geriyordu, bu da masaüstünde fotoğrafların aşırı
+            büyük görünmesine yol açıyordu. auto-fill boş sütunları
+            (görünmez) yer tutucu olarak bırakıp görsellerin sabit bir
+            üst boyutu aşmamasını sağlıyor. */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: '1.2rem' }}>
           {images.ornekler.map((img, i) => (
             <div key={i} style={{ aspectRatio: '4 / 5', overflow: 'hidden' }}>
               <img

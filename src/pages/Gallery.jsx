@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
-import { fetchArtworks } from '../lib/artworks'
+import { fetchArtworks, SIZE_MM } from '../lib/artworks'
 import Hero from '../components/Hero'
 import ArtCard from '../components/ArtCard'
 import fotografDefault from '../assets/fine-art/ornek-botanik.jpg'
@@ -132,6 +132,14 @@ function PaperCarousel({ papers, images }) {
     }
   }
 
+  // Sayfaya girildikten 5sn sonra kendiliğinden kaymaya başlıyor, sonra her
+  // 5sn'de bir sonraki "sayfa"ya geçiyor. Kullanıcı parmakla/okla kendi
+  // kaydırdığında bir sonraki otomatik adıma kadar dokunulmuyor.
+  useEffect(() => {
+    const id = setInterval(() => scrollByPage(1), 5000)
+    return () => clearInterval(id)
+  }, [])
+
   return (
     <div style={{ position: 'relative' }}>
       <style>{`
@@ -156,13 +164,15 @@ function PaperCarousel({ papers, images }) {
         onClick={() => scrollByPage(-1)}
         aria-label="Önceki kağıtlar"
         style={{
-          position: 'absolute', left: -6, top: '38%', transform: 'translateY(-50%)',
-          zIndex: 2, background: 'none', border: 'none', cursor: 'pointer',
-          fontSize: '2.4rem', lineHeight: 1, fontFamily: 'Georgia, serif',
-          color: 'rgba(255,255,255,.35)', padding: '.5rem', transition: 'color .15s ease',
+          position: 'absolute', left: '.4rem', top: '38%', transform: 'translateY(-50%)',
+          zIndex: 2, background: '#fff', border: 'none', cursor: 'pointer',
+          width: 42, height: 42, borderRadius: '50%',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          fontSize: '1.3rem', lineHeight: 1, color: '#111',
+          boxShadow: '0 2px 10px rgba(0,0,0,.35)', transition: 'transform .15s ease',
         }}
-        onMouseEnter={e => { e.currentTarget.style.color = '#fff' }}
-        onMouseLeave={e => { e.currentTarget.style.color = 'rgba(255,255,255,.35)' }}
+        onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-50%) scale(1.08)' }}
+        onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(-50%) scale(1)' }}
       >
         ‹
       </button>
@@ -218,13 +228,15 @@ function PaperCarousel({ papers, images }) {
         onClick={() => scrollByPage(1)}
         aria-label="Sonraki kağıtlar"
         style={{
-          position: 'absolute', right: -6, top: '38%', transform: 'translateY(-50%)',
-          zIndex: 2, background: 'none', border: 'none', cursor: 'pointer',
-          fontSize: '2.4rem', lineHeight: 1, fontFamily: 'Georgia, serif',
-          color: 'rgba(255,255,255,.35)', padding: '.5rem', transition: 'color .15s ease',
+          position: 'absolute', right: '.4rem', top: '38%', transform: 'translateY(-50%)',
+          zIndex: 2, background: '#fff', border: 'none', cursor: 'pointer',
+          width: 42, height: 42, borderRadius: '50%',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          fontSize: '1.3rem', lineHeight: 1, color: '#111',
+          boxShadow: '0 2px 10px rgba(0,0,0,.35)', transition: 'transform .15s ease',
         }}
-        onMouseEnter={e => { e.currentTarget.style.color = '#fff' }}
-        onMouseLeave={e => { e.currentTarget.style.color = 'rgba(255,255,255,.35)' }}
+        onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-50%) scale(1.08)' }}
+        onMouseLeave={e => { e.currentTarget.style.transform = 'translateY(-50%) scale(1)' }}
       >
         ›
       </button>
@@ -390,7 +402,7 @@ function FilePrepCards({ images, content }) {
                   fontFamily: "'Archivo', sans-serif", fontSize: '.72rem', lineHeight: 1.6,
                   color: 'rgba(255,255,255,.85)', margin: '.5rem 0 0',
                 }}>
-                  {content['dosya-gonderimi-aciklama'] || 'Dosyalarınızı güvenli ve hızlı şekilde bize ulaştırın. Desteklenen büyük boyut seçenekleriyle yükleme yapabilirsiniz.'}
+                  {content['dosya-gonderimi-aciklama'] || 'Dosyalarınızı güvenli ve hızlı şekilde bize ulaştırın.'}
                 </p>
                 <a href="#siparis-iletisim" style={{
                   display: 'inline-flex', alignItems: 'center', gap: '.35rem', marginTop: '.6rem',
@@ -417,7 +429,7 @@ function Gallery() {
   const [seckiArtworks, setSeckiArtworks] = useState([])
   const [contact, setContact] = useState({
     isim: '', postaKodu: '', adres: '', email: '', telefon: '',
-    numune: '', mesaj: '',
+    numune: '', boyut: '', mesaj: '',
   })
   const [contactStatus, setContactStatus] = useState('idle') // idle | sent
 
@@ -491,32 +503,41 @@ function Gallery() {
         .gs-showcase { padding: 2rem 2rem 2.5rem; }
         .gs-papers-intro { padding: 1.5rem 2rem 2.5rem; }
         .gs-papers-band { padding: 3rem 2.5rem; margin-bottom: 3rem; }
-        .gs-fileprep { padding: 2rem 2rem 2.5rem; }
         .gs-contact { padding: 3rem 2rem 3.5rem; }
         @media (max-width: 768px) {
           .gs-services { padding: 2.2rem 1.5rem 2rem; }
           .gs-showcase { padding: 1.5rem 1.5rem 1.6rem; }
           .gs-papers-intro { padding: 1.2rem 1.5rem 1.6rem; }
           .gs-papers-band { padding: 2rem 1.5rem; margin-bottom: 2rem; }
-          .gs-fileprep { padding: 1.5rem 1.5rem 1.8rem; }
           .gs-contact { padding: 2rem 1.5rem 2.2rem; }
+        }
+        /* Masaüstünde başlık altı açıklama metinleri başlığa çok uzak
+           duruyordu — mobilde dokunmadan, sadece masaüstünde yaklaştırıyoruz. */
+        @media (min-width: 769px) {
+          .section-desc { margin-top: .5rem !important; }
+          .section-divider { margin-bottom: .6rem !important; }
         }
       `}</style>
 
-      {/* Hizmetlerimiz */}
+      {/* Baskı İçin Dosya Hazırlığı — üstte, ardından (aynı bölümde, ayrı
+          başlık olmadan) 01-06 numaralı Hizmetlerimiz listesi geliyor. */}
       <section className="gs-services" style={{ maxWidth: 1500, margin: '0 auto', textAlign: 'center' }}>
         <div style={{ marginBottom: '3rem' }}>
           <h2 style={{ ...displayHeading, fontSize: '2.2rem', margin: 0 }}>
-            Hizmetlerimiz
+            Baskı İçin Dosya Hazırlığı
           </h2>
           <div style={{ width: 46, height: 1, background: 'var(--border)', margin: '.9rem auto 0' }} />
-          <p style={{
+          <p className="section-desc" style={{
             fontFamily: "'Archivo', sans-serif", fontSize: '.88rem', lineHeight: 1.7,
-            color: 'var(--muted)', maxWidth: 520, margin: '1.2rem auto 0',
+            color: 'var(--muted)', maxWidth: 560, margin: '1.2rem auto 0',
           }}>
-            {content['hizmetlerimiz-aciklama'] || 'Sanatçılar, fotoğrafçılar, galeriler ve kurumlar için yüksek kalite, arşiv değeri taşıyan baskı çözümleri sunuyoruz.'}
+            {content['baski-hazirlik-aciklama'] || 'En iyi baskı sonucunu alabilmek için dosyalarınızı aşağıdaki teknik kriterlere göre hazırlayabilirsiniz.'}
           </p>
         </div>
+
+        <FilePrepCards images={images} content={content} />
+
+        <div style={{ marginTop: '4rem' }} />
 
         <style>{`
           .hizmetlerimiz-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
@@ -530,7 +551,11 @@ function Gallery() {
           .hizmet-card .hizmet-ok { transition: transform .2s ease; display: inline-block; }
           .hizmet-card:hover .hizmet-ok { transform: translateX(4px); }
         `}</style>
-        <div className="hizmetlerimiz-grid">
+        {/* maxWidth 1100 — 1500'lük geniş bölüm konteynerinde sabit 3
+            sütun, masaüstünde her fotoğrafın aşırı büyük durmasına yol
+            açıyordu; oranı bozmadan (aspect-ratio 4/3 aynı kalıyor) grid'i
+            daraltıp kareleri küçültüyoruz. */}
+        <div className="hizmetlerimiz-grid" style={{ maxWidth: 1100, margin: '0 auto' }}>
           {HIZMETLER.map((h, i) => {
             const title = content[`${h.key}-baslik`] || h.title
             const desc = content[`${h.key}-aciklama`] || h.desc
@@ -610,7 +635,7 @@ function Gallery() {
         <h2 style={{ ...displayHeading, fontSize: '2.4rem', margin: '0 0 1.2rem' }}>
           Sertifikalı Fine Art Kağıtları
         </h2>
-        <div style={{ width: 60, height: 1, background: 'var(--border)', margin: '0 auto 1.5rem' }} />
+        <div className="section-divider" style={{ width: 60, height: 1, background: 'var(--border)', margin: '0 auto 1.5rem' }} />
         <p style={{
           fontFamily: "'Archivo', sans-serif", fontSize: '.92rem', lineHeight: 1.8,
           color: 'var(--muted)', maxWidth: 900, margin: '0 auto',
@@ -628,25 +653,6 @@ function Gallery() {
           <PaperCarousel papers={CERTIFIED_PAPERS} images={images} />
         </div>
       </div>
-
-      {/* Baskı İçin Dosya Hazırlığı — görsel kartlar. Sertifikalı Kağıtlar
-          ile İletişim arasında konumlandırıldı. */}
-      <section className="gs-fileprep" style={{ maxWidth: 1500, margin: '0 auto' }}>
-        <div style={{ textAlign: 'center', marginBottom: '3rem' }}>
-          <h2 style={{ ...displayHeading, fontSize: '2.2rem', margin: 0 }}>
-            Baskı İçin Dosya Hazırlığı
-          </h2>
-          <div style={{ width: 46, height: 1, background: 'var(--border)', margin: '.9rem auto 0' }} />
-          <p style={{
-            fontFamily: "'Archivo', sans-serif", fontSize: '.88rem', lineHeight: 1.7,
-            color: 'var(--muted)', maxWidth: 560, margin: '1.2rem auto 0',
-          }}>
-            {content['baski-hazirlik-aciklama'] || 'En iyi baskı sonucunu alabilmek için dosyalarınızı aşağıdaki teknik kriterlere göre hazırlayabilirsiniz.'}
-          </p>
-        </div>
-
-        <FilePrepCards images={images} content={content} />
-      </section>
 
       {/* İletişim üstü görsel alanı — telifli olabilecek referans görsel kullanılmadı, Admin'den yüklenebilir */}
       <div style={{ maxWidth: 1100, margin: '0 auto', padding: '0 2rem' }}>
@@ -682,7 +688,6 @@ function Gallery() {
             color: 'var(--muted)', display: 'flex', flexDirection: 'column', gap: '1rem',
           }}>
             <p style={{ margin: 0 }}>Sipariş, teklif talebi ve tüm sorularınız için bizimle iletişime geçebilirsiniz.</p>
-            <p style={{ margin: 0 }}>Baskı sürecine uygun kağıt seçimi, ölçü ve adet planlaması konusunda size memnuniyetle destek oluruz.</p>
             <p style={{ margin: 0 }}>
               Talebinizi iletirken tercih ettiğiniz <b>kağıt türü, baskı ölçüsü ve adet bilgisi</b>ni
               paylaşmanız hazırlık sürecini kolaylaştırır.
@@ -745,17 +750,25 @@ function Gallery() {
             </div>
 
             <div>
-              <label style={contactLabel}><span lang="en">Fine</span> Art Kağıt Numune Seti</label>
+              <label style={contactLabel}>Kağıt Seçenekleri</label>
               <select name="numune" value={contact.numune} onChange={updateContact} style={contactInput}>
-                <option value="">Numune seçin</option>
+                <option value="">Kağıt seçin</option>
                 {papers.map(p => <option key={p.name} value={p.name}>{p.name}</option>)}
               </select>
             </div>
 
             <div>
-              <label style={contactLabel}>
-                Mesaj * <span style={{ textTransform: 'none', letterSpacing: 0 }}>(Sipariş verirken lütfen teslimat adresinizi ve telefon numaranızı belirtin!)</span>
-              </label>
+              <label style={contactLabel}>Boyut</label>
+              <select name="boyut" value={contact.boyut} onChange={updateContact} style={contactInput}>
+                <option value="">Boyut seçin</option>
+                {Object.entries(SIZE_MM).map(([label, mm]) => (
+                  <option key={label} value={label}>{label} — {mm}</option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label style={contactLabel}>Mesaj *</label>
               <textarea
                 name="mesaj" required maxLength={500} value={contact.mesaj} onChange={updateContact}
                 style={{ ...contactInput, minHeight: 110, resize: 'vertical' }}

@@ -62,22 +62,6 @@ export default function CartSidebar({ open, onClose }) {
               ✓ Siparişiniz alındı!<br />
               <span style={{ fontSize: '.85rem', color: '#aaa', fontStyle: 'normal' }}>En kısa sürede sizinle iletişime geçeceğiz.</span>
             </div>
-          ) : !loggedIn ? (
-            <div style={{ textAlign: 'center', paddingTop: '4rem' }}>
-              <div style={{
-                fontFamily: "'Archivo Black', sans-serif",
-                fontSize: '1.2rem', color: 'var(--muted)', fontStyle: 'italic', marginBottom: '1rem'
-              }}>
-                Sepete eklemek için giriş yap
-              </div>
-              <Link to="/login" onClick={onClose} style={{
-                display: 'inline-block', padding: '.65rem 1.4rem',
-                background: 'var(--ink)', color: '#fff',
-                fontSize: '.68rem', letterSpacing: '.16em', textTransform: 'uppercase',
-              }}>
-                Giriş Yap
-              </Link>
-            </div>
           ) : items.length === 0 ? (
             <div style={{
               textAlign: 'center', paddingTop: '4rem',
@@ -124,14 +108,37 @@ export default function CartSidebar({ open, onClose }) {
               <span style={{ fontSize: '.7rem', letterSpacing: '.1em', textTransform: 'uppercase', color: 'var(--muted)' }}>Toplam</span>
               <span style={{ fontFamily: "'Archivo Black', sans-serif", fontSize: '1.4rem' }}>₺{total.toLocaleString('tr-TR')}</span>
             </div>
-            <button
-              onClick={() => setCheckoutOpen(true)}
-              style={{
-                width: '100%', padding: '.9rem', background: 'var(--ink)', color: '#fff', border: 'none',
-                fontSize: '.68rem', letterSpacing: '.2em', textTransform: 'uppercase', cursor: 'pointer'
-              }}>
-              Ödemeye Geç
-            </button>
+            {loggedIn ? (
+              <button
+                onClick={() => setCheckoutOpen(true)}
+                style={{
+                  width: '100%', padding: '.9rem', background: 'var(--ink)', color: '#fff', border: 'none',
+                  fontSize: '.68rem', letterSpacing: '.2em', textTransform: 'uppercase', cursor: 'pointer'
+                }}>
+                Ödemeye Geç
+              </button>
+            ) : (
+              // Üyelik olmadan da satın alınabilsin (Etsy'deki gibi) — kayıt
+              // olma ve misafir olarak devam etme aynı ağırlıkta iki seçenek.
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '.6rem' }}>
+                <Link to="/signup" onClick={onClose} style={{
+                  width: '100%', padding: '.9rem', background: 'var(--ink)', color: '#fff', border: 'none',
+                  fontSize: '.68rem', letterSpacing: '.2em', textTransform: 'uppercase', textAlign: 'center',
+                  boxSizing: 'border-box', textDecoration: 'none', display: 'block',
+                }}>
+                  Üye Ol ve Devam Et
+                </Link>
+                <button
+                  onClick={() => setCheckoutOpen(true)}
+                  style={{
+                    width: '100%', padding: '.9rem', background: '#fff', color: 'var(--ink)',
+                    border: '1px solid var(--ink)', fontSize: '.68rem', letterSpacing: '.2em',
+                    textTransform: 'uppercase', cursor: 'pointer',
+                  }}>
+                  Kayıt Olmadan Devam Et
+                </button>
+              </div>
+            )}
             <div style={{ fontSize: '.6rem', textAlign: 'center', color: 'var(--muted)', marginTop: '.8rem', letterSpacing: '.08em' }}>
               Ücretsiz kargo · Güvenli ödeme · 14 gün iade
             </div>

@@ -78,23 +78,23 @@ export default function Hero() {
       display: 'flex', alignItems: 'center', justifyContent: 'center',
       textAlign: 'center', overflow: 'hidden', background: 'var(--surface)',
     }}>
-      {/* Masaüstünde görseller (21:9 için hazırlanmış) 52vh'lik kısa bir
-          kutuya sığdırılınca aşırı yakınlaştırılmış/kırpılmış
-          görünüyordu — kutu, görselin oranından çok daha geniş/kısa
-          kalıyordu. 68vh bu kırpmayı büyük ölçüde azaltıyor.
+      {/* Masaüstünde 68vh ekrana sığmayacak kadar büyük kalıyordu —
+          diğer sayfalardaki (Çerçeve/Fine Art Baskı/Fotoğraf Baskı)
+          hero'lara daha yakın bir boyda, 55vh'ye indirildi. Kırpma zaten
+          ayrıca bir zoom (bkz. HeroSlideStack'teki transform: scale)
+          ile azaltılıyor, o yüzden boyu küçültmek kırpma sorununu geri
+          getirmiyor.
 
           Mobilde, dikey/portre hero görselleri henüz yüklenmemişse
           (.hero-section--mobile-set yoksa) aynı yatay (21:9) görseller
-          kullanılıyor — bu sefer tam tersi sorun oluyor: dar bir dikey
-          ekranda 68vh'lik uzun bir kutuyu kaplamak için görsel çok daha
-          fazla yakınlaştırılıp yanlardan kırpılıyor. Bu yüzden mobilde,
-          henüz kendi portre görselleri olmayan hero için kutu daha kısa
-          tutuluyor (42vh) — kırpma/yakınlaştırma daha az agresif oluyor.
-          Meltem'in hazırladığı portre görseller yüklenince
-          (.hero-section--mobile-set) o görseller zaten dikey ekran için
-          kesildiği için mobilde tekrar 68vh'ye çıkılabiliyor. */}
+          kullanılıyor — dar bir dikey ekranda uzun bir kutuyu kaplamak
+          için görsel çok daha fazla yakınlaştırılıp yanlardan kırpılırdı,
+          bu yüzden o durumda kutu daha da kısa tutuluyor (42vh). Meltem'in
+          hazırladığı portre görseller yüklenince (.hero-section--mobile-set)
+          o görseller zaten dikey ekran için kesildiği için mobilde de
+          55vh kullanılabiliyor. */}
       <style>{`
-        .hero-section { height: 68vh; min-height: 460px; }
+        .hero-section { height: 55vh; min-height: 380px; }
         @media (max-width: 640px) {
           .hero-section:not(.hero-section--mobile-set) { height: 42vh; min-height: 300px; }
         }
