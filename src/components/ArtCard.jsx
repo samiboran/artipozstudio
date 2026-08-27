@@ -55,10 +55,11 @@ function ArtCard({ artwork, index, onClick, noBottomGap = false }) {
     >
       {/* Görsel kutusu (4/5) her zamanki tam boyutunda kalıyor — sadece
           içindeki görsel artık kırpılmadan (contain) sığdırılıyor, kutudan
-          taşan/kesilen kısım kalmıyor. Oran uymayan kenarlarda kutunun
-          kendi zemin rengi (mat gibi) görünür. */}
+          taşan/kesilen kısım kalmıyor. Oran uymayan kenarlarda (mat gibi)
+          siyah zemin görünür — eserlerin kendi fotoğraf zeminiyle aynı
+          renkte, kayıtsız bir geçiş için. */}
       <div style={{
-        overflow: 'hidden', position: 'relative', background: 'var(--surface)', aspectRatio: '4/5',
+        overflow: 'hidden', position: 'relative', background: 'var(--ink)', aspectRatio: '4/5',
       }}>
         {artwork.image_url
           ? <img src={artwork.image_url} alt={artwork.title}
