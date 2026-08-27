@@ -97,7 +97,6 @@ const IMAGE_SLOTS = [
 // fallback'in aynısı — admin boş kutuya bakınca sitede şu an ne yazdığını görsün diye.
 const PAGE_TEXT_FIELDS = {
   gallery: [
-    { section: 'hizmetlerimiz-aciklama', label: 'Hizmetlerimiz — Bölüm Açıklaması (başlığın sağında)', placeholder: 'Sanatçılar, fotoğrafçılar, galeriler ve kurumlar için yüksek kalite, arşiv değeri taşıyan baskı çözümleri sunuyoruz.', tall: true },
     { section: 'hizmet-fotograf-baslik', label: 'Hizmetlerimiz — Fotoğraf Baskı Kart Başlığı', placeholder: 'Fotoğraf Baskı' },
     { section: 'hizmet-fotograf-aciklama', label: 'Hizmetlerimiz — Fotoğraf Baskı Kart Açıklaması', placeholder: 'Kodak ve profesyonel fotoğraf kağıtları ile mat, parlak veya saten yüzey seçenekleri.', tall: true },
     { section: 'hizmet-fine-art-baslik', label: 'Hizmetlerimiz — Fine Art / Giclée Baskı Kart Başlığı', placeholder: 'Fine Art / Giclée Baskı' },
@@ -111,7 +110,6 @@ const PAGE_TEXT_FIELDS = {
     { section: 'hizmet-cerceve-baslik', label: 'Hizmetlerimiz — Çerçeveleme Kart Başlığı', placeholder: 'Çerçeveleme' },
     { section: 'hizmet-cerceve-aciklama', label: 'Hizmetlerimiz — Çerçeveleme Kart Açıklaması', placeholder: 'Eserlerinizi estetik ve koruyucu çerçeve çözümleriyle tamamlıyoruz. Özel ölçü seçenekleriyle.', tall: true },
     { section: 'baski-hazirlik-aciklama', label: 'Baskı İçin Dosya Hazırlığı — Bölüm Açıklaması', placeholder: 'En iyi baskı sonucunu alabilmek için dosyalarınızı aşağıdaki teknik kriterlere göre hazırlayabilirsiniz.', tall: true },
-    { section: 'dosya-gonderimi-aciklama', label: 'Dosya Hazırlığı — Dosya Gönderimi Kartı Açıklaması', placeholder: 'Dosyalarınızı WeTransfer üzerinden paylaşabilir, aynı gün değerlendirme için son dosya iletim saati 15.00’a kadar iletebilirsiniz.', tall: true },
     { section: 'sertifikali-kagit-aciklama', label: 'Sertifikalı Fine Art Kağıtları — Açıklama', placeholder: "Hahnemühle'nin arşivsel kalitedeki fine art kağıtlarıyla, eserlerinizde üstün renk doğruluğu, derin tonlar ve yüksek detay elde edilir. Her baskı, uzun yıllar boyunca ilk günkü etkisini koruyacak kalıcılık ve premium sunum anlayışıyla üretilir.", tall: true },
   ],
   'fotograf-baski': [
