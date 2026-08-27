@@ -4,6 +4,7 @@ import { supabase } from './supabase'
 // Standart ISO kağıt boyutlarının mm karşılığı — İşler ürünlerinde
 // "A4/A3/A2" etiketinin yanında fiziksel ölçüyü de göstermek için.
 export const SIZE_MM = {
+  A5: '148 × 210 mm',
   A4: '210 × 297 mm',
   A3: '297 × 420 mm',
   A2: '420 × 594 mm',
