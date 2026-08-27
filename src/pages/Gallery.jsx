@@ -266,26 +266,6 @@ function FineArtCarousel({ artworks }) {
     }
   }
 
-  // Mobilde ok butonları gizli, kaydırma parmakla yapılıyor — bu yüzden
-  // yukarıdaki loop mantığı (sadece ok tıklamasında çalışıyordu) devreye
-  // girmiyor, kullanıcı son karta gelince "sonu var" gibi takılı kalıyordu.
-  // Parmakla kaydırma durunca son karta gelinmişse başa dön.
-  useEffect(() => {
-    const el = trackRef.current
-    if (!el) return
-    let timeout
-    function onScroll() {
-      clearTimeout(timeout)
-      timeout = setTimeout(() => {
-        if (el.scrollLeft + el.clientWidth >= el.scrollWidth - 4) {
-          el.scrollTo({ left: 0, behavior: 'smooth' })
-        }
-      }, 150)
-    }
-    el.addEventListener('scroll', onScroll)
-    return () => { el.removeEventListener('scroll', onScroll); clearTimeout(timeout) }
-  }, [artworks])
-
   return (
     <div style={{ position: 'relative' }}>
       <style>{`
