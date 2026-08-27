@@ -79,26 +79,32 @@ const HIZMETLER = [
   {
     key: 'hizmet-fotograf', to: '/fotograf-baski', title: 'Fotoğraf Baskı', defaultImg: fotografDefault,
     desc: 'Kodak ve profesyonel fotoğraf kağıtları ile mat, parlak veya saten yüzey seçenekleri.',
+    zoom: 1.05,
   },
   {
     key: 'hizmet-fine-art', to: '/fine-art-baski', title: 'Fine Art / Giclée Baskı', defaultImg: fineArtDefault,
     desc: 'Hahnemühle arşiv kağıtları ve pigment mürekkeplerle, müze kalitesinde fine art baskılar.',
+    zoom: 1.35,
   },
   {
     key: 'hizmet-edisyon', to: '/fine-art-baski', title: 'Edisyon & Art Print Üretimi',
     desc: 'Sanatçılar için sınırlı sayıda edisyon, numaralandırma, imza ve sertifika desteği.',
+    zoom: 1,
   },
   {
     key: 'hizmet-poster', to: '/fotograf-baski', title: 'Poster & Kartpostal Baskı',
     desc: 'Poster, kartpostal ve küçük format baskılarınız için yüksek kaliteli çözümler.',
+    zoom: 1.3,
   },
   {
     key: 'hizmet-sergi', to: '/fine-art-baski', title: 'Sergi & Portfolyo Baskıları',
     desc: 'Sergiler, portfolyolar ve projeleriniz için büyük format baskı ve sunum çözümleri.',
+    zoom: 1.1,
   },
   {
     key: 'hizmet-cerceve', to: '/cerceve', title: 'Çerçeveleme', defaultImg: cerceveDefault,
     desc: 'Eserlerinizi estetik ve koruyucu çerçeve çözümleriyle tamamlıyoruz. Özel ölçü seçenekleriyle.',
+    zoom: 1.25,
   },
 ]
 
@@ -528,12 +534,15 @@ function Gallery() {
               {imgSrc ? (
                 // Fine Art Seçkisi kartlarındaki gibi: kutu tam boyutunda,
                 // görsel kırpılmadan (contain) sığdırılıyor, siyah mat zeminle.
+                // Her fotoğrafın kendi oranı farklı olduğundan bazılarında mat
+                // (siyah boşluk) diğerlerinden daha fazla kalıyordu — kart
+                // bazında ayarlanabilir bir "zoom" ile bu dengesizlik azaltılıyor.
                 <div style={{ width: '100%', aspectRatio: '4 / 3', overflow: 'hidden', background: 'var(--ink)' }}>
                   <img
                     src={imgSrc}
                     alt={title}
                     loading="lazy" decoding="async"
-                    style={{ width: '100%', height: '100%', objectFit: 'contain', display: 'block' }}
+                    style={{ width: '100%', height: '100%', objectFit: 'contain', display: 'block', transform: `scale(${h.zoom || 1})` }}
                   />
                 </div>
               ) : (
