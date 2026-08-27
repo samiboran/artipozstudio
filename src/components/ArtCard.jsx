@@ -63,7 +63,10 @@ function ArtCard({ artwork, index, onClick, noBottomGap = false }) {
         {artwork.image_url
           ? <img src={artwork.image_url} alt={artwork.title}
               loading={index < 4 ? 'eager' : 'lazy'} decoding="async"
-              style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+              // Kırpma oranı (4/5) aynı kalıyor ama görsel konuyu (çiçek vb.)
+              // kutuya aşırı yakın/büyük gösteriyordu — %30 küçültüp ortalıyoruz,
+              // kenarlarda ince bir zemin payı bırakıyor.
+              style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block', transform: 'scale(.7)' }} />
           : <div dangerouslySetInnerHTML={{ __html: makeSVG(index) }}
               style={{ width: '100%', height: '100%' }} />
         }
