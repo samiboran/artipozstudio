@@ -519,6 +519,19 @@ function Gallery() {
             sütun, masaüstünde her fotoğrafın aşırı büyük durmasına yol
             açıyordu; oranı bozmadan (aspect-ratio 4/3 aynı kalıyor) grid'i
             daraltıp kareleri küçültüyoruz. */}
+        <div style={{ marginBottom: '3rem' }}>
+          <h2 style={{ ...displayHeading, fontSize: '2.2rem', margin: 0 }}>
+            Hizmetlerimiz
+          </h2>
+          <div style={{ width: 46, height: 1, background: 'var(--border)', margin: '.9rem auto 0' }} />
+          <p className="section-desc" style={{
+            fontFamily: "'Archivo', sans-serif", fontSize: '.88rem', lineHeight: 1.7,
+            color: 'var(--muted)', maxWidth: 560, margin: '1.2rem auto 0',
+          }}>
+            {content['hizmetlerimiz-aciklama'] || 'Sanatçılar, fotoğrafçılar, galeriler ve kurumlar için yüksek kalite, arşiv değeri taşıyan baskı çözümleri sunuyoruz.'}
+          </p>
+        </div>
+
         <div className="hizmetlerimiz-grid" style={{ maxWidth: 1100, margin: '0 auto' }}>
           {HIZMETLER.map(h => {
             const title = content[`${h.key}-baslik`] || h.title
