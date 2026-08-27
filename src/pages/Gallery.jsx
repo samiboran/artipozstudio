@@ -540,7 +540,7 @@ function Gallery() {
             açıyordu; oranı bozmadan (aspect-ratio 4/3 aynı kalıyor) grid'i
             daraltıp kareleri küçültüyoruz. */}
         <div className="hizmetlerimiz-grid" style={{ maxWidth: 1100, margin: '0 auto' }}>
-          {HIZMETLER.map((h, i) => {
+          {HIZMETLER.map(h => {
             const title = content[`${h.key}-baslik`] || h.title
             const desc = content[`${h.key}-aciklama`] || h.desc
             const imgSrc = images[h.key] || h.defaultImg
@@ -569,7 +569,7 @@ function Gallery() {
               )}
               <div style={{ background: 'var(--surface)', padding: '1.3rem 1.4rem 1.5rem' }}>
                 <p style={{ fontFamily: "'Playfair Display', serif", fontWeight: 600, fontSize: '1.08rem', color: 'var(--ink)', margin: '0 0 .6rem' }}>
-                  {String(i + 1).padStart(2, '0')} — {title}
+                  {title}
                 </p>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', gap: '1rem' }}>
                   <p style={{
