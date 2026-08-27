@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { fetchArtworks, SIZE_MM } from '../lib/artworks'
+import { getSessionId } from '../lib/session'
 import Hero from '../components/Hero'
 import ArtCard from '../components/ArtCard'
 import fotografDefault from '../assets/fine-art/ornek-botanik.jpg'
@@ -409,7 +410,8 @@ function Gallery() {
     isim: '', postaKodu: '', adres: '', email: '', telefon: '',
     numune: '', boyut: '', mesaj: '',
   })
-  const [contactStatus, setContactStatus] = useState('idle') // idle | sent
+  const [contactStatus, setContactStatus] = useState('idle') // idle | submitting | sent
+  const [contactError, setContactError] = useState('')
 
   useEffect(() => {
     supabase.from('papers').select('name').order('sort_order')
@@ -433,10 +435,25 @@ function Gallery() {
     setContact(c => ({ ...c, [name]: value }))
   }
 
-  function submitContact(e) {
+  async function submitContact(e) {
     e.preventDefault()
-    // TODO: gerçek gönderim henüz bağlı değil — Cerceve.jsx'teki sipariş formuyla
-    // birlikte, checkout'taki create-order deseniyle bağlanması gerekiyor
+    setContactError('')
+    setContactStatus('submitting')
+
+    try {
+      const res = await fetch('https://qrbkzjosorimiwdbwyyl.supabase.co/functions/v1/send-contact-email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}` },
+        body: JSON.stringify({ ...contact, session_id: getSessionId() }),
+      })
+      const data = await res.json()
+      if (!res.ok) { setContactStatus('idle'); setContactError(data.error || 'Mesaj gönderilemedi.'); return }
+    } catch {
+      setContactStatus('idle')
+      setContactError('Mesaj gönderilemedi: bağlantı hatası.')
+      return
+    }
+
     setContactStatus('sent')
   }
 
@@ -766,15 +783,20 @@ function Gallery() {
               </div>
             </div>
 
+            {contactError && <div style={{ color: '#c33', fontSize: '.78rem' }}>{contactError}</div>}
+
             <button
               type="submit"
+              disabled={contactStatus === 'submitting'}
               style={{
                 marginTop: '.5rem', padding: '.9rem', background: 'var(--ink)',
                 color: '#fff', border: 'none', fontFamily: "'Archivo', sans-serif",
-                fontSize: '.72rem', letterSpacing: '.16em', textTransform: 'uppercase', cursor: 'pointer',
+                fontSize: '.72rem', letterSpacing: '.16em', textTransform: 'uppercase',
+                cursor: contactStatus === 'submitting' ? 'not-allowed' : 'pointer',
+                opacity: contactStatus === 'submitting' ? .7 : 1,
               }}
             >
-              Gönder
+              {contactStatus === 'submitting' ? 'Gönderiliyor…' : 'Gönder'}
             </button>
           </form>
         )}

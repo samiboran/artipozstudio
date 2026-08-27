@@ -5,7 +5,10 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!
 const SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
 const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY')
-const ADMIN_EMAIL = Deno.env.get('ADMIN_EMAIL')
+// Sipariş bildirimleri hep buraya gider — ADMIN_EMAIL env var'ına bağımlı
+// değil (o secret hiç ayarlanmamışsa mail sessizce boş adrese gidip
+// kayboluyordu, bu yüzden sipariş bildirimleri hiç ulaşmıyordu).
+const NOTIFY_EMAIL = 'info@artipozstudio.com'
 
 // TEK yer: siteni buradan yönet. Wildcard (*) KULLANMA.
 const ALLOWED_ORIGIN = 'https://artipozstudio.com'
@@ -112,13 +115,13 @@ serve(async (req) => {
         fetch('https://api.resend.com/emails', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${RESEND_API_KEY}` },
-          body: JSON.stringify({ from: 'Fossil Garden <onboarding@resend.dev>', to, subject, html }),
+          body: JSON.stringify({ from: 'Artı Poz <onboarding@resend.dev>', to, subject, html }),
         }).catch((e) => console.error('Mail gönderilemedi:', e))
 
       if (email) {
-        await sendMail(email, 'Siparişiniz Alındı — Fossil Garden', `
+        await sendMail(email, 'Siparişiniz Alındı — Artı Poz', `
           <div style="font-family:Georgia,serif;max-width:600px;margin:0 auto;color:#111">
-            <h1 style="font-size:24px;font-weight:300;border-bottom:1px solid #eee;padding-bottom:16px">Fossil Garden</h1>
+            <h1 style="font-size:24px;font-weight:300;border-bottom:1px solid #eee;padding-bottom:16px">Artı Poz</h1>
             <p>Merhaba ${esc(name)},</p>
             <p>Siparişiniz alındı. En kısa sürede sizinle iletişime geçeceğiz.</p>
             <table style="width:100%;border-collapse:collapse;margin:24px 0">
@@ -131,12 +134,12 @@ serve(async (req) => {
             <p style="color:#666;font-size:14px">Teslimat adresi: ${esc(address)}</p>
             <p style="color:#666;font-size:14px">Telefon: ${esc(phone)}</p>
             <hr style="border:none;border-top:1px solid #eee;margin:24px 0">
-            <p style="color:#999;font-size:12px">Fossil Garden · Fine Art Print Studio · İstanbul</p>
+            <p style="color:#999;font-size:12px">Artı Poz · Fine Art Print Studio · İstanbul</p>
           </div>
         `)
       }
 
-      await sendMail(ADMIN_EMAIL || '', `🛍 Yeni Sipariş: ${name} — ₺${total}`, `
+      await sendMail(NOTIFY_EMAIL, `🛍 Yeni Sipariş: ${name} — ₺${total}`, `
         <div style="font-family:Georgia,serif;max-width:600px;margin:0 auto;color:#111">
           <h2 style="font-weight:300">Yeni Sipariş Geldi</h2>
           <p><strong>Ad:</strong> ${esc(name)}</p>

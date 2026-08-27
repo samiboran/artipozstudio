@@ -5,7 +5,10 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!
 const SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
 const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY')
-const ADMIN_EMAIL = Deno.env.get('ADMIN_EMAIL')
+// Sipariş bildirimleri hep buraya gider — ADMIN_EMAIL env var'ına bağımlı
+// değil (o secret hiç ayarlanmamışsa mail sessizce boş adrese gidip
+// kayboluyordu, bu yüzden sipariş bildirimleri hiç ulaşmıyordu).
+const NOTIFY_EMAIL = 'info@artipozstudio.com'
 
 // TEK yer: siteni buradan yönet. Wildcard (*) KULLANMA.
 const ALLOWED_ORIGIN = 'https://artipozstudio.com'
@@ -141,7 +144,7 @@ serve(async (req) => {
         `)
       }
 
-      await sendMail(ADMIN_EMAIL || '', `📷 Yeni Fotoğraf Baskı Siparişi: ${name} — ₺${total}`, `
+      await sendMail(NOTIFY_EMAIL, `📷 Yeni Fotoğraf Baskı Siparişi: ${name} — ₺${total}`, `
         <div style="font-family:Georgia,serif;max-width:600px;margin:0 auto;color:#111">
           <h2 style="font-weight:300">Yeni Fotoğraf Baskı Siparişi</h2>
           <p><strong>Ad:</strong> ${esc(name)}</p>
