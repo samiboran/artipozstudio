@@ -33,6 +33,29 @@ function ScrollToTop() {
   return null
 }
 
+// Fotoğrafların sağ tık → "Görseli farklı kaydet" veya sürükle-bırak ile
+// kolayca indirilmesini zorlaştırır. Tarayıcı görseli göstermek için zaten
+// indirmek zorunda olduğundan bu hiçbir yöntemle %100 engellenemez (ekran
+// görüntüsü, geliştirici araçları hep mümkün) — sadece sıradan kullanıcının
+// kısayolla indirmesini engelliyor. Admin panelinde kendi görsellerini
+// yönetirken (ör. önizlemeyi yeni sekmede açma) engel olmasın diye /admin
+// hariç tutuluyor.
+function ImageProtection() {
+  const { pathname } = useLocation()
+  useEffect(() => {
+    if (pathname.startsWith('/admin')) return
+    const onContextMenu = e => { if (e.target.tagName === 'IMG') e.preventDefault() }
+    const onDragStart = e => { if (e.target.tagName === 'IMG') e.preventDefault() }
+    document.addEventListener('contextmenu', onContextMenu)
+    document.addEventListener('dragstart', onDragStart)
+    return () => {
+      document.removeEventListener('contextmenu', onContextMenu)
+      document.removeEventListener('dragstart', onDragStart)
+    }
+  }, [pathname])
+  return null
+}
+
 // Basit ziyaretçi istatistiği için her rota değişiminde page_views'e bir satır ekler.
 // Admin panelinin kendi gezinmesi istatistikleri kirletmesin diye /admin hariç tutulur.
 function PageViewTracker() {
@@ -59,6 +82,7 @@ function App() {
   return (
     <>
       <ScrollToTop />
+      <ImageProtection />
       <PageViewTracker />
       <Navbar cartCount={count} onCartClick={() => setCartOpen(true)} />
       <Routes>
