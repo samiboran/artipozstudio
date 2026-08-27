@@ -53,20 +53,17 @@ function ArtCard({ artwork, index, onClick, noBottomGap = false }) {
         marginBottom: noBottomGap ? 0 : '1.8rem',
       }}
     >
-      {/* Görsel — sabit 4/5 oranlı kutuya kırpılıyor (bazı yüklenen eser
-          fotoğrafları, ör. büyük boş zeminli/mekan çekimleri, doğal
-          oranıyla gösterilince vitrinde eserden çok boşluk gösteriyordu;
-          tam görsel ürün sayfasında zaten görülüyor). */}
+      {/* Görsel kutusu (4/5) her zamanki tam boyutunda kalıyor — sadece
+          içindeki görsel artık kırpılmadan (contain) sığdırılıyor, kutudan
+          taşan/kesilen kısım kalmıyor. Oran uymayan kenarlarda kutunun
+          kendi zemin rengi (mat gibi) görünür. */}
       <div style={{
         overflow: 'hidden', position: 'relative', background: 'var(--surface)', aspectRatio: '4/5',
       }}>
         {artwork.image_url
           ? <img src={artwork.image_url} alt={artwork.title}
               loading={index < 4 ? 'eager' : 'lazy'} decoding="async"
-              // Kırpma oranı (4/5) aynı kalıyor ama görsel konuyu (çiçek vb.)
-              // kutuya aşırı yakın/büyük gösteriyordu — %30 küçültüp ortalıyoruz,
-              // kenarlarda ince bir zemin payı bırakıyor.
-              style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block', transform: 'scale(.7)' }} />
+              style={{ width: '100%', height: '100%', objectFit: 'contain', display: 'block' }} />
           : <div dangerouslySetInnerHTML={{ __html: makeSVG(index) }}
               style={{ width: '100%', height: '100%' }} />
         }
