@@ -519,26 +519,10 @@ function Gallery() {
         }
       `}</style>
 
-      {/* Baskı İçin Dosya Hazırlığı — üstte, ardından (aynı bölümde, ayrı
-          başlık olmadan) 01-06 numaralı Hizmetlerimiz listesi geliyor. */}
+      {/* 01-06 numaralı Hizmetlerimiz listesi — üstte, Hero'dan hemen sonra;
+          ardından (aynı bölümde, ayrı başlık olmadan) Baskı İçin Dosya
+          Hazırlığı kartları geliyor. */}
       <section className="gs-services" style={{ maxWidth: 1500, margin: '0 auto', textAlign: 'center' }}>
-        <div style={{ marginBottom: '3rem' }}>
-          <h2 style={{ ...displayHeading, fontSize: '2.2rem', margin: 0 }}>
-            Baskı İçin Dosya Hazırlığı
-          </h2>
-          <div style={{ width: 46, height: 1, background: 'var(--border)', margin: '.9rem auto 0' }} />
-          <p className="section-desc" style={{
-            fontFamily: "'Archivo', sans-serif", fontSize: '.88rem', lineHeight: 1.7,
-            color: 'var(--muted)', maxWidth: 560, margin: '1.2rem auto 0',
-          }}>
-            {content['baski-hazirlik-aciklama'] || 'En iyi baskı sonucunu alabilmek için dosyalarınızı aşağıdaki teknik kriterlere göre hazırlayabilirsiniz.'}
-          </p>
-        </div>
-
-        <FilePrepCards images={images} content={content} />
-
-        <div style={{ marginTop: '4rem' }} />
-
         <style>{`
           .hizmetlerimiz-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
           @media (max-width: 860px) {
@@ -556,7 +540,7 @@ function Gallery() {
             açıyordu; oranı bozmadan (aspect-ratio 4/3 aynı kalıyor) grid'i
             daraltıp kareleri küçültüyoruz. */}
         <div className="hizmetlerimiz-grid" style={{ maxWidth: 1100, margin: '0 auto' }}>
-          {HIZMETLER.map((h, i) => {
+          {HIZMETLER.map(h => {
             const title = content[`${h.key}-baslik`] || h.title
             const desc = content[`${h.key}-aciklama`] || h.desc
             const imgSrc = images[h.key] || h.defaultImg
@@ -585,7 +569,7 @@ function Gallery() {
               )}
               <div style={{ background: 'var(--surface)', padding: '1.3rem 1.4rem 1.5rem' }}>
                 <p style={{ fontFamily: "'Playfair Display', serif", fontWeight: 600, fontSize: '1.08rem', color: 'var(--ink)', margin: '0 0 .6rem' }}>
-                  {String(i + 1).padStart(2, '0')} — {title}
+                  {title}
                 </p>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', gap: '1rem' }}>
                   <p style={{
@@ -601,6 +585,23 @@ function Gallery() {
             )
           })}
         </div>
+
+        <div style={{ marginTop: '4rem' }} />
+
+        <div style={{ marginBottom: '3rem' }}>
+          <h2 style={{ ...displayHeading, fontSize: '2.2rem', margin: 0 }}>
+            Baskı İçin Dosya Hazırlığı
+          </h2>
+          <div style={{ width: 46, height: 1, background: 'var(--border)', margin: '.9rem auto 0' }} />
+          <p className="section-desc" style={{
+            fontFamily: "'Archivo', sans-serif", fontSize: '.88rem', lineHeight: 1.7,
+            color: 'var(--muted)', maxWidth: 560, margin: '1.2rem auto 0',
+          }}>
+            {content['baski-hazirlik-aciklama'] || 'En iyi baskı sonucunu alabilmek için dosyalarınızı aşağıdaki teknik kriterlere göre hazırlayabilirsiniz.'}
+          </p>
+        </div>
+
+        <FilePrepCards images={images} content={content} />
       </section>
 
       {/* Artı Poz Editions — Fine Art Seçkisi vitrini. Ana Sayfa'da ilgi
