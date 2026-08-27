@@ -79,36 +79,35 @@ const HIZMETLER = [
   {
     key: 'hizmet-fotograf', to: '/fotograf-baski', title: 'Fotoğraf Baskı', defaultImg: fotografDefault,
     desc: 'Kodak ve profesyonel fotoğraf kağıtları ile mat, parlak veya saten yüzey seçenekleri.',
-    zoom: 1.05,
   },
   {
     key: 'hizmet-fine-art', to: '/fine-art-baski', title: 'Fine Art / Giclée Baskı', defaultImg: fineArtDefault,
     desc: 'Hahnemühle arşiv kağıtları ve pigment mürekkeplerle, müze kalitesinde fine art baskılar.',
-    zoom: 1.35,
   },
   {
     key: 'hizmet-edisyon', to: '/fine-art-baski', title: 'Edisyon & Art Print Üretimi',
     desc: 'Sanatçılar için sınırlı sayıda edisyon, numaralandırma, imza ve sertifika desteği.',
-    zoom: 1,
   },
   {
     key: 'hizmet-poster', to: '/fotograf-baski', title: 'Poster & Kartpostal Baskı',
     desc: 'Poster, kartpostal ve küçük format baskılarınız için yüksek kaliteli çözümler.',
-    zoom: 1.3,
   },
   {
     key: 'hizmet-sergi', to: '/fine-art-baski', title: 'Sergi & Portfolyo Baskıları',
     desc: 'Sergiler, portfolyolar ve projeleriniz için büyük format baskı ve sunum çözümleri.',
-    zoom: 1.1,
   },
   {
     key: 'hizmet-cerceve', to: '/cerceve', title: 'Çerçeveleme', defaultImg: cerceveDefault,
     desc: 'Eserlerinizi estetik ve koruyucu çerçeve çözümleriyle tamamlıyoruz. Özel ölçü seçenekleriyle.',
-    zoom: 1.25,
   },
 ]
 
 const eyebrow = { fontFamily: "'Archivo', sans-serif", fontSize: '.68rem', letterSpacing: '.14em', textTransform: 'uppercase', color: 'var(--muted)' }
+
+// Sipariş & İletişim formundaki "Kağıt Seçenekleri"nde, admin panelinden
+// yönetilen fine art kağıtlarına ek olarak Kodak dijital baskı (Fotoğraf
+// Baskı hizmeti) kağıtları da seçilebilsin diye sabit olarak ekleniyor.
+const KODAK_PAPERS = ['Kodak Mat', 'Kodak Parlak']
 
 const contactLabel = { display: 'block', marginBottom: '.4rem', fontFamily: "'Archivo', sans-serif", fontSize: '.68rem', fontWeight: 600, letterSpacing: '.1em', textTransform: 'uppercase', color: 'var(--ink)' }
 const contactInput = {
@@ -139,10 +138,11 @@ function PaperCarousel({ papers, images }) {
   }
 
   // Sayfaya girildikten 5sn sonra kendiliğinden kaymaya başlıyor, sonra her
-  // 5sn'de bir sonraki "sayfa"ya geçiyor. Kullanıcı parmakla/okla kendi
+  // 8sn'de bir sonraki "sayfa"ya geçiyor (önceden 5sn'de değişiyordu, çok
+  // hızlı hissettirdiği için yavaşlatıldı). Kullanıcı parmakla/okla kendi
   // kaydırdığında bir sonraki otomatik adıma kadar dokunulmuyor.
   useEffect(() => {
-    const id = setInterval(() => scrollByPage(1), 5000)
+    const id = setInterval(() => scrollByPage(1), 8000)
     return () => clearInterval(id)
   }, [])
 
@@ -493,7 +493,6 @@ function Gallery() {
            duruyordu — mobilde dokunmadan, sadece masaüstünde yaklaştırıyoruz. */
         @media (min-width: 769px) {
           .section-desc { margin-top: .5rem !important; }
-          .section-divider { margin-bottom: .6rem !important; }
         }
       `}</style>
 
@@ -521,7 +520,6 @@ function Gallery() {
           <h2 style={{ ...displayHeading, fontSize: '2.2rem', margin: 0 }}>
             Hizmetlerimiz
           </h2>
-          <div style={{ width: 46, height: 1, background: 'var(--border)', margin: '.9rem auto 0' }} />
         </div>
 
         <div className="hizmetlerimiz-grid" style={{ maxWidth: 1100, margin: '0 auto' }}>
@@ -532,17 +530,15 @@ function Gallery() {
             return (
             <Link key={h.key} to={h.to} className="hizmet-card">
               {imgSrc ? (
-                // Fine Art Seçkisi kartlarındaki gibi: kutu tam boyutunda,
-                // görsel kırpılmadan (contain) sığdırılıyor, siyah mat zeminle.
-                // Her fotoğrafın kendi oranı farklı olduğundan bazılarında mat
-                // (siyah boşluk) diğerlerinden daha fazla kalıyordu — kart
-                // bazında ayarlanabilir bir "zoom" ile bu dengesizlik azaltılıyor.
-                <div style={{ width: '100%', aspectRatio: '4 / 3', overflow: 'hidden', background: 'var(--ink)' }}>
+                // "contain" (kırpmadan sığdırma) bazı fotoğraflarda siyah mat
+                // boşluk bırakıyordu — kutuyu her zaman tam dolduran "cover"a
+                // geri dönüldü, mat hiç oluşmuyor.
+                <div style={{ width: '100%', aspectRatio: '4 / 3', overflow: 'hidden' }}>
                   <img
                     src={imgSrc}
                     alt={title}
                     loading="lazy" decoding="async"
-                    style={{ width: '100%', height: '100%', objectFit: 'contain', display: 'block', transform: `scale(${h.zoom || 1})` }}
+                    style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
                   />
                 </div>
               ) : (
@@ -580,7 +576,6 @@ function Gallery() {
           <h2 style={{ ...displayHeading, fontSize: '2.2rem', margin: 0 }}>
             Baskı İçin Dosya Hazırlığı
           </h2>
-          <div style={{ width: 46, height: 1, background: 'var(--border)', margin: '.9rem auto 0' }} />
           <p className="section-desc" style={{
             fontFamily: "'Archivo', sans-serif", fontSize: '.88rem', lineHeight: 1.7,
             color: 'var(--muted)', maxWidth: 560, margin: '1.2rem auto 0',
@@ -605,7 +600,6 @@ function Gallery() {
             <h2 style={{ ...displayHeading, fontSize: '2.2rem', margin: 0 }}>
               Fine Art Seçkisi
             </h2>
-            <div style={{ width: 46, height: 1, background: 'var(--border)', margin: '.9rem auto 0' }} />
             <Link to="/isler" style={{
               display: 'inline-flex', alignItems: 'center', gap: '.5rem', marginTop: '.9rem',
               fontFamily: "'Archivo', sans-serif", fontSize: '.68rem',
@@ -624,7 +618,6 @@ function Gallery() {
         <h2 style={{ ...displayHeading, fontSize: '2.4rem', margin: '0 0 1.2rem' }}>
           Sertifikalı Fine Art Kağıtları
         </h2>
-        <div className="section-divider" style={{ width: 60, height: 1, background: 'var(--border)', margin: '0 auto 1.5rem' }} />
         <p style={{
           fontFamily: "'Archivo', sans-serif", fontSize: '.92rem', lineHeight: 1.8,
           color: 'var(--muted)', maxWidth: 900, margin: '0 auto',
@@ -742,7 +735,12 @@ function Gallery() {
               <label style={contactLabel}>Kağıt Seçenekleri</label>
               <select name="numune" value={contact.numune} onChange={updateContact} style={contactInput}>
                 <option value="">Kağıt seçin</option>
-                {papers.map(p => <option key={p.name} value={p.name}>{p.name}</option>)}
+                <optgroup label="Fine Art Kağıtlar">
+                  {papers.map(p => <option key={p.name} value={p.name}>{p.name}</option>)}
+                </optgroup>
+                <optgroup label="Kodak Dijital Baskı Kağıtları">
+                  {KODAK_PAPERS.map(name => <option key={name} value={name}>{name}</option>)}
+                </optgroup>
               </select>
             </div>
 

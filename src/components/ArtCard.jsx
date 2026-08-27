@@ -54,18 +54,16 @@ function ArtCard({ artwork, index, onClick, noBottomGap = false }) {
         marginBottom: noBottomGap ? 0 : '1.8rem',
       }}
     >
-      {/* Görsel kutusu (4/5) her zamanki tam boyutunda kalıyor — sadece
-          içindeki görsel artık kırpılmadan (contain) sığdırılıyor, kutudan
-          taşan/kesilen kısım kalmıyor. Oran uymayan kenarlarda (mat gibi)
-          siyah zemin görünür — eserlerin kendi fotoğraf zeminiyle aynı
-          renkte, kayıtsız bir geçiş için. */}
+      {/* "contain" (kırpmadan sığdırma) bazı fotoğraflarda siyah mat boşluk
+          bırakıyordu — kutuyu her zaman tam dolduran "cover"a geri dönüldü,
+          mat hiç oluşmuyor. */}
       <div style={{
         overflow: 'hidden', position: 'relative', background: 'var(--ink)', aspectRatio: '4/5',
       }}>
         {artwork.image_url
           ? <img src={artwork.image_url} alt={artwork.title}
               loading={index < 4 ? 'eager' : 'lazy'} decoding="async"
-              style={{ width: '100%', height: '100%', objectFit: 'contain', display: 'block' }} />
+              style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
           : <div dangerouslySetInnerHTML={{ __html: makeSVG(index) }}
               style={{ width: '100%', height: '100%' }} />
         }
