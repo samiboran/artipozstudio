@@ -24,10 +24,6 @@ function HeroSlideStack({ urls }) {
       fetchPriority={i === 0 ? 'high' : 'auto'}
       style={{
         position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover',
-        // Bazı hero fotoğrafları (mekan/galeri çekimleri) konunun etrafında
-        // çok fazla boş zemin/duvar bırakıyor — hafif bir zoom, üstten ve
-        // alttan bu boşluğu kırpıp konuyu kadraja biraz daha yaklaştırıyor.
-        transform: 'scale(1.18)',
         opacity: i === index ? 1 : 0, transition: 'opacity 1s ease',
       }}
     />

@@ -80,6 +80,7 @@ const HIZMETLER = [
   {
     key: 'hizmet-fotograf', to: '/fotograf-baski', title: 'Fotoğraf Baskı', defaultImg: fotografDefault,
     desc: 'Kodak ve profesyonel fotoğraf kağıtları ile mat, parlak veya saten yüzey seçenekleri.',
+    imgScale: .8,
   },
   {
     key: 'hizmet-fine-art', to: '/fine-art-baski', title: 'Fine Art / Giclée Baskı', defaultImg: fineArtDefault,
@@ -92,6 +93,7 @@ const HIZMETLER = [
   {
     key: 'hizmet-poster', to: '/fotograf-baski', title: 'Poster & Kartpostal Baskı',
     desc: 'Poster, kartpostal ve küçük format baskılarınız için yüksek kaliteli çözümler.',
+    imgScale: .8,
   },
   {
     key: 'hizmet-sergi', to: '/fine-art-baski', title: 'Sergi & Portfolyo Baskıları',
@@ -123,7 +125,11 @@ const contactInput = {
 // parmakla kaydırılır (native scroll-snap).
 function PaperCarousel({ papers, images }) {
   const trackRef = useRef(null)
+  const intervalRef = useRef(null)
 
+  // Ok butonlarıyla MANUEL kaydırma — sonda/başta ok'a basmaya devam
+  // edilirse başa/sona döner (loop). Otomatik kaymadan (autoAdvance) farklı
+  // olarak kasıtlı burada loop var.
   const scrollByPage = (dir) => {
     const el = trackRef.current
     if (!el) return
@@ -138,17 +144,33 @@ function PaperCarousel({ papers, images }) {
     }
   }
 
-  // Sayfaya girildikten 5sn sonra kendiliğinden kaymaya başlıyor, sonra her
-  // 8sn'de bir sonraki "sayfa"ya geçiyor (önceden 5sn'de değişiyordu, çok
-  // hızlı hissettirdiği için yavaşlatıldı). Kullanıcı parmakla/okla kendi
-  // kaydırdığında bir sonraki otomatik adıma kadar dokunulmuyor.
+  // OTOMATİK kayma — manuel ok'tan farklı olarak sona gelince başa
+  // dönmüyor, orada duruyor. Kullanıcı isterse sağ ok'a basıp elle
+  // başa dönebilir (scrollByPage'in loop'u orada devrede).
+  const autoAdvance = () => {
+    const el = trackRef.current
+    if (!el) return
+    const atEnd = el.scrollLeft + el.clientWidth >= el.scrollWidth - 4
+    if (atEnd) return
+    el.scrollBy({ left: el.clientWidth, behavior: 'smooth' })
+  }
+
+  const stopAuto = () => {
+    if (intervalRef.current) { clearInterval(intervalRef.current); intervalRef.current = null }
+  }
+  const startAuto = () => {
+    stopAuto()
+    intervalRef.current = setInterval(autoAdvance, 3000)
+  }
+
+  // Mouse üzerine gelince duruyor, ayrılınca 3sn'lik döngü yeniden başlıyor.
   useEffect(() => {
-    const id = setInterval(() => scrollByPage(1), 8000)
-    return () => clearInterval(id)
+    startAuto()
+    return stopAuto
   }, [])
 
   return (
-    <div style={{ position: 'relative' }}>
+    <div style={{ position: 'relative' }} onMouseEnter={stopAuto} onMouseLeave={startAuto}>
       <style>{`
         .paper-carousel-track { scrollbar-width: none; -ms-overflow-style: none; }
         .paper-carousel-track::-webkit-scrollbar { display: none; }
@@ -549,13 +571,18 @@ function Gallery() {
               {imgSrc ? (
                 // "contain" (kırpmadan sığdırma) bazı fotoğraflarda siyah mat
                 // boşluk bırakıyordu — kutuyu her zaman tam dolduran "cover"a
-                // geri dönüldü, mat hiç oluşmuyor.
-                <div style={{ width: '100%', aspectRatio: '4 / 3', overflow: 'hidden' }}>
+                // geri dönüldü, mat hiç oluşmuyor. Fotoğraf Baskı ve Poster &
+                // Kartpostal Baskı kartlarındaki görseller diğerlerine göre
+                // daha sıkışık/büyük durduğundan (h.imgScale) hafifçe küçültülüyor.
+                <div style={{ width: '100%', aspectRatio: '4 / 3', overflow: 'hidden', background: 'var(--surface)' }}>
                   <img
                     src={imgSrc}
                     alt={title}
                     loading="lazy" decoding="async"
-                    style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+                    style={{
+                      width: '100%', height: '100%', objectFit: 'cover', display: 'block',
+                      transform: h.imgScale ? `scale(${h.imgScale})` : undefined,
+                    }}
                   />
                 </div>
               ) : (
@@ -727,8 +754,8 @@ function Gallery() {
                 <input name="isim" required value={contact.isim} onChange={updateContact} style={contactInput} placeholder="İsim" />
               </div>
               <div>
-                <label style={contactLabel}>Posta Kodu *</label>
-                <input name="postaKodu" required value={contact.postaKodu} onChange={updateContact} style={contactInput} placeholder="Posta kodu" />
+                <label style={contactLabel}>Posta Kodu</label>
+                <input name="postaKodu" value={contact.postaKodu} onChange={updateContact} style={contactInput} placeholder="Posta kodu" />
               </div>
             </div>
 
