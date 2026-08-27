@@ -71,7 +71,11 @@ const FILE_PREP_CARDS = [
   { key: 'renk-profili', title: 'Renk Profili' },
   { key: 'cozunurluk-olcu', title: 'Çözünürlük ve Ölçü' },
   { key: 'tasma-payi', title: 'Taşma Payı ve Kesim' },
-  { key: 'dosya-gonderimi', title: 'Dosya Gönderimi', hasDesc: true },
+  // Kutu/object-fit kuralı diğer 4 kartla birebir aynı (aşağıdaki .fp-card
+  // ve img style'ı hepsi için ortak) — Dosya Gönderimi'nin kendi fotoğrafı
+  // farklı kadrajlı olduğundan ortak %18 ekstra zoom onu diğerlerinden daha
+  // "yakın/büyük" gösteriyordu, bu kart için zoom kaldırıldı.
+  { key: 'dosya-gonderimi', title: 'Dosya Gönderimi', hasDesc: true, zoom: 1 },
 ]
 
 const displayHeading = { fontFamily: "'Playfair Display', serif", fontWeight: 600, color: 'var(--ink)' }
@@ -385,8 +389,8 @@ function FilePrepCards({ images, content }) {
               loading="lazy" decoding="async"
               // Bazı referans fotoğraflar (ör. Photoshop ekran görüntüsü, masa
               // üstü çekimler) çok boş alan bırakıyor — hafif zoom bu boşluğu
-              // üstten/alttan kırpıyor.
-              style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', transform: 'scale(1.18)' }}
+              // üstten/alttan kırpıyor (kart bazında ayarlanabilir, bkz. card.zoom).
+              style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', transform: `scale(${card.zoom ?? 1.18})` }}
             />
           ) : (
             <div style={{
@@ -511,22 +515,25 @@ function Gallery() {
     <div>
       <Hero />
 
-      {/* Bölümler arası dikey boşluk — masaüstü ve mobil için ayrı ayrı.
-          Önceden her bölümün kendi padding'i (bazıları 5rem) art arda
-          gelince toplamda 7rem+'a çıkıyordu; artık hem tekil değerler hem
-          de mobildeki toplam boşluk azaltıldı. */}
+      {/* Bölümler arası dikey boşluk — tek bir tutarlı ölçeğe bağlandı: her
+          bölüm kendi üstünde/altında aynı miktarda ("yarım boşluk") padding
+          taşıyor, böylece iki bölüm yan yana geldiğinde aralarındaki toplam
+          boşluk her zaman aynı ("tam boşluk") oluyor. Hero'nun kendi alt
+          boşluğu olmadığından, ilk bölüm (gs-services) üstte tek başına
+          "tam boşluk" taşıyor — aksi halde Hero ile Hizmetlerimiz arası
+          diğer bölüm aralarının yarısı kadar kalırdı. */}
       <style>{`
-        .gs-services { padding: 3.5rem 2rem 3rem; }
-        .gs-showcase { padding: 2rem 2rem 2.5rem; }
-        .gs-papers-intro { padding: 1.5rem 2rem 2.5rem; }
-        .gs-papers-band { padding: 3rem 2.5rem; margin-bottom: 3rem; }
-        .gs-contact { padding: 3rem 2rem 3.5rem; }
+        .gs-services { padding: 4rem 2rem 2rem; }
+        .gs-showcase { padding: 2rem 2rem 2rem; }
+        .gs-papers-intro { padding: 2rem 2rem 2rem; }
+        .gs-papers-band { padding: 3rem 2.5rem; margin-bottom: 2rem; }
+        .gs-contact { padding: 2rem 2rem 2rem; }
         @media (max-width: 768px) {
-          .gs-services { padding: 2.2rem 1.5rem 2rem; }
-          .gs-showcase { padding: 1.5rem 1.5rem 1.6rem; }
-          .gs-papers-intro { padding: 1.2rem 1.5rem 1.6rem; }
-          .gs-papers-band { padding: 2rem 1.5rem; margin-bottom: 2rem; }
-          .gs-contact { padding: 2rem 1.5rem 2.2rem; }
+          .gs-services { padding: 2.4rem 1.5rem 1.2rem; }
+          .gs-showcase { padding: 1.2rem 1.5rem 1.2rem; }
+          .gs-papers-intro { padding: 1.2rem 1.5rem 1.2rem; }
+          .gs-papers-band { padding: 2rem 1.5rem; margin-bottom: 1.2rem; }
+          .gs-contact { padding: 1.2rem 1.5rem 1.2rem; }
         }
         /* Masaüstünde başlık altı açıklama metinleri başlığa çok uzak
            duruyordu — mobilde dokunmadan, sadece masaüstünde yaklaştırıyoruz. */
