@@ -22,7 +22,7 @@ function MobileImageCarousel({ images, alt }) {
 
   if (!images.length) {
     return (
-      <div style={{ width: '100%', aspectRatio: '4/5', background: 'var(--surface)' }}>
+      <div style={{ width: '100%', aspectRatio: '4/5', background: 'var(--ink)' }}>
         <div dangerouslySetInnerHTML={{ __html: makeSVG(0) }} style={{ width: '100%', height: '100%' }} />
       </div>
     )
@@ -39,7 +39,7 @@ function MobileImageCarousel({ images, alt }) {
         }}
       >
         {images.map((img, i) => (
-          <div key={img.id || i} style={{ flex: '0 0 100%', scrollSnapAlign: 'start', aspectRatio: '4/5', background: 'var(--surface)' }}>
+          <div key={img.id || i} style={{ flex: '0 0 100%', scrollSnapAlign: 'start', aspectRatio: '4/5', background: 'var(--ink)' }}>
             <img src={img.image_url} alt={alt}
               loading={i === 0 ? 'eager' : 'lazy'} fetchPriority={i === 0 ? 'high' : 'auto'} decoding="async"
               style={{ width: '100%', height: '100%', objectFit: 'contain', display: 'block' }} />
@@ -232,7 +232,7 @@ function ProductDetail() {
 
           {/* Masaüstü — ana görsel + ayrı galeri/mockup thumbnail şeritleri */}
           <div className="pd-desktop-viewer">
-          <div style={{ flex: 1, overflow: 'hidden', background: 'var(--surface)', position: 'relative' }}>
+          <div style={{ flex: 1, overflow: 'hidden', background: 'var(--ink)', position: 'relative' }}>
             {artwork.is_original && view === 'print' && (
               <div style={{ position: 'absolute', top: '.9rem', left: '.9rem', zIndex: 2, background: 'var(--ink)', color: '#fff', fontSize: '.56rem', letterSpacing: '.18em', textTransform: 'uppercase', padding: '.28rem .7rem' }}>
                 Orijinal
