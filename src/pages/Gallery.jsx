@@ -377,21 +377,13 @@ function FilePrepCards({ images, content }) {
               {card.title}
             </div>
             {card.hasDesc ? (
-              <>
-                <p style={{
-                  fontFamily: "'Archivo', sans-serif", fontSize: '.72rem', lineHeight: 1.6,
-                  color: 'rgba(255,255,255,.85)', margin: '.5rem 0 0',
-                }}>
-                  {content['dosya-gonderimi-aciklama'] || 'Dosyalarınızı güvenli ve hızlı şekilde bize ulaştırın.'}
-                </p>
-                <a href="#siparis-iletisim" style={{
-                  display: 'inline-flex', alignItems: 'center', gap: '.35rem', marginTop: '.6rem',
-                  fontFamily: "'Archivo', sans-serif", fontSize: '.7rem', letterSpacing: '.06em',
-                  color: '#fff', textDecoration: 'underline', textUnderlineOffset: 3,
-                }}>
-                  Detayları Gör <span>→</span>
-                </a>
-              </>
+              <a href="#siparis-iletisim" style={{
+                display: 'inline-flex', alignItems: 'center', gap: '.35rem', marginTop: '.6rem',
+                fontFamily: "'Archivo', sans-serif", fontSize: '.7rem', letterSpacing: '.06em',
+                color: '#fff', textDecoration: 'underline', textUnderlineOffset: 3,
+              }}>
+                Detayları Gör <span>→</span>
+              </a>
             ) : (
               <div style={{ color: '#fff', fontSize: '.95rem', marginTop: '.3rem' }}>→</div>
             )}
@@ -519,17 +511,11 @@ function Gallery() {
             sütun, masaüstünde her fotoğrafın aşırı büyük durmasına yol
             açıyordu; oranı bozmadan (aspect-ratio 4/3 aynı kalıyor) grid'i
             daraltıp kareleri küçültüyoruz. */}
-        <div style={{ marginBottom: '3rem' }}>
+        <div style={{ marginBottom: '2.4rem' }}>
           <h2 style={{ ...displayHeading, fontSize: '2.2rem', margin: 0 }}>
             Hizmetlerimiz
           </h2>
           <div style={{ width: 46, height: 1, background: 'var(--border)', margin: '.9rem auto 0' }} />
-          <p className="section-desc" style={{
-            fontFamily: "'Archivo', sans-serif", fontSize: '.88rem', lineHeight: 1.7,
-            color: 'var(--muted)', maxWidth: 560, margin: '1.2rem auto 0',
-          }}>
-            {content['hizmetlerimiz-aciklama'] || 'Sanatçılar, fotoğrafçılar, galeriler ve kurumlar için yüksek kalite, arşiv değeri taşıyan baskı çözümleri sunuyoruz.'}
-          </p>
         </div>
 
         <div className="hizmetlerimiz-grid" style={{ maxWidth: 1100, margin: '0 auto' }}>
@@ -540,14 +526,14 @@ function Gallery() {
             return (
             <Link key={h.key} to={h.to} className="hizmet-card">
               {imgSrc ? (
-                <div style={{ width: '100%', aspectRatio: '4 / 3', overflow: 'hidden' }}>
+                // Fine Art Seçkisi kartlarındaki gibi: kutu tam boyutunda,
+                // görsel kırpılmadan (contain) sığdırılıyor, siyah mat zeminle.
+                <div style={{ width: '100%', aspectRatio: '4 / 3', overflow: 'hidden', background: 'var(--ink)' }}>
                   <img
                     src={imgSrc}
                     alt={title}
                     loading="lazy" decoding="async"
-                    // Bazı hizmet fotoğrafları konunun etrafında çok boş alan
-                    // bırakıyor — hafif zoom bu boşluğu üstten/alttan kırpıyor.
-                    style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block', transform: 'scale(1.18)' }}
+                    style={{ width: '100%', height: '100%', objectFit: 'contain', display: 'block' }}
                   />
                 </div>
               ) : (

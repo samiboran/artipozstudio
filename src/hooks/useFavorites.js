@@ -1,12 +1,27 @@
 import { useState } from 'react'
 import { supabase } from '../lib/supabase'
 
-// Favoriler artık hesaba bağlı (user_favorites tablosu) — giriş yapmamış
-// ziyaretçi favori ekleyemez; toggle() sessizce false döner, çağıran taraf
-// (ArtCard/ProductDetail) bunu sadece küçük bir "sallanma" animasyonu için
-// kullanır, kalıcı bir değişiklik yapılmaz.
+// Favoriler artık sepet gibi üyelik gerektirmiyor (Etsy'deki gibi) —
+// giriş yapmamış ziyaretçinin favorileri tarayıcıda (localStorage) tutulur.
+// Giriş yapılınca hesaba bağlı favoriler (user_favorites tablosu) devreye
+// girer; çıkış yapılınca tekrar tarayıcıdaki favorilere dönülür.
+const GUEST_KEY = 'ap_guest_favorites'
+
+function loadGuestFavorites() {
+  try {
+    const raw = localStorage.getItem(GUEST_KEY)
+    return raw ? JSON.parse(raw) : []
+  } catch {
+    return []
+  }
+}
+
+function saveGuestFavorites(ids) {
+  try { localStorage.setItem(GUEST_KEY, JSON.stringify(ids)) } catch { /* yoksay */ }
+}
+
 let listeners = []
-let favState = []
+let favState = loadGuestFavorites()
 let currentUserId = null
 
 function setFavs(newFavs) {
@@ -15,7 +30,7 @@ function setFavs(newFavs) {
 }
 
 async function loadFavorites(userId) {
-  if (!userId) { setFavs([]); return }
+  if (!userId) { setFavs(loadGuestFavorites()); return }
   const { data, error } = await supabase.from('user_favorites').select('artwork_id').eq('user_id', userId)
   if (error) { console.error('Favoriler yüklenemedi:', error.message); return }
   setFavs((data || []).map(r => r.artwork_id))
@@ -23,7 +38,7 @@ async function loadFavorites(userId) {
 
 supabase.auth.getSession().then(({ data: { session } }) => {
   currentUserId = session?.user?.id || null
-  loadFavorites(currentUserId)
+  if (currentUserId) loadFavorites(currentUserId)
 })
 
 // onAuthStateChange içinde senkron supabase çağrısı auth-lock deadlock'una
@@ -43,19 +58,20 @@ export function useFavorites() {
     listeners.push(setIds)
   }
 
-  // Dönüş değeri: true = gerçekten değişti, false = giriş yapılmadığı için
-  // hiçbir şey yapılmadı (arayüz sadece görsel bir geri bildirim gösterebilir).
   async function toggle(id) {
-    if (!currentUserId) return false
-    if (favState.includes(id)) {
-      setFavs(favState.filter(x => x !== id))
-      const { error } = await supabase.from('user_favorites').delete().eq('user_id', currentUserId).eq('artwork_id', id)
-      if (error) console.error('Favoriden çıkarılamadı:', error.message)
+    const adding = !favState.includes(id)
+    const next = adding ? [...favState, id] : favState.filter(x => x !== id)
+    setFavs(next)
+
+    if (currentUserId) {
+      const { error } = adding
+        ? await supabase.from('user_favorites').insert({ user_id: currentUserId, artwork_id: id })
+        : await supabase.from('user_favorites').delete().eq('user_id', currentUserId).eq('artwork_id', id)
+      if (error) console.error(adding ? 'Favoriye eklenemedi:' : 'Favoriden çıkarılamadı:', error.message)
     } else {
-      setFavs([...favState, id])
-      const { error } = await supabase.from('user_favorites').insert({ user_id: currentUserId, artwork_id: id })
-      if (error) console.error('Favoriye eklenemedi:', error.message)
+      saveGuestFavorites(next)
     }
+
     return true
   }
 

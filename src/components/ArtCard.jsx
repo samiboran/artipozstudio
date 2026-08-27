@@ -12,8 +12,9 @@ function ArtCard({ artwork, index, onClick, noBottomGap = false }) {
   const [favShake, setFavShake] = useState(false)
   const [cartShake, setCartShake] = useState(false)
 
-  // Giriş yapılmamışsa toggle/addItem hiçbir şey yapmaz (false döner) —
-  // butonun yine de tepki verdiğini göstermek için kısa bir sallanma.
+  // toggle/addItem artık üyelik gerektirmeden çalışıyor (favoriler giriş
+  // yapılmamışsa tarayıcıda, sepet zaten öyleydi) — false dönüşü teorik
+  // olarak kalıyor, gerçekleşirse sallanma geri bildirimi gösterir.
   async function handleFav(e) {
     e.stopPropagation()
     const ok = await toggle(artwork.id)
