@@ -89,6 +89,10 @@ const IMAGE_SLOTS = [
   { page: 'fotograf-baski', section: 'mat-2', label: 'Fotoğraf Baskı — Mat Örnek (üzerine gelince, 2. görsel)', multiple: false, aspect: '4 / 3' },
   { page: 'fotograf-baski', section: 'parlak-1', label: 'Fotoğraf Baskı — Parlak Örnek (1. görsel)', multiple: false, aspect: '4 / 3' },
   { page: 'fotograf-baski', section: 'parlak-2', label: 'Fotoğraf Baskı — Parlak Örnek (üzerine gelince, 2. görsel)', multiple: false, aspect: '4 / 3' },
+  { page: 'fotograf-baski', section: 'kodak-glossy-gorsel', label: 'Fotoğraf Baskı — Kodak Glossy Görseli', multiple: false, aspect: '4 / 3' },
+  { page: 'fotograf-baski', section: 'kodak-satin-gorsel', label: 'Fotoğraf Baskı — Kodak Satin Görseli', multiple: false, aspect: '4 / 3' },
+  { page: 'fotograf-baski', section: 'kodak-matte-gorsel', label: 'Fotoğraf Baskı — Kodak Matte Görseli', multiple: false, aspect: '4 / 3' },
+  { page: 'fotograf-baski', section: 'kodak-metallic-gorsel', label: 'Fotoğraf Baskı — Kodak Metallic Görseli', multiple: false, aspect: '4 / 3' },
 ]
 
 // page_content tablosunda yönetilen düzenlenebilir metin alanları — page_images ile
