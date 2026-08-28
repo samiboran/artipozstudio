@@ -10,6 +10,48 @@ const MAX_FILE_SIZE_MB = 50
 const PHOTO_SIZES = ['A2', 'A3', 'A4', 'A5', 'A6']
 const PHOTO_FINISHES = ['Mat', 'Parlak']
 
+// Hero'nun hemen altındaki Kodak kağıt tanıtım kartları — Meltem'in
+// yazdığı metinler birebir, sıra: Glossy, Satin, Matte, Metallic.
+// Görselleri Admin > Görseller'den yüklenecek (section: kodak-*-gorsel).
+const KODAK_PAPERS = [
+  {
+    key: 'kodak-glossy', name: 'Kodak Glossy',
+    subtitle: 'Yüksek parlaklık · canlı renkler · güçlü kontrast',
+    paragraphs: [
+      'Pürüzsüz ve parlak yüzeyi, fotoğraflara canlı ve dikkat çekici bir görünüm kazandırır. Renkleri doygun, siyahları derin ve ayrıntıları belirgin gösterir.',
+      'Işığı güçlü biçimde yansıtan yüzeyi sayesinde özellikle renk ve kontrastın öne çıktığı fotoğraflarda etkileyici sonuç verir.',
+    ],
+    bullets: ['Yüksek parlaklık', 'Canlı ve doygun renkler', 'Derin siyahlar', 'Manzara, moda ve ürün fotoğrafları için ideal'],
+  },
+  {
+    key: 'kodak-satin', name: 'Kodak Satin 260 gr',
+    subtitle: '260 gr · düşük yansıma · dengeli saten yüzey',
+    paragraphs: [
+      'İnce ve ipeksi yüzeyi, parlak kâğıda göre ışığı daha kontrollü yansıtır. Fotoğrafın renklerini ve ayrıntılarını korurken daha sakin, dengeli bir görünüm sunar.',
+      'Parmak izi ve yoğun parlamanın daha az fark edildiği zarif yüzeyiyle çok yönlü bir fotoğraf kâğıdıdır.',
+    ],
+    bullets: ['Kontrollü ve düşük yansıma', 'Dengeli renkler ve kontrast', 'Doğal cilt tonları', 'Portre, düğün ve günlük fotoğraf baskıları için ideal'],
+  },
+  {
+    key: 'kodak-matte', name: 'Kodak Matte',
+    subtitle: 'Yansımasız · sakin tonlar · yumuşak yüzey',
+    paragraphs: [
+      'Mat yüzeyi ışık yansımalarını en aza indirerek fotoğrafın farklı açılardan rahatça izlenmesini sağlar. Tonlara sakin, yumuşak ve rafine bir karakter kazandırır.',
+      'Gösterişli bir parlaklık yerine fotoğrafın içeriğini ve ton geçişlerini öne çıkaran sade bir seçenektir.',
+    ],
+    bullets: ['Yansımasız görünüm', 'Yumuşak ton geçişleri', 'Sakin ve doğal renkler', 'Siyah-beyaz, portre ve sade çalışmalar için ideal'],
+  },
+  {
+    key: 'kodak-metallic', name: 'Kodak Metallic 255 gr',
+    subtitle: '255 gr · metalik parlama · yüksek görsel derinlik',
+    paragraphs: [
+      'Özel metalik yüzeyi, ışığa göre değişen gümüşümsü bir parlama oluşturur. Renkleri daha güçlü, siyahları daha yoğun ve parlak alanları daha dikkat çekici gösterir.',
+      'Fotoğrafa belirgin bir derinlik ve üç boyut hissi kazandıran, serinin en çarpıcı yüzey seçeneğidir.',
+    ],
+    bullets: ['Metalik ve parlak görünüm', 'Güçlü ve doygun renkler', 'Derin siyahlar ve parlak beyazlar', 'Gece, mimari, otomobil ve yüksek kontrastlı fotoğraflar için ideal'],
+  },
+]
+
 // Supabase'e hiç bağlanamazsa veya fiyat tablosu boşsa gösterilecek yedek veri —
 // FineArtBaski.jsx / Cerceve.jsx'teki aynı desen.
 const FALLBACK_PRICES = {
@@ -66,6 +108,8 @@ export default function FotografBaski() {
   const [images, setImages] = useState({
     hero: heroImgDefault,
     'mat-1': null, 'mat-2': null, 'parlak-1': null, 'parlak-2': null,
+    'kodak-glossy-gorsel': null, 'kodak-satin-gorsel': null,
+    'kodak-matte-gorsel': null, 'kodak-metallic-gorsel': null,
   })
   const [content, setContent] = useState({})
   const [prices, setPrices] = useState(FALLBACK_PRICES)
@@ -111,7 +155,9 @@ export default function FotografBaski() {
           const next = { ...prev }
           const bySection = {}
           imgs.forEach(row => { (bySection[row.section] ||= []).push(row) })
-          ;['hero', 'mat-1', 'mat-2', 'parlak-1', 'parlak-2'].forEach(section => {
+          ;['hero', 'mat-1', 'mat-2', 'parlak-1', 'parlak-2',
+            'kodak-glossy-gorsel', 'kodak-satin-gorsel', 'kodak-matte-gorsel', 'kodak-metallic-gorsel',
+          ].forEach(section => {
             if (bySection[section]?.[0]) next[section] = bySection[section][0].image_url
           })
           return next
@@ -268,6 +314,45 @@ export default function FotografBaski() {
           <p style={{ ...body, color: 'rgba(255,255,255,.85)', maxWidth: 480, margin: '0 auto' }}>
             {content['hero-aciklama'] || 'Yüksek çözünürlükte, profesyonel fotoğraf kağıtlarına baskı.'}
           </p>
+        </div>
+      </section>
+
+      {/* Kodak fotoğraf kağıtları — Hero'nun hemen altında, sırayla
+          Glossy, Satin, Matte, Metallic. */}
+      <section style={{ maxWidth: 1400, margin: '0 auto', padding: '3.5rem 2rem 1rem' }}>
+        <style>{`
+          .kodak-papers-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 1.8rem; }
+          @media (max-width: 1100px) {
+            .kodak-papers-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+          }
+          @media (max-width: 640px) {
+            .kodak-papers-grid { grid-template-columns: 1fr; }
+          }
+        `}</style>
+        <div className="kodak-papers-grid">
+          {KODAK_PAPERS.map(paper => (
+            <div key={paper.key} style={{ background: 'var(--surface)', padding: '1.2rem' }}>
+              <div style={{ width: '100%', aspectRatio: '4 / 3', overflow: 'hidden', marginBottom: '1.2rem' }}>
+                {images[`${paper.key}-gorsel`]
+                  ? <img
+                      src={images[`${paper.key}-gorsel`]}
+                      alt={paper.name}
+                      loading="lazy" decoding="async"
+                      style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+                    />
+                  : placeholderBox(`${paper.name} — Admin'den yükle`)
+                }
+              </div>
+              <h3 style={{ ...heading, fontSize: '1.15rem', margin: '0 0 .5rem' }}>{paper.name}</h3>
+              <p style={{ ...label, color: 'var(--ink)', marginBottom: '.9rem' }}>{paper.subtitle}</p>
+              {paper.paragraphs.map((p, i) => (
+                <p key={i} style={{ ...body, fontSize: '.82rem', marginBottom: '.9rem' }}>{p}</p>
+              ))}
+              <ul style={{ ...body, fontSize: '.8rem', margin: 0, paddingLeft: '1.1rem' }}>
+                {paper.bullets.map(b => <li key={b} style={{ marginBottom: '.35rem' }}>{b}</li>)}
+              </ul>
+            </div>
+          ))}
         </div>
       </section>
 
