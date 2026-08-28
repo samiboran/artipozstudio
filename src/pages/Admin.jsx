@@ -85,10 +85,6 @@ const IMAGE_SLOTS = [
   { page: 'fine-art-baski', section: 'kagit-secenekleri', label: 'Fine Art Baskı — Kağıt Seçenekleri', multiple: false, aspect: '4 / 3', defaultImg: fineArtKagitSecenekleriDefault },
   { page: 'fine-art-baski', section: 'ornekler', label: 'Fine Art Baskı — Örnek Baskılarımız', multiple: true, aspect: '4 / 5', defaultImgs: [fineArtOrnekBotanikDefault, fineArtOrnekBotanik2Default, fineArtOrnekDoku1Default, fineArtOrnekDoku2Default] },
   { page: 'fotograf-baski', section: 'hero', label: 'Fotoğraf Baskı — Hero Görseli', multiple: false, aspect: '21 / 9', defaultImg: fotografBaskiHeroDefault },
-  { page: 'fotograf-baski', section: 'mat-1', label: 'Fotoğraf Baskı — Mat Örnek (1. görsel)', multiple: false, aspect: '4 / 3' },
-  { page: 'fotograf-baski', section: 'mat-2', label: 'Fotoğraf Baskı — Mat Örnek (üzerine gelince, 2. görsel)', multiple: false, aspect: '4 / 3' },
-  { page: 'fotograf-baski', section: 'parlak-1', label: 'Fotoğraf Baskı — Parlak Örnek (1. görsel)', multiple: false, aspect: '4 / 3' },
-  { page: 'fotograf-baski', section: 'parlak-2', label: 'Fotoğraf Baskı — Parlak Örnek (üzerine gelince, 2. görsel)', multiple: false, aspect: '4 / 3' },
   { page: 'fotograf-baski', section: 'kodak-glossy-gorsel', label: 'Fotoğraf Baskı — Kodak Glossy Görseli', multiple: false, aspect: '4 / 3' },
   { page: 'fotograf-baski', section: 'kodak-satin-gorsel', label: 'Fotoğraf Baskı — Kodak Satin Görseli', multiple: false, aspect: '4 / 3' },
   { page: 'fotograf-baski', section: 'kodak-matte-gorsel', label: 'Fotoğraf Baskı — Kodak Matte Görseli', multiple: false, aspect: '4 / 3' },
@@ -118,7 +114,6 @@ const PAGE_TEXT_FIELDS = {
   ],
   'fotograf-baski': [
     { section: 'hero-aciklama', label: 'Hero — Alt Açıklama', placeholder: 'Yüksek çözünürlükte, profesyonel fotoğraf kağıtlarına baskı.' },
-    { section: 'yuzey-aciklama', label: 'Mat/Parlak Karşılaştırma Açıklaması', placeholder: 'Seçtiğiniz yüzeye göre baskı hazırlıyoruz — mat yüzey yumuşak, yansımasız bir görünüm, parlak yüzey ise derin renkler ve yüksek kontrast sunar. Kartların üzerine gelerek yakın çekim detayını görebilirsiniz.', tall: true },
   ],
   'fine-art-baski': [
     { section: 'hero-aciklama', label: 'Hero — Alt Açıklama', placeholder: 'Müze ve galeri standartlarında, arşiv kalitesinde baskı. Sanatınızı nesiller boyu yaşatın.', tall: true },
