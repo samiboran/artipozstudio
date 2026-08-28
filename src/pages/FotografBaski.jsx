@@ -88,26 +88,9 @@ const placeholderBox = (label) => (
   </div>
 )
 
-function FinishCard({ label: cardLabel, img1, img2, onClick }) {
-  return (
-    <div onClick={onClick} style={{ cursor: onClick ? 'pointer' : 'default' }}>
-      <div className="finish-card" style={{ width: '100%', aspectRatio: '4 / 3', overflow: 'hidden', position: 'relative', background: 'var(--surface)' }}>
-        {img1 ? (
-          <img src={img1} alt={`${cardLabel} baskı örneği`} loading="lazy" decoding="async" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
-        ) : placeholderBox(`${cardLabel} — Admin'den yükle`)}
-        {img2 && (
-          <img className="img-2" src={img2} alt={`${cardLabel} baskı örneği, yakın çekim`} loading="lazy" decoding="async" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />
-        )}
-      </div>
-      <p style={{ ...eyebrow, textAlign: 'center', marginTop: '.9rem' }}>{cardLabel}</p>
-    </div>
-  )
-}
-
 export default function FotografBaski() {
   const [images, setImages] = useState({
     hero: heroImgDefault,
-    'mat-1': null, 'mat-2': null, 'parlak-1': null, 'parlak-2': null,
     'kodak-glossy-gorsel': null, 'kodak-satin-gorsel': null,
     'kodak-matte-gorsel': null, 'kodak-metallic-gorsel': null,
   })
@@ -155,8 +138,7 @@ export default function FotografBaski() {
           const next = { ...prev }
           const bySection = {}
           imgs.forEach(row => { (bySection[row.section] ||= []).push(row) })
-          ;['hero', 'mat-1', 'mat-2', 'parlak-1', 'parlak-2',
-            'kodak-glossy-gorsel', 'kodak-satin-gorsel', 'kodak-matte-gorsel', 'kodak-metallic-gorsel',
+          ;['hero', 'kodak-glossy-gorsel', 'kodak-satin-gorsel', 'kodak-matte-gorsel', 'kodak-metallic-gorsel',
           ].forEach(section => {
             if (bySection[section]?.[0]) next[section] = bySection[section][0].image_url
           })
@@ -286,13 +268,6 @@ export default function FotografBaski() {
 
   return (
     <div style={{ paddingTop: '4.2rem' }}>
-      <style>{`
-        @media (hover: hover) {
-          .finish-card:hover .img-2 { opacity: 1; }
-        }
-        .finish-card .img-2 { opacity: 0; transition: opacity .4s ease; }
-      `}</style>
-
       {/* Hero */}
       <section style={{
         position: 'relative', height: '46vh', minHeight: 320,
@@ -385,19 +360,6 @@ export default function FotografBaski() {
             </div>
           ))}
         </div>
-      </section>
-
-      {/* Yüzey seçenekleri: mat / parlak karşılaştırma */}
-      <section style={{ maxWidth: 900, margin: '0 auto', padding: '4rem 2rem 1rem' }}>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: '1.5rem' }}>
-          <FinishCard label="Mat" img1={images['mat-1']} img2={images['mat-2']} onClick={() => setFinish('Mat')} />
-          <FinishCard label="Parlak" img1={images['parlak-1']} img2={images['parlak-2']} onClick={() => setFinish('Parlak')} />
-        </div>
-        <p style={{ ...body, textAlign: 'center', marginTop: '2rem', maxWidth: 560, marginLeft: 'auto', marginRight: 'auto' }}>
-          {content['yuzey-aciklama'] || `Seçtiğiniz yüzeye göre baskı hazırlıyoruz — mat yüzey yumuşak, yansımasız bir görünüm,
-          parlak yüzey ise derin renkler ve yüksek kontrast sunar. Kartların üzerine gelerek
-          yakın çekim detayını görebilirsiniz.`}
-        </p>
       </section>
 
       {/* Dosya yükleme */}
