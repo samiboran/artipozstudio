@@ -74,12 +74,10 @@ export default function Hero() {
       display: 'flex', alignItems: 'center', justifyContent: 'center',
       textAlign: 'center', overflow: 'hidden', background: 'var(--surface)',
     }}>
-      {/* Masaüstünde 68vh ekrana sığmayacak kadar büyük kalıyordu —
-          diğer sayfalardaki (Çerçeve/Fine Art Baskı/Fotoğraf Baskı)
-          hero'lara daha yakın bir boyda, 55vh'ye indirildi. Kırpma zaten
-          ayrıca bir zoom (bkz. HeroSlideStack'teki transform: scale)
-          ile azaltılıyor, o yüzden boyu küçültmek kırpma sorununu geri
-          getirmiyor.
+      {/* Masaüstü Hero yüksekliği net talimatla 55vh'den 38-40vh'ye
+          indirildi (39vh) — Meltem artık hero kutusunun oranına göre
+          hazırlanmış görseller yüklediği için aşırı kırpma sorunu yok,
+          sadece kutu boyu küçültüldü.
 
           Mobilde, dikey/portre hero görselleri henüz yüklenmemişse
           (.hero-section--mobile-set yoksa) aynı yatay (21:9) görseller
@@ -88,9 +86,9 @@ export default function Hero() {
           bu yüzden o durumda kutu daha da kısa tutuluyor (42vh). Meltem'in
           hazırladığı portre görseller yüklenince (.hero-section--mobile-set)
           o görseller zaten dikey ekran için kesildiği için mobilde de
-          55vh kullanılabiliyor. */}
+          39vh kullanılabiliyor. */}
       <style>{`
-        .hero-section { height: 55vh; min-height: 380px; }
+        .hero-section { height: 39vh; min-height: 320px; }
         @media (max-width: 640px) {
           .hero-section:not(.hero-section--mobile-set) { height: 42vh; min-height: 300px; }
         }
