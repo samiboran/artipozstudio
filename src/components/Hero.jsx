@@ -5,7 +5,11 @@ import heroImgDefault from '../assets/fine-art/hero.jpg'
 // Masaüstü/mobil için ayrı yüklenen görsel setinden birer sırayla dönen
 // crossfade slayt gösterir. İki set birbirinden bağımsız kendi tempolarında
 // döner (aynı anda sadece biri CSS ile görünür oluyor).
-function HeroSlideStack({ urls }) {
+// fit="contain": masaüstünde görsel artık kırpılmıyor/büyütülmüyor — kutu
+// (.hero-section) boyu aynı kalıyor, sadece içindeki fotoğraf hiç kırpılmadan
+// sığdırılıyor, oran uymayan kenarlarda kutunun zemin rengi görünüyor.
+// Mobilde (fit="cover", varsayılan) eski davranış korunuyor.
+function HeroSlideStack({ urls, fit = 'cover' }) {
   const [index, setIndex] = useState(0)
 
   useEffect(() => {
@@ -23,7 +27,8 @@ function HeroSlideStack({ urls }) {
       loading="eager"
       fetchPriority={i === 0 ? 'high' : 'auto'}
       style={{
-        position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover',
+        position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: fit,
+        background: fit === 'contain' ? 'var(--surface)' : 'none',
         opacity: i === index ? 1 : 0, transition: 'opacity 1s ease',
       }}
     />
@@ -110,7 +115,7 @@ export default function Hero() {
       `}</style>
 
       <div className="hero-desktop-imgs">
-        <HeroSlideStack urls={desktopUrls} />
+        <HeroSlideStack urls={desktopUrls} fit="contain" />
       </div>
       <div className="hero-mobile-imgs">
         <HeroSlideStack urls={mobileStackUrls} />
