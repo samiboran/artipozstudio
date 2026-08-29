@@ -554,7 +554,7 @@ function Gallery() {
           @media (max-width: 560px) {
             .hizmetlerimiz-grid { grid-template-columns: 1fr; }
           }
-          .hizmet-card { color: inherit; text-decoration: none; display: block; }
+          .hizmet-card { color: inherit; text-decoration: none; display: flex; flex-direction: column; height: 100%; }
           .hizmet-card .hizmet-ok { transition: transform .2s ease; display: inline-block; }
           .hizmet-card:hover .hizmet-ok { transform: translateX(4px); }
         `}</style>
@@ -581,7 +581,7 @@ function Gallery() {
                 // geri dönüldü, mat hiç oluşmuyor. Fotoğraf Baskı ve Poster &
                 // Kartpostal Baskı kartlarındaki görseller diğerlerine göre
                 // daha sıkışık/büyük durduğundan (h.imgScale) hafifçe küçültülüyor.
-                <div style={{ width: '100%', aspectRatio: '4 / 3', overflow: 'hidden', background: 'var(--surface)' }}>
+                <div style={{ width: '100%', aspectRatio: '4 / 3', overflow: 'hidden', background: 'var(--surface)', flexShrink: 0 }}>
                   <img
                     src={imgSrc}
                     alt={title}
@@ -594,7 +594,7 @@ function Gallery() {
                 </div>
               ) : (
                 <div style={{
-                  width: '100%', aspectRatio: '4 / 3', background: '#e4e2db',
+                  width: '100%', aspectRatio: '4 / 3', background: '#e4e2db', flexShrink: 0,
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                   fontFamily: "'Archivo', sans-serif", fontSize: '.68rem',
                   letterSpacing: '.08em', textTransform: 'uppercase', color: 'var(--muted)', textAlign: 'center', padding: '1rem',
@@ -602,7 +602,13 @@ function Gallery() {
                   Görsel — Admin'den yükle
                 </div>
               )}
-              <div style={{ background: 'var(--surface)', padding: '1.3rem 1.4rem 1.5rem' }}>
+              {/* Kart içeriği kutusu artık flex:1 ile kalan yüksekliği dolduruyor
+                  ve title/açıklama+ok arasında justify-content:space-between
+                  kullanıyor — bu sayede metin uzunluğu farklı olsa da (ör.
+                  Çerçeveleme'nin 3 satırlık açıklaması) ok her kartta aynı
+                  alt hizada kalıyor, satır sayısı grid satırının yüksekliğini
+                  bozmuyor. */}
+              <div style={{ background: 'var(--surface)', padding: '1.3rem 1.4rem 1.5rem', flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
                 <p style={{ fontFamily: "'Playfair Display', serif", fontWeight: 600, fontSize: '1.08rem', color: 'var(--ink)', margin: '0 0 .6rem' }}>
                   {title}
                 </p>

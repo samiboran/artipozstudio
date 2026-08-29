@@ -1,4 +1,4 @@
-import { Link, useNavigate, useLocation } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { useState, useEffect } from 'react'
 import { supabase } from '../lib/supabase'
 
@@ -45,14 +45,14 @@ const NAV_LINKS = [
 function Navbar({ cartCount = 0, onCartClick }) {
   const [search, setSearch] = useState('')
   const [menuOpen, setMenuOpen] = useState(false)
-  const [scrolled, setScrolled] = useState(false)
   const [customerName, setCustomerName] = useState(null)
   const navigate = useNavigate()
-  const location = useLocation()
 
-  const isHome = location.pathname === '/'
-  // Ana sayfada hero'nun üzerinde şeffaf, aşağı inince beyaz; diğer sayfalarda her zaman beyaz.
-  const transparent = isHome && !scrolled
+  // Önceden ana sayfada hero'nun üzerinde şeffaf + linkler sağa kaymış,
+  // diğer sayfalarda opak + ortalı duruyordu — sayfa değiştikçe menü yer
+  // değiştiriyordu ve şeffaf haldeyken linkler açık zeminde okunmuyordu.
+  // Artık her sayfada aynı: her zaman opak, aynı hizada.
+  const transparent = false
 
   useEffect(() => {
     async function loadCustomer(session) {
@@ -85,14 +85,6 @@ function Navbar({ cartCount = 0, onCartClick }) {
     setCustomerName(null)
     navigate('/')
   }
-
-  useEffect(() => {
-    if (!isHome) { setScrolled(false); return }
-    const onScroll = () => setScrolled(window.scrollY > 80)
-    onScroll()
-    window.addEventListener('scroll', onScroll)
-    return () => window.removeEventListener('scroll', onScroll)
-  }, [isHome])
 
   const handleSearch = (e) => {
     if (e.key === 'Enter' && search.trim()) {
