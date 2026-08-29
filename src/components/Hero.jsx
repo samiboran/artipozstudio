@@ -79,10 +79,9 @@ export default function Hero() {
       display: 'flex', alignItems: 'center', justifyContent: 'center',
       textAlign: 'center', overflow: 'hidden', background: 'var(--surface)',
     }}>
-      {/* Masaüstü Hero yüksekliği net talimatla 55vh'den 38-40vh'ye
-          indirildi (39vh) — Meltem artık hero kutusunun oranına göre
-          hazırlanmış görseller yüklediği için aşırı kırpma sorunu yok,
-          sadece kutu boyu küçültüldü.
+      {/* Masaüstü Hero yüksekliği, site genelindeki tüm hero'larla (Fine Art
+          Baskı, Fotoğraf Baskı, Çerçeve) tutarlı olsun diye 58vh'ye eşitlendi
+          — Fine Art Baskı hero'sunun boyu referans alındı.
 
           Mobilde, dikey/portre hero görselleri henüz yüklenmemişse
           (.hero-section--mobile-set yoksa) aynı yatay (21:9) görseller
@@ -93,7 +92,7 @@ export default function Hero() {
           o görseller zaten dikey ekran için kesildiği için mobilde de
           39vh kullanılabiliyor. */}
       <style>{`
-        .hero-section { height: 39vh; min-height: 320px; }
+        .hero-section { height: 58vh; min-height: 380px; }
         @media (max-width: 640px) {
           .hero-section:not(.hero-section--mobile-set) { height: 42vh; min-height: 300px; }
         }
