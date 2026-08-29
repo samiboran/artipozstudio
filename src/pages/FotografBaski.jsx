@@ -7,8 +7,11 @@ import heroImgDefault from '../assets/process/studyo.jpg'
 // buradan değiştir, kod içinde başka yerde hardcode edilmedi.
 const MAX_FILE_SIZE_MB = 50
 
-const PHOTO_SIZES = ['A2', 'A3', 'A4', 'A5', 'A6']
-const PHOTO_FINISHES = ['Mat', 'Parlak']
+// Kodak kağıt tanıtım kartlarıyla aynı 4 seçenek (Fine Art kağıtları değil).
+const PHOTO_FINISHES = ['Glossy', 'Satin', 'Matte', 'Metallic']
+const PHOTO_SIZES = ['10×15', '13×18', '20×30']
+const CUSTOM_SIZE = 'Özel Ölçü'
+const BORDER_OPTIONS = ['Yok', 'Var']
 
 // Hero'nun hemen altındaki Kodak kağıt tanıtım kartları — Meltem'in
 // yazdığı metinler birebir, sıra: Glossy, Satin, Matte, Metallic.
@@ -52,15 +55,11 @@ const KODAK_PAPERS = [
   },
 ]
 
-// Supabase'e hiç bağlanamazsa veya fiyat tablosu boşsa gösterilecek yedek veri —
-// FineArtBaski.jsx / Cerceve.jsx'teki aynı desen.
-const FALLBACK_PRICES = {
-  'A2:Mat': 950, 'A2:Parlak': 950,
-  'A3:Mat': 650, 'A3:Parlak': 650,
-  'A4:Mat': 450, 'A4:Parlak': 450,
-  'A5:Mat': 280, 'A5:Parlak': 280,
-  'A6:Mat': 180, 'A6:Parlak': 180,
-}
+// Supabase'e hiç bağlanamazsa gösterilecek yedek veri — fiyatlar Admin'den
+// girilene kadar gerçek bir sayı göstermek yerine 0 kalıyor (yanlış/uydurma
+// bir fiyat gösterme riski olmasın diye).
+const FALLBACK_PRICES = {}
+PHOTO_SIZES.forEach(s => PHOTO_FINISHES.forEach(f => { FALLBACK_PRICES[`${s}:${f}`] = 0 }))
 
 const heading = { fontFamily: 'var(--font-heading)', fontWeight: 400, color: 'var(--ink)' }
 const eyebrow = {
@@ -93,28 +92,30 @@ export default function FotografBaski() {
     hero: heroImgDefault,
     'kodak-glossy-gorsel': null, 'kodak-satin-gorsel': null,
     'kodak-matte-gorsel': null, 'kodak-metallic-gorsel': null,
+    'wizard-mockup': null,
   })
   const [content, setContent] = useState({})
   const [prices, setPrices] = useState(FALLBACK_PRICES)
 
-  // --- Sipariş satırı formu ---
+  // --- "Baskını Oluştur" sihirbazı: 01 Dosya + 02 Kağıt & Ölçü aynı ekranda
+  // (wizardStep === 'form'), 03 Bilgiler ayrı ekran (wizardStep === 'bilgiler').
+  const [wizardStep, setWizardStep] = useState('form') // form | bilgiler | sent
+  const [wizardError, setWizardError] = useState('')
+
   const [uploadedUrl, setUploadedUrl] = useState('')
   const [uploading, setUploading] = useState(false)
   const [uploadError, setUploadError] = useState('')
-  const [size, setSize] = useState('A4')
-  const [finish, setFinish] = useState('Mat')
+  const [size, setSize] = useState(PHOTO_SIZES[0])
+  const [finish, setFinish] = useState(PHOTO_FINISHES[0])
   const [quantity, setQuantity] = useState(1)
-  const [note, setNote] = useState('')
-  const [selectorOpen, setSelectorOpen] = useState(false)
+  const [border, setBorder] = useState(BORDER_OPTIONS[0])
+  const [customWidth, setCustomWidth] = useState('')
+  const [customHeight, setCustomHeight] = useState('')
   const fileRef = useRef()
 
-  // --- Liste (sepet) ---
-  const [list, setList] = useState([])
-
-  // --- Sipariş formu ---
-  const [orderOpen, setOrderOpen] = useState(false)
-  const [orderForm, setOrderForm] = useState({ name: '', email: '', phone: '', address: '' })
-  const [orderStatus, setOrderStatus] = useState('idle') // idle | submitting | sent
+  // --- Bilgiler formu (Ana Sayfa'daki Sipariş & İletişim ile aynı alan seti) ---
+  const [orderForm, setOrderForm] = useState({ name: '', postaKodu: '', address: '', email: '', phone: '', mesaj: '' })
+  const [orderStatus, setOrderStatus] = useState('idle') // idle | submitting
   const [orderError, setOrderError] = useState('')
 
   useEffect(() => { loadData() }, [])
@@ -139,6 +140,7 @@ export default function FotografBaski() {
           const bySection = {}
           imgs.forEach(row => { (bySection[row.section] ||= []).push(row) })
           ;['hero', 'kodak-glossy-gorsel', 'kodak-satin-gorsel', 'kodak-matte-gorsel', 'kodak-metallic-gorsel',
+            'wizard-mockup',
           ].forEach(section => {
             if (bySection[section]?.[0]) next[section] = bySection[section][0].image_url
           })
@@ -156,9 +158,11 @@ export default function FotografBaski() {
     }
   }
 
-  const unitPrice = prices[`${size}:${finish}`] || 0
-  const lineTotal = unitPrice * (Number(quantity) || 0)
-  const listTotal = list.reduce((sum, item) => sum + item.unitPrice * item.quantity, 0)
+  // Özel Ölçü'nün sabit bir fiyatı yok — teklif üzerine gönderiliyor,
+  // bu yüzden unitPrice/lineTotal bu durumda null (fiyat hesaplanamaz).
+  const isCustomSize = size === CUSTOM_SIZE
+  const unitPrice = isCustomSize ? null : (prices[`${size}:${finish}`] || 0)
+  const lineTotal = isCustomSize ? null : unitPrice * (Number(quantity) || 0)
 
   // Supabase JS client'ının oturum kilidiyle ilgili bilinen bir durum: birden fazla
   // sekme/istemci aynı anda aynı Supabase session'ına erişmeye çalışınca "lock ...
@@ -202,23 +206,15 @@ export default function FotografBaski() {
     setUploading(false)
   }
 
-  function addToList() {
-    if (!uploadedUrl) { setUploadError('Önce bir fotoğraf yükleyin.'); return }
-    setList(l => [...l, {
-      key: `${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
-      imageUrl: uploadedUrl, size, finish,
-      quantity: Math.max(1, Number(quantity) || 1),
-      unitPrice, note: note.trim(),
-    }])
-    // Formu bir sonraki fotoğraf için sıfırla, boy/yüzey tercihini koru.
-    setUploadedUrl('')
-    setQuantity(1)
-    setNote('')
-    if (fileRef.current) fileRef.current.value = ''
-  }
-
-  function removeFromList(key) {
-    setList(l => l.filter(item => item.key !== key))
+  // 01 Dosya + 02 Kağıt & Ölçü ekranından 03 Bilgiler ekranına geçiş.
+  function goToBilgiler() {
+    setWizardError('')
+    if (!uploadedUrl) { setWizardError('Lütfen önce bir fotoğraf yükleyin.'); return }
+    if (isCustomSize && (!customWidth.trim() || !customHeight.trim())) {
+      setWizardError('Lütfen özel ölçü için genişlik ve yükseklik girin.')
+      return
+    }
+    setWizardStep('bilgiler')
   }
 
   function updateOrderForm(e) {
@@ -228,24 +224,30 @@ export default function FotografBaski() {
 
   async function submitOrder(e) {
     e.preventDefault()
+    if (!orderForm.name?.trim()) { setOrderError('Ad soyad gerekli.'); return }
     if (!orderForm.email?.trim() || !orderForm.email.includes('@')) { setOrderError('Geçerli bir e-posta adresi giriniz.'); return }
     if (!orderForm.phone?.trim() || orderForm.phone.trim().length < 10) { setOrderError('Geçerli bir telefon numarası giriniz.'); return }
     if (!orderForm.address?.trim() || orderForm.address.trim().length < 10) { setOrderError('Geçerli bir adres giriniz.'); return }
-    if (list.length === 0) { setOrderError('Listeniz boş.'); return }
 
     setOrderStatus('submitting')
     setOrderError('')
 
     const payload = {
       name: orderForm.name,
+      posta_kodu: orderForm.postaKodu,
       email: orderForm.email,
       phone: orderForm.phone,
       address: orderForm.address,
+      note: orderForm.mesaj,
       session_id: getSessionId(),
-      items: list.map(item => ({
-        image_url: item.imageUrl, size: item.size, finish: item.finish,
-        quantity: item.quantity, note: item.note,
-      })),
+      items: [{
+        image_url: uploadedUrl,
+        size: isCustomSize ? CUSTOM_SIZE : size,
+        finish,
+        quantity: Math.max(1, Number(quantity) || 1),
+        white_border: border === 'Var',
+        note: isCustomSize ? `Özel ölçü: ${customWidth.trim()}×${customHeight.trim()} cm` : null,
+      }],
     }
 
     try {
@@ -262,8 +264,8 @@ export default function FotografBaski() {
       return
     }
 
-    setOrderStatus('sent')
-    setList([])
+    setOrderStatus('idle')
+    setWizardStep('sent')
   }
 
   return (
@@ -362,182 +364,75 @@ export default function FotografBaski() {
         </div>
       </section>
 
-      {/* Dosya yükleme */}
-      <section style={{ maxWidth: 640, margin: '0 auto', padding: '3rem 2rem' }}>
-        <p style={label}>Fotoğrafınızı Yükleyin</p>
-        <div
-          onClick={() => fileRef.current?.click()}
-          onDragOver={e => e.preventDefault()}
-          onDrop={e => { e.preventDefault(); handleFileSelect(e.dataTransfer.files[0]) }}
-          style={{
-            marginTop: '.8rem', border: '1px dashed var(--border)', padding: '2rem 1rem',
-            textAlign: 'center', cursor: 'pointer', minHeight: 200,
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            background: uploadedUrl ? 'transparent' : 'var(--surface)',
-          }}
-        >
-          {uploading ? (
-            <span style={{ ...body, fontSize: '.82rem' }}>Yükleniyor…</span>
-          ) : uploadedUrl ? (
-            <img src={uploadedUrl} alt="Yüklenen fotoğraf önizlemesi" style={{ maxWidth: '100%', maxHeight: 260, objectFit: 'contain', display: 'block' }} />
-          ) : (
-            <span style={{ ...body, fontSize: '.82rem' }}>
-              Fotoğrafınızı buraya sürükleyin<br />veya tıklayarak dosya seçin
-            </span>
-          )}
-        </div>
-        <input ref={fileRef} type="file" accept="image/*" style={{ display: 'none' }}
-          onChange={e => handleFileSelect(e.target.files[0])} />
-        {uploadError && <p style={{ color: '#c33', fontSize: '.78rem', marginTop: '.5rem' }}>{uploadError}</p>}
+      {/* "Baskını Oluştur" sihirbazı — koyu temalı bölüm, 01 Dosya + 02 Kağıt
+          & Ölçü aynı kart içinde, 03 Bilgiler ayrı bir ekranda. Mevcut backend
+          (create-photo-print-order, photo_print_orders/_items) hiç değişmeden
+          kullanılıyor — sadece arayüz değişti. */}
+      <section style={{ background: 'var(--ink)', padding: '4rem 2rem' }}>
+        <style>{`
+          .fb-wizard { display: grid; grid-template-columns: 1fr 1fr; gap: 3.5rem; max-width: 1200px; margin: 0 auto; align-items: start; }
+          @media (max-width: 900px) {
+            .fb-wizard { grid-template-columns: 1fr; gap: 2.5rem; }
+          }
+          .fb-btn-group { display: flex; flex-wrap: wrap; gap: .6rem; }
+        `}</style>
 
-        <p style={{ ...body, fontSize: '.76rem', marginTop: '1.2rem', lineHeight: 1.9 }}>
-          Önerilen formatlar: <b>JPEG, PNG, TIFF veya PDF.</b> En iyi sonuç için en az{' '}
-          <b>300 DPI</b> çözünürlük ve <b>RGB renk profili</b> kullanın. Dosya başına
-          en fazla <b>{MAX_FILE_SIZE_MB} MB</b> yükleyebilirsiniz.
-        </p>
-      </section>
+        <div className="fb-wizard">
+          {/* Sol: başlık, alt metin, adım göstergesi, örnek baskı görseli */}
+          <div>
+            <h2 style={{ ...heading, color: '#fff', fontSize: 'clamp(1.8rem, 3.5vw, 2.6rem)', margin: '0 0 1rem' }}>
+              Fotoğrafını baskıya dönüştür.
+            </h2>
+            <p style={{ ...body, color: 'rgba(255,255,255,.65)', marginBottom: '2.2rem', maxWidth: 420 }}>
+              Kağıdını ve ölçünü seç, dosyanı yükle. Baskıya uygunluğunu kontrol edip seninle iletişime geçelim.
+            </p>
 
-      {/* Boy / yüzey / adet / not + listeye ekle */}
-      <section style={{ maxWidth: 700, margin: '0 auto', padding: '1rem 2rem 3rem' }}>
-        <div style={{ marginBottom: '1rem' }}>
-          <label style={{ ...label, display: 'block', marginBottom: '.5rem' }}>Boy & Yüzey</label>
-          <button
-            type="button" onClick={() => setSelectorOpen(o => !o)}
-            style={{
-              width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-              padding: '.75rem 1rem', border: '1px solid var(--border)', background: '#fff',
-              fontFamily: 'var(--font-body)', fontSize: '.85rem', color: 'var(--ink)', cursor: 'pointer',
-            }}
-          >
-            <span>{size} · {finish} · {quantity} adet — <b>₺{lineTotal.toLocaleString('tr-TR')}</b></span>
-            <span style={{ fontSize: '.7rem', color: 'var(--muted)' }}>{selectorOpen ? '▲' : '▼'}</span>
-          </button>
-
-          {selectorOpen && (
-            <div style={{ border: '1px solid var(--border)', borderTop: 'none', padding: '1.2rem 1rem' }}>
-              <div style={{ marginBottom: '1rem' }}>
-                <label style={{ ...label, display: 'block', marginBottom: '.5rem', fontSize: '.68rem' }}>Boy</label>
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '.5rem' }}>
-                  {PHOTO_SIZES.map(s => (
-                    <button key={s} type="button" onClick={() => setSize(s)} style={{
-                      padding: '.5rem 1rem', border: `1px solid ${size === s ? 'var(--ink)' : 'var(--border)'}`,
-                      background: size === s ? 'var(--ink)' : 'none', color: size === s ? '#fff' : 'var(--ink)',
-                      fontFamily: 'var(--font-body)', fontSize: '.78rem', cursor: 'pointer',
+            <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '.5rem', marginBottom: '2.5rem' }}>
+              {[{ n: '01', label: 'DOSYA' }, { n: '02', label: 'KAĞIT & ÖLÇÜ' }, { n: '03', label: 'BİLGİLER' }].map((s, i) => {
+                const currentIndex = wizardStep === 'bilgiler' ? 2 : wizardStep === 'sent' ? 3 : (uploadedUrl ? 1 : 0)
+                const active = i === currentIndex
+                const done = i < currentIndex
+                return (
+                  <div key={s.n} style={{ display: 'flex', alignItems: 'center', gap: '.5rem' }}>
+                    {i > 0 && <span style={{ width: 18, height: 1, background: done ? 'rgba(255,255,255,.6)' : 'rgba(255,255,255,.2)' }} />}
+                    <span style={{
+                      fontFamily: 'var(--font-body)', fontSize: '.66rem', letterSpacing: '.12em',
+                      color: active ? '#fff' : done ? 'rgba(255,255,255,.55)' : 'rgba(255,255,255,.3)',
+                      fontWeight: active ? 700 : 400, whiteSpace: 'nowrap',
                     }}>
-                      {s}
-                    </button>
-                  ))}
-                </div>
-              </div>
-              <div style={{ marginBottom: '1rem' }}>
-                <label style={{ ...label, display: 'block', marginBottom: '.5rem', fontSize: '.68rem' }}>Yüzey</label>
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '.5rem' }}>
-                  {PHOTO_FINISHES.map(f => (
-                    <button key={f} type="button" onClick={() => setFinish(f)} style={{
-                      padding: '.5rem 1rem', border: `1px solid ${finish === f ? 'var(--ink)' : 'var(--border)'}`,
-                      background: finish === f ? 'var(--ink)' : 'none', color: finish === f ? '#fff' : 'var(--ink)',
-                      fontFamily: 'var(--font-body)', fontSize: '.78rem', cursor: 'pointer',
-                    }}>
-                      {f}
-                    </button>
-                  ))}
-                </div>
-              </div>
-              <div>
-                <label style={{ ...label, display: 'block', marginBottom: '.4rem', fontSize: '.68rem' }}>Adet</label>
-                <input type="number" min="1" value={quantity} onChange={e => setQuantity(e.target.value)} style={{ ...inputStyle, maxWidth: 140 }} />
-              </div>
-              <div style={{ ...body, fontSize: '.85rem', color: 'var(--ink)', marginTop: '1rem', paddingTop: '.8rem', borderTop: '1px solid var(--border)' }}>
-                Birim fiyat: <b>₺{unitPrice.toLocaleString('tr-TR')}</b>
-                <span style={{ margin: '0 .5rem', color: 'var(--border)' }}>·</span>
-                Satır toplamı: <b>₺{lineTotal.toLocaleString('tr-TR')}</b>
-              </div>
+                      {s.n} {s.label}
+                    </span>
+                  </div>
+                )
+              })}
             </div>
-          )}
-        </div>
 
-        <div style={{ marginBottom: '1.2rem' }}>
-          <label style={{ ...label, display: 'block', marginBottom: '.4rem' }}>Not (opsiyonel)</label>
-          <textarea
-            value={note} maxLength={300} onChange={e => setNote(e.target.value)}
-            style={{ ...inputStyle, minHeight: 70, resize: 'vertical' }}
-            placeholder="Kırpma, kadraj veya özel bir isteğiniz varsa yazabilirsiniz"
-          />
-        </div>
-
-        <button
-          type="button" onClick={addToList} disabled={uploading}
-          style={{
-            width: '100%', padding: '.85rem', background: 'var(--accent)', color: '#fff',
-            border: 'none', fontFamily: 'var(--font-body)', fontSize: '.75rem',
-            letterSpacing: '.14em', textTransform: 'uppercase', cursor: uploading ? 'not-allowed' : 'pointer',
-            opacity: uploading ? .6 : 1,
-          }}
-        >
-          Listeye Ekle
-        </button>
-      </section>
-
-      {/* Liste */}
-      {list.length > 0 && (
-        <section style={{ maxWidth: 700, margin: '0 auto', padding: '0 2rem 3rem' }}>
-          <p style={label}>Listeniz</p>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '.8rem', marginTop: '1rem' }}>
-            {list.map(item => (
-              <div key={item.key} style={{ display: 'flex', alignItems: 'center', gap: '1rem', border: '1px solid var(--border)', padding: '.8rem' }}>
-                <img src={item.imageUrl} alt="" loading="lazy" decoding="async" style={{ width: 56, height: 56, objectFit: 'cover', flexShrink: 0 }} />
-                <div style={{ flex: 1, ...body, fontSize: '.82rem' }}>
-                  {item.size} · {item.finish} · {item.quantity} adet
-                  {item.note && <div style={{ fontSize: '.7rem', color: 'var(--muted)', marginTop: '.2rem' }}>Not: {item.note}</div>}
+            <div style={{ width: '100%', maxWidth: 380, aspectRatio: '4 / 5', overflow: 'hidden' }}>
+              {images['wizard-mockup'] ? (
+                <img src={images['wizard-mockup']} alt="Örnek baskı" loading="lazy" decoding="async"
+                  style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+              ) : (
+                <div style={{
+                  width: '100%', height: '100%', background: 'rgba(255,255,255,.06)',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem', textAlign: 'center',
+                  fontFamily: 'var(--font-body)', fontSize: '.68rem', color: 'rgba(255,255,255,.4)',
+                }}>
+                  Örnek Baskı Görseli — Admin'den yükle
                 </div>
-                <div style={{ ...label, color: 'var(--ink)', whiteSpace: 'nowrap' }}>
-                  ₺{(item.unitPrice * item.quantity).toLocaleString('tr-TR')}
-                </div>
-                <button
-                  type="button" onClick={() => removeFromList(item.key)}
-                  aria-label="Kaldır"
-                  style={{ background: 'none', border: 'none', color: '#c33', fontSize: '1.1rem', cursor: 'pointer', lineHeight: 1, padding: '0 .3rem' }}
-                >
-                  ×
-                </button>
-              </div>
-            ))}
+              )}
+            </div>
           </div>
 
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '1.2rem', paddingTop: '1rem', borderTop: '1px solid var(--border)' }}>
-            <span style={{ ...heading, fontSize: '1.1rem' }}>Toplam</span>
-            <span style={{ ...heading, fontSize: '1.3rem' }}>₺{listTotal.toLocaleString('tr-TR')}</span>
-          </div>
-
-          {!orderOpen && (
-            <button
-              type="button" onClick={() => setOrderOpen(true)}
-              style={{
-                width: '100%', marginTop: '1.2rem', padding: '.9rem', background: 'var(--ink)', color: '#fff',
-                border: 'none', fontFamily: 'var(--font-body)', fontSize: '.75rem',
-                letterSpacing: '.14em', textTransform: 'uppercase', cursor: 'pointer',
-              }}
-            >
-              Sipariş Ver
-            </button>
-          )}
-        </section>
-      )}
-
-      {/* Sipariş formu */}
-      {list.length > 0 && orderOpen && (
-        <section style={{ background: 'var(--surface)', padding: '3rem 2rem' }}>
-          <div style={{ maxWidth: 560, margin: '0 auto' }}>
-            {orderStatus === 'sent' ? (
-              <div style={{ background: '#fff', border: '1px solid var(--border)', padding: '2rem', textAlign: 'center', ...body }}>
-                Siparişiniz alındı. En kısa sürede sizinle iletişime geçeceğiz.
+          {/* Sağ: "Baskını Oluştur" kartı */}
+          <div style={{ background: '#fff', padding: '2.2rem' }}>
+            {wizardStep === 'sent' ? (
+              <div style={{ textAlign: 'center', padding: '2.5rem 0' }}>
+                <h3 style={{ ...heading, fontSize: '1.3rem', margin: '0 0 .8rem' }}>Siparişin Alındı</h3>
+                <p style={body}>Dosyanı kontrol edip en kısa sürede seninle iletişime geçeceğiz.</p>
               </div>
-            ) : (
+            ) : wizardStep === 'bilgiler' ? (
               <>
-                <h2 style={{ ...heading, fontSize: '1.5rem', textAlign: 'center', margin: '0 0 .6rem' }}>İletişim Bilgileri</h2>
-                <p style={{ ...body, textAlign: 'center', marginBottom: '1.8rem' }}>
-                  Siparişinizi tamamlamak için bilgilerinizi girin.
-                </p>
+                <h3 style={{ ...heading, fontSize: '1.3rem', margin: '0 0 1.5rem' }}>Bilgilerin</h3>
                 <form onSubmit={submitOrder} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: '1rem' }}>
                     <div>
@@ -545,39 +440,190 @@ export default function FotografBaski() {
                       <input name="name" required value={orderForm.name} onChange={updateOrderForm} style={inputStyle} placeholder="Adınız ve soyadınız" />
                     </div>
                     <div>
-                      <label style={{ ...label, display: 'block', marginBottom: '.4rem' }}>E-posta *</label>
-                      <input name="email" type="email" required value={orderForm.email} onChange={updateOrderForm} style={inputStyle} placeholder="E-posta adresiniz" />
+                      <label style={{ ...label, display: 'block', marginBottom: '.4rem' }}>Posta Kodu</label>
+                      <input name="postaKodu" value={orderForm.postaKodu} onChange={updateOrderForm} style={inputStyle} placeholder="Posta kodu" />
                     </div>
                   </div>
                   <div>
-                    <label style={{ ...label, display: 'block', marginBottom: '.4rem' }}>Telefon *</label>
-                    <input name="phone" type="tel" required value={orderForm.phone} onChange={updateOrderForm} style={inputStyle} placeholder="Telefon numaranız" />
+                    <label style={{ ...label, display: 'block', marginBottom: '.4rem' }}>Teslimat Adresi *</label>
+                    <textarea name="address" required value={orderForm.address} onChange={updateOrderForm} style={{ ...inputStyle, minHeight: 70, resize: 'vertical' }} placeholder="Açık adresiniz" />
+                  </div>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: '1rem' }}>
+                    <div>
+                      <label style={{ ...label, display: 'block', marginBottom: '.4rem' }}>E-posta *</label>
+                      <input name="email" type="email" required value={orderForm.email} onChange={updateOrderForm} style={inputStyle} placeholder="E-posta adresiniz" />
+                    </div>
+                    <div>
+                      <label style={{ ...label, display: 'block', marginBottom: '.4rem' }}>Telefon *</label>
+                      <input name="phone" type="tel" required value={orderForm.phone} onChange={updateOrderForm} style={inputStyle} placeholder="Telefon numaranız" />
+                    </div>
                   </div>
                   <div>
-                    <label style={{ ...label, display: 'block', marginBottom: '.4rem' }}>Teslimat Adresi *</label>
-                    <textarea name="address" required value={orderForm.address} onChange={updateOrderForm} style={{ ...inputStyle, minHeight: 80, resize: 'vertical' }} placeholder="Açık adresiniz" />
+                    <label style={{ ...label, display: 'block', marginBottom: '.4rem' }}>Mesaj (opsiyonel)</label>
+                    <textarea name="mesaj" maxLength={500} value={orderForm.mesaj} onChange={updateOrderForm} style={{ ...inputStyle, minHeight: 70, resize: 'vertical' }} placeholder="Eklemek istediğin bir not varsa yazabilirsin" />
                   </div>
 
                   {orderError && <div style={{ color: '#c33', fontSize: '.78rem' }}>{orderError}</div>}
 
-                  <button
-                    type="submit" disabled={orderStatus === 'submitting'}
-                    style={{
-                      marginTop: '.5rem', padding: '.9rem', background: 'var(--accent)', color: '#fff',
-                      border: 'none', fontFamily: 'var(--font-body)', fontSize: '.75rem',
-                      letterSpacing: '.14em', textTransform: 'uppercase',
-                      cursor: orderStatus === 'submitting' ? 'not-allowed' : 'pointer',
-                      opacity: orderStatus === 'submitting' ? .7 : 1,
-                    }}
-                  >
-                    {orderStatus === 'submitting' ? 'Gönderiliyor…' : `Siparişi Gönder — ₺${listTotal.toLocaleString('tr-TR')}`}
-                  </button>
+                  <div style={{ display: 'flex', gap: '.8rem', marginTop: '.5rem' }}>
+                    <button
+                      type="button" onClick={() => setWizardStep('form')}
+                      style={{
+                        padding: '.9rem 1.1rem', background: 'none', color: 'var(--ink)',
+                        border: '1px solid var(--border)', fontFamily: 'var(--font-body)', fontSize: '.75rem',
+                        letterSpacing: '.14em', textTransform: 'uppercase', cursor: 'pointer',
+                      }}
+                    >
+                      ← Geri
+                    </button>
+                    <button
+                      type="submit" disabled={orderStatus === 'submitting'}
+                      style={{
+                        flex: 1, padding: '.9rem', background: 'var(--accent)', color: '#fff',
+                        border: 'none', fontFamily: 'var(--font-body)', fontSize: '.75rem',
+                        letterSpacing: '.14em', textTransform: 'uppercase',
+                        cursor: orderStatus === 'submitting' ? 'not-allowed' : 'pointer',
+                        opacity: orderStatus === 'submitting' ? .7 : 1,
+                      }}
+                    >
+                      {orderStatus === 'submitting' ? 'Gönderiliyor…' : 'Siparişi Gönder'}
+                    </button>
+                  </div>
                 </form>
+              </>
+            ) : (
+              <>
+                <h3 style={{ ...heading, fontSize: '1.3rem', margin: '0 0 1.5rem' }}>Baskını Oluştur</h3>
+
+                <div
+                  onClick={() => fileRef.current?.click()}
+                  onDragOver={e => e.preventDefault()}
+                  onDrop={e => { e.preventDefault(); handleFileSelect(e.dataTransfer.files[0]) }}
+                  style={{
+                    border: '1px dashed var(--border)', padding: '1.6rem 1rem',
+                    textAlign: 'center', cursor: 'pointer', minHeight: 160,
+                    display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '.6rem',
+                    background: uploadedUrl ? 'transparent' : 'var(--surface)', marginBottom: '1.4rem',
+                  }}
+                >
+                  {uploading ? (
+                    <span style={{ ...body, fontSize: '.82rem' }}>Yükleniyor…</span>
+                  ) : uploadedUrl ? (
+                    <img src={uploadedUrl} alt="Yüklenen fotoğraf önizlemesi" style={{ maxWidth: '100%', maxHeight: 200, objectFit: 'contain', display: 'block' }} />
+                  ) : (
+                    <>
+                      <span style={{ ...body, fontSize: '.85rem', color: 'var(--ink)' }}>Fotoğrafını buraya bırak</span>
+                      <span style={{ ...body, fontSize: '.72rem' }}>JPG, TIFF veya PNG</span>
+                      <button
+                        type="button" onClick={e => { e.stopPropagation(); fileRef.current?.click() }}
+                        style={{
+                          marginTop: '.3rem', padding: '.55rem 1.2rem', background: 'var(--ink)', color: '#fff',
+                          border: 'none', fontFamily: 'var(--font-body)', fontSize: '.68rem',
+                          letterSpacing: '.14em', textTransform: 'uppercase', cursor: 'pointer',
+                        }}
+                      >
+                        Dosya Seç
+                      </button>
+                    </>
+                  )}
+                </div>
+                <input ref={fileRef} type="file" accept="image/*" style={{ display: 'none' }}
+                  onChange={e => handleFileSelect(e.target.files[0])} />
+                {uploadError && <p style={{ color: '#c33', fontSize: '.78rem', marginTop: '-1rem', marginBottom: '1rem' }}>{uploadError}</p>}
+
+                <div style={{ marginBottom: '1.2rem' }}>
+                  <label style={{ ...label, display: 'block', marginBottom: '.5rem', fontSize: '.68rem' }}>Kağıt</label>
+                  <div className="fb-btn-group">
+                    {PHOTO_FINISHES.map(f => (
+                      <button key={f} type="button" onClick={() => setFinish(f)} style={{
+                        padding: '.5rem 1rem', border: `1px solid ${finish === f ? 'var(--ink)' : 'var(--border)'}`,
+                        background: finish === f ? 'var(--ink)' : 'none', color: finish === f ? '#fff' : 'var(--ink)',
+                        fontFamily: 'var(--font-body)', fontSize: '.78rem', cursor: 'pointer',
+                      }}>
+                        {f}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div style={{ marginBottom: '1.2rem' }}>
+                  <label style={{ ...label, display: 'block', marginBottom: '.5rem', fontSize: '.68rem' }}>Ölçü</label>
+                  <div className="fb-btn-group">
+                    {[...PHOTO_SIZES, CUSTOM_SIZE].map(s => (
+                      <button key={s} type="button" onClick={() => setSize(s)} style={{
+                        padding: '.5rem 1rem', border: `1px solid ${size === s ? 'var(--ink)' : 'var(--border)'}`,
+                        background: size === s ? 'var(--ink)' : 'none', color: size === s ? '#fff' : 'var(--ink)',
+                        fontFamily: 'var(--font-body)', fontSize: '.78rem', cursor: 'pointer',
+                      }}>
+                        {s}
+                      </button>
+                    ))}
+                  </div>
+                  {isCustomSize && (
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: '.6rem', marginTop: '.7rem' }}>
+                      <input value={customWidth} onChange={e => setCustomWidth(e.target.value)} style={inputStyle} placeholder="Genişlik (cm)" inputMode="decimal" />
+                      <input value={customHeight} onChange={e => setCustomHeight(e.target.value)} style={inputStyle} placeholder="Yükseklik (cm)" inputMode="decimal" />
+                    </div>
+                  )}
+                </div>
+
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: '1rem', marginBottom: '1.4rem' }}>
+                  <div>
+                    <label style={{ ...label, display: 'block', marginBottom: '.5rem', fontSize: '.68rem' }}>Adet</label>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '.6rem' }}>
+                      <button type="button" onClick={() => setQuantity(q => Math.max(1, (Number(q) || 1) - 1))} style={{
+                        width: 32, height: 32, border: '1px solid var(--border)', background: '#fff',
+                        fontSize: '1rem', color: 'var(--ink)', cursor: 'pointer', lineHeight: 1,
+                      }}>−</button>
+                      <span style={{ ...label, color: 'var(--ink)', minWidth: 24, textAlign: 'center' }}>{quantity}</span>
+                      <button type="button" onClick={() => setQuantity(q => Math.min(100, (Number(q) || 1) + 1))} style={{
+                        width: 32, height: 32, border: '1px solid var(--border)', background: '#fff',
+                        fontSize: '1rem', color: 'var(--ink)', cursor: 'pointer', lineHeight: 1,
+                      }}>+</button>
+                    </div>
+                  </div>
+                  <div>
+                    <label style={{ ...label, display: 'block', marginBottom: '.5rem', fontSize: '.68rem' }}>Beyaz Kenarlık</label>
+                    <select value={border} onChange={e => setBorder(e.target.value)} style={inputStyle}>
+                      {BORDER_OPTIONS.map(o => <option key={o} value={o}>{o}</option>)}
+                    </select>
+                  </div>
+                </div>
+
+                <div style={{ ...body, fontSize: '.85rem', color: 'var(--ink)', marginBottom: '1.2rem', paddingTop: '.9rem', borderTop: '1px solid var(--border)' }}>
+                  {isCustomSize ? (
+                    'Fiyat, ölçü kontrol edildikten sonra teklif olarak iletilecek.'
+                  ) : (
+                    <>
+                      Birim fiyat: <b>₺{unitPrice.toLocaleString('tr-TR')}</b>
+                      <span style={{ margin: '0 .5rem', color: 'var(--border)' }}>·</span>
+                      Toplam: <b>₺{lineTotal.toLocaleString('tr-TR')}</b>
+                    </>
+                  )}
+                </div>
+
+                {wizardError && <p style={{ color: '#c33', fontSize: '.78rem', marginTop: '-.6rem', marginBottom: '1rem' }}>{wizardError}</p>}
+
+                <button
+                  type="button" onClick={goToBilgiler} disabled={uploading}
+                  style={{
+                    width: '100%', padding: '.9rem', background: 'var(--accent)', color: '#fff',
+                    border: 'none', fontFamily: 'var(--font-body)', fontSize: '.75rem',
+                    letterSpacing: '.14em', textTransform: 'uppercase', cursor: uploading ? 'not-allowed' : 'pointer',
+                    opacity: uploading ? .6 : 1,
+                  }}
+                >
+                  Devam Et →
+                </button>
+
+                <p style={{ ...body, fontSize: '.7rem', textAlign: 'center', marginTop: '1rem' }}>
+                  Dosyan baskıdan önce kontrol edilir.
+                </p>
               </>
             )}
           </div>
-        </section>
-      )}
+        </div>
+      </section>
     </div>
   )
 }

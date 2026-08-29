@@ -41,7 +41,7 @@ serve(async (req) => {
 
   try {
     const body = await req.json()
-    const { items, name, email, phone, address, session_id } = body
+    const { items, name, email, phone, address, posta_kodu, note, session_id } = body
 
     // --- Girdi doğrulama ---
     if (!Array.isArray(items) || items.length === 0) return badRequest('Listeniz boş.')
@@ -69,9 +69,13 @@ serve(async (req) => {
     let total = 0
     const validatedItems: any[] = []
 
+    // "Özel Ölçü"nün sabit fiyatı yok (photo_print_prices'ta karşılığı yok) —
+    // bu satır 0 TL ile kaydedilir, toplama dahil edilmez; fiyat kontrol
+    // sonrası ayrıca teklif olarak iletilir.
     for (const item of items) {
-      const unitPrice = priceMap.get(`${item.size}:${item.finish}`)
-      if (unitPrice === undefined) return badRequest(`Geçersiz boy/yüzey kombinasyonu: ${item.size} / ${item.finish}`)
+      const isCustomSize = item.size === 'Özel Ölçü'
+      const unitPrice = isCustomSize ? 0 : priceMap.get(`${item.size}:${item.finish}`)
+      if (!isCustomSize && unitPrice === undefined) return badRequest(`Geçersiz boy/yüzey kombinasyonu: ${item.size} / ${item.finish}`)
 
       // quantity'yi makul bir aralığa sıkıştır (1-100) — client'tan gelen her sayıya güvenme.
       const quantity = Math.max(1, Math.min(100, Math.floor(Number(item.quantity)) || 1))
@@ -84,6 +88,7 @@ serve(async (req) => {
         finish: item.finish,
         quantity,
         unit_price: unitPrice,
+        white_border: !!item.white_border,
         note: item.note ? String(item.note).slice(0, 300) : null,
       })
     }
@@ -93,6 +98,8 @@ serve(async (req) => {
       .from('photo_print_orders')
       .insert({
         customer_name: name, email, phone, address,
+        posta_kodu: posta_kodu ? String(posta_kodu).slice(0, 20) : null,
+        note: note ? String(note).slice(0, 500) : null,
         total_price: total, session_id: session_id || null,
       })
       .select()
@@ -110,9 +117,9 @@ serve(async (req) => {
     if (RESEND_API_KEY) {
       const itemsHtml = validatedItems.map((i) =>
         `<tr>
-          <td style="padding:8px;border-bottom:1px solid #eee">${esc(i.size)} — ${esc(i.finish)}${i.note ? ' · ' + esc(i.note) : ''}</td>
+          <td style="padding:8px;border-bottom:1px solid #eee">${esc(i.size)} — ${esc(i.finish)}${i.white_border ? ' · Beyaz Kenarlık' : ''}${i.note ? ' · ' + esc(i.note) : ''}</td>
           <td style="padding:8px;border-bottom:1px solid #eee;text-align:right">x${i.quantity}</td>
-          <td style="padding:8px;border-bottom:1px solid #eee;text-align:right">₺${(i.unit_price * i.quantity).toLocaleString('tr-TR')}</td>
+          <td style="padding:8px;border-bottom:1px solid #eee;text-align:right">${i.size === 'Özel Ölçü' ? 'Teklif üzerine' : '₺' + (i.unit_price * i.quantity).toLocaleString('tr-TR')}</td>
         </tr>`
       ).join('')
 
@@ -136,8 +143,9 @@ serve(async (req) => {
                 <td style="padding:12px 8px;text-align:right;font-weight:bold">₺${total.toLocaleString('tr-TR')}</td>
               </tr>
             </table>
-            <p style="color:#666;font-size:14px">Teslimat adresi: ${esc(address)}</p>
+            <p style="color:#666;font-size:14px">Teslimat adresi: ${esc(address)}${posta_kodu ? ' ' + esc(posta_kodu) : ''}</p>
             <p style="color:#666;font-size:14px">Telefon: ${esc(phone)}</p>
+            ${note ? `<p style="color:#666;font-size:14px">Mesajınız: ${esc(note)}</p>` : ''}
             <hr style="border:none;border-top:1px solid #eee;margin:24px 0">
             <p style="color:#999;font-size:12px">Artı Poz · Fine Art Print Studio · İstanbul</p>
           </div>
@@ -150,7 +158,8 @@ serve(async (req) => {
           <p><strong>Ad:</strong> ${esc(name)}</p>
           <p><strong>E-posta:</strong> ${esc(email) || '—'}</p>
           <p><strong>Telefon:</strong> ${esc(phone)}</p>
-          <p><strong>Adres:</strong> ${esc(address)}</p>
+          <p><strong>Adres:</strong> ${esc(address)}${posta_kodu ? ' ' + esc(posta_kodu) : ''}</p>
+          ${note ? `<p><strong>Mesaj:</strong> ${esc(note)}</p>` : ''}
           <table style="width:100%;border-collapse:collapse;margin:24px 0">
             ${itemsHtml}
             <tr>
