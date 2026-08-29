@@ -9,7 +9,7 @@ const MAX_FILE_SIZE_MB = 50
 
 // Kodak kağıt tanıtım kartlarıyla aynı 4 seçenek (Fine Art kağıtları değil).
 const PHOTO_FINISHES = ['Glossy', 'Satin', 'Matte', 'Metallic']
-const PHOTO_SIZES = ['10×15', '13×18', '20×30']
+const PHOTO_SIZES = ['A5', 'A4', 'A3', 'A2']
 const CUSTOM_SIZE = 'Özel Ölçü'
 const BORDER_OPTIONS = ['Yok', 'Var']
 
@@ -55,11 +55,14 @@ const KODAK_PAPERS = [
   },
 ]
 
-// Supabase'e hiç bağlanamazsa gösterilecek yedek veri — fiyatlar Admin'den
-// girilene kadar gerçek bir sayı göstermek yerine 0 kalıyor (yanlış/uydurma
-// bir fiyat gösterme riski olmasın diye).
+// Fiyat sadece ölçüye göre değişiyor, kağıt yüzeyine göre değişmiyor
+// (Meltem'in verdiği referans: A5 250, A4 350, A3 600, A2 1000 — tüm kağıt
+// seçeneklerinde aynı). Veritabanı yapısı hâlâ boy×yüzey olduğundan bu
+// değerler 4 yüzeyin hepsine aynı şekilde yazılıyor; Admin de tek bir
+// "boy başına fiyat" alanı üzerinden bunu güncelliyor.
+const SIZE_PRICES = { 'A5': 250, 'A4': 350, 'A3': 600, 'A2': 1000 }
 const FALLBACK_PRICES = {}
-PHOTO_SIZES.forEach(s => PHOTO_FINISHES.forEach(f => { FALLBACK_PRICES[`${s}:${f}`] = 0 }))
+PHOTO_SIZES.forEach(s => PHOTO_FINISHES.forEach(f => { FALLBACK_PRICES[`${s}:${f}`] = SIZE_PRICES[s] || 0 }))
 
 const heading = { fontFamily: 'var(--font-heading)', fontWeight: 400, color: 'var(--ink)' }
 const eyebrow = {
@@ -158,10 +161,17 @@ export default function FotografBaski() {
     }
   }
 
+  // Fiyat sadece ölçüye bağlı (yüzeyden bağımsız) — hangi kağıt yüzeyi seçili
+  // olursa olsun aynı ölçü aynı fiyatı gösterir, bu yüzden lookup her zaman
+  // ilk yüzeyden (Glossy) okunuyor.
+  function getSizePrice(s) {
+    return prices[`${s}:${PHOTO_FINISHES[0]}`] || 0
+  }
+
   // Özel Ölçü'nün sabit bir fiyatı yok — teklif üzerine gönderiliyor,
   // bu yüzden unitPrice/lineTotal bu durumda null (fiyat hesaplanamaz).
   const isCustomSize = size === CUSTOM_SIZE
-  const unitPrice = isCustomSize ? null : (prices[`${size}:${finish}`] || 0)
+  const unitPrice = isCustomSize ? null : getSizePrice(size)
   const lineTotal = isCustomSize ? null : unitPrice * (Number(quantity) || 0)
 
   // Supabase JS client'ının oturum kilidiyle ilgili bilinen bir durum: birden fazla
@@ -370,7 +380,9 @@ export default function FotografBaski() {
           kullanılıyor — sadece arayüz değişti. */}
       <section style={{ background: 'var(--ink)', padding: '4rem 2rem' }}>
         <style>{`
-          .fb-wizard { display: grid; grid-template-columns: 1fr 1fr; gap: 3.5rem; max-width: 1200px; margin: 0 auto; align-items: start; }
+          .fb-wizard { display: grid; grid-template-columns: 1fr 1fr; gap: 3.5rem; max-width: 1200px; margin: 0 auto; align-items: stretch; }
+          .fb-wizard-left { display: flex; flex-direction: column; height: 100%; }
+          .fb-wizard-mockup { flex: 1; min-height: 240px; }
           @media (max-width: 900px) {
             .fb-wizard { grid-template-columns: 1fr; gap: 2.5rem; }
           }
@@ -378,8 +390,10 @@ export default function FotografBaski() {
         `}</style>
 
         <div className="fb-wizard">
-          {/* Sol: başlık, alt metin, adım göstergesi, örnek baskı görseli */}
-          <div>
+          {/* Sol: başlık, alt metin, adım göstergesi, örnek baskı görseli —
+              flex column + görsel flex:1, sağdaki "Baskını Oluştur" kartıyla
+              aynı yükseklikte bitsin diye (kartın uzunluğuna göre esner). */}
+          <div className="fb-wizard-left">
             <h2 style={{ ...heading, color: '#fff', fontSize: 'clamp(1.8rem, 3.5vw, 2.6rem)', margin: '0 0 1rem' }}>
               Fotoğrafını baskıya dönüştür.
             </h2>
@@ -407,7 +421,7 @@ export default function FotografBaski() {
               })}
             </div>
 
-            <div style={{ width: '100%', maxWidth: 380, aspectRatio: '4 / 5', overflow: 'hidden' }}>
+            <div className="fb-wizard-mockup" style={{ width: '100%', maxWidth: 380, overflow: 'hidden' }}>
               {images['wizard-mockup'] ? (
                 <img src={images['wizard-mockup']} alt="Örnek baskı" loading="lazy" decoding="async"
                   style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
@@ -544,20 +558,32 @@ export default function FotografBaski() {
                       </button>
                     ))}
                   </div>
+                  <p style={{ ...body, fontSize: '.7rem', margin: '.5rem 0 0' }}>Tüm kağıt seçeneklerinde fiyat aynıdır.</p>
                 </div>
 
                 <div style={{ marginBottom: '1.2rem' }}>
                   <label style={{ ...label, display: 'block', marginBottom: '.5rem', fontSize: '.68rem' }}>Ölçü</label>
                   <div className="fb-btn-group">
-                    {[...PHOTO_SIZES, CUSTOM_SIZE].map(s => (
+                    {PHOTO_SIZES.map(s => (
                       <button key={s} type="button" onClick={() => setSize(s)} style={{
                         padding: '.5rem 1rem', border: `1px solid ${size === s ? 'var(--ink)' : 'var(--border)'}`,
                         background: size === s ? 'var(--ink)' : 'none', color: size === s ? '#fff' : 'var(--ink)',
                         fontFamily: 'var(--font-body)', fontSize: '.78rem', cursor: 'pointer',
+                        display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '.2rem', minWidth: 62,
                       }}>
-                        {s}
+                        <span>{s}</span>
+                        <span style={{ fontSize: '.66rem', opacity: .75 }}>{getSizePrice(s).toLocaleString('tr-TR')} TL</span>
                       </button>
                     ))}
+                    <button type="button" onClick={() => setSize(CUSTOM_SIZE)} style={{
+                      padding: '.5rem 1rem', border: `1px solid ${isCustomSize ? 'var(--ink)' : 'var(--border)'}`,
+                      background: isCustomSize ? 'var(--ink)' : 'none', color: isCustomSize ? '#fff' : 'var(--ink)',
+                      fontFamily: 'var(--font-body)', fontSize: '.78rem', cursor: 'pointer',
+                      display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '.2rem', minWidth: 62,
+                    }}>
+                      <span>{CUSTOM_SIZE}</span>
+                      <span style={{ fontSize: '.66rem', opacity: .75 }}>Teklif üzerine</span>
+                    </button>
                   </div>
                   {isCustomSize && (
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: '.6rem', marginTop: '.7rem' }}>
@@ -595,9 +621,11 @@ export default function FotografBaski() {
                     'Fiyat, ölçü kontrol edildikten sonra teklif olarak iletilecek.'
                   ) : (
                     <>
-                      Birim fiyat: <b>₺{unitPrice.toLocaleString('tr-TR')}</b>
-                      <span style={{ margin: '0 .5rem', color: 'var(--border)' }}>·</span>
-                      Toplam: <b>₺{lineTotal.toLocaleString('tr-TR')}</b>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 600 }}>
+                        <span>{quantity} × {size} Baskı</span>
+                        <span>₺{lineTotal.toLocaleString('tr-TR')}</span>
+                      </div>
+                      <p style={{ ...body, fontSize: '.72rem', margin: '.4rem 0 0' }}>Kargo ücreti dahil değildir.</p>
                     </>
                   )}
                 </div>
@@ -613,7 +641,7 @@ export default function FotografBaski() {
                     opacity: uploading ? .6 : 1,
                   }}
                 >
-                  Devam Et →
+                  {isCustomSize ? 'Devam Et →' : `Devam Et — ₺${lineTotal.toLocaleString('tr-TR')} →`}
                 </button>
 
                 <p style={{ ...body, fontSize: '.7rem', textAlign: 'center', marginTop: '1rem' }}>
