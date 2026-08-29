@@ -47,8 +47,11 @@ const EMPTY_PAPER = {
 }
 
 // Fotoğraf Baskı sayfasındaki boy/yüzey fiyat matrisi — sabit 5×2 ızgara.
-const PHOTO_SIZES = ['A2', 'A3', 'A4', 'A5', 'A6']
-const PHOTO_FINISHES = ['Mat', 'Parlak']
+// Fiyat tablosunun eksenleri — Fotoğraf Baskı sihirbazındaki Kağıt/Ölçü
+// butonlarıyla birebir aynı olmalı (Özel Ölçü'nün sabit fiyatı yok, bu
+// yüzden burada yer almıyor).
+const PHOTO_SIZES = ['10×15', '13×18', '20×30']
+const PHOTO_FINISHES = ['Glossy', 'Satin', 'Matte', 'Metallic']
 
 // Görseller sekmesinde yönetilen sabit alanlar. multiple:false => tek görsel (yeni yükleme
 // eskisinin yerine geçer). multiple:true => istenildiği kadar görsel eklenip silinebilir.
@@ -89,6 +92,7 @@ const IMAGE_SLOTS = [
   { page: 'fotograf-baski', section: 'kodak-satin-gorsel', label: 'Fotoğraf Baskı — Kodak Satin Görseli', multiple: false, aspect: '4 / 3' },
   { page: 'fotograf-baski', section: 'kodak-matte-gorsel', label: 'Fotoğraf Baskı — Kodak Matte Görseli', multiple: false, aspect: '4 / 3' },
   { page: 'fotograf-baski', section: 'kodak-metallic-gorsel', label: 'Fotoğraf Baskı — Kodak Metallic Görseli', multiple: false, aspect: '4 / 3' },
+  { page: 'fotograf-baski', section: 'wizard-mockup', label: 'Fotoğraf Baskı — "Baskını Oluştur" Örnek Baskı Görseli', multiple: false, aspect: '4 / 5' },
 ]
 
 // page_content tablosunda yönetilen düzenlenebilir metin alanları — page_images ile
@@ -1855,8 +1859,8 @@ function Admin() {
                         <div>
                           <div style={{ fontSize: '.85rem', fontWeight: 600 }}>{o.customer_name}</div>
                           <div style={{ fontSize: '.72rem', color: '#888' }}>{o.email} · {o.phone}</div>
-                          <div style={{ fontSize: '.72rem', color: '#888' }}>{o.address}</div>
-                          {o.note && <div style={{ fontSize: '.72rem', color: '#888', marginTop: '.3rem' }}>Not: {o.note}</div>}
+                          <div style={{ fontSize: '.72rem', color: '#888' }}>{o.address}{o.posta_kodu ? ` ${o.posta_kodu}` : ''}</div>
+                          {o.note && <div style={{ fontSize: '.72rem', color: '#888', marginTop: '.3rem' }}>Mesaj: {o.note}</div>}
                           <div style={{ fontSize: '.68rem', color: '#aaa', marginTop: '.3rem' }}>{new Date(o.created_at).toLocaleString('tr-TR')}</div>
                         </div>
                         <div style={{ textAlign: 'right' }}>
@@ -1874,8 +1878,9 @@ function Admin() {
                         {(photoOrderItems[o.id] || []).map(item => (
                           <div key={item.id} style={{ width: 110, fontSize: '.7rem', color: '#666' }}>
                             <img src={item.image_url} alt="" style={{ width: '100%', aspectRatio: '4 / 3', objectFit: 'cover', display: 'block', border: '1px solid #eee', marginBottom: '.3rem' }} />
-                            {item.size} · {item.finish}<br />
-                            {item.quantity} adet · ₺{Number(item.unit_price).toLocaleString('tr-TR')}
+                            {item.size} · {item.finish}{item.white_border ? ' · Kenarlıklı' : ''}<br />
+                            {item.quantity} adet · {item.size === 'Özel Ölçü' ? 'Teklif üzerine' : `₺${Number(item.unit_price).toLocaleString('tr-TR')}`}
+                            {item.note && <div style={{ marginTop: '.2rem', color: '#999' }}>{item.note}</div>}
                           </div>
                         ))}
                       </div>
