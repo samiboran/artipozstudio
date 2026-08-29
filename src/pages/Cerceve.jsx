@@ -210,9 +210,9 @@ export default function Cerceve() {
   return (
     <div style={{ paddingTop: '4.2rem' }}>
 
-      {/* Hero */}
+      {/* Hero — site genelindeki diğer hero'larla (Fine Art Baskı referans) aynı boy: 58vh. */}
       <section style={{
-        position: 'relative', height: '52vh', minHeight: 340,
+        position: 'relative', height: '58vh', minHeight: 380,
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         textAlign: 'center', overflow: 'hidden', background: 'var(--surface)',
       }}>
