@@ -939,14 +939,8 @@ function Admin() {
     setPhotoPrices(map)
   }
 
-  // Fiyat sadece boya göre değişiyor — girilen değer 4 kağıt yüzeyinin
-  // hepsine aynı şekilde yazılıyor (veritabanı yapısı hâlâ boy×yüzey).
-  function updatePhotoPrice(size, value) {
-    setPhotoPrices(p => {
-      const next = { ...p }
-      PHOTO_FINISHES.forEach(finish => { next[`${size}:${finish}`] = value })
-      return next
-    })
+  function updatePhotoPrice(size, finish, value) {
+    setPhotoPrices(p => ({ ...p, [`${size}:${finish}`]: value }))
   }
 
   async function savePhotoPrices() {
@@ -1810,26 +1804,31 @@ function Admin() {
             <>
               <h2 style={{ ...sectionHeading, marginBottom: '2rem' }}>Fotoğraf Baskı Fiyatları</h2>
               <p style={{ fontSize: '.8rem', color: '#888', marginTop: '-1rem', marginBottom: '1.5rem' }}>
-                Fiyat sadece ölçüye göre değişir — tüm kağıt yüzeylerinde (Glossy, Satin, Matte, Metallic) aynıdır.
+                Her ölçü × kağıt yüzeyi kombinasyonu için ayrı fiyat girilebilir — site bu tabloyu birebir kullanır.
+                Bir yüzeyin tüm ölçüler için aynı fiyat olmasını istiyorsan hepsine aynı rakamı yaz.
               </p>
-              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '.85rem', marginBottom: '1.5rem', maxWidth: 360 }}>
+              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '.85rem', marginBottom: '1.5rem' }}>
                 <thead>
                   <tr style={{ borderBottom: '2px solid #eee' }}>
-                    <th style={{ textAlign: 'left', padding: '.6rem' }}>Ölçü</th>
-                    <th style={{ textAlign: 'left', padding: '.6rem' }}>Fiyat (₺)</th>
+                    <th style={{ textAlign: 'left', padding: '.6rem' }}>Boy</th>
+                    {PHOTO_FINISHES.map(f => (
+                      <th key={f} style={{ textAlign: 'left', padding: '.6rem' }}>{f} (₺)</th>
+                    ))}
                   </tr>
                 </thead>
                 <tbody>
                   {PHOTO_SIZES.map(size => (
                     <tr key={size} style={{ borderBottom: '1px solid #f5f5f5' }}>
                       <td style={{ padding: '.6rem', fontWeight: 500 }}>{size}</td>
-                      <td style={{ padding: '.6rem' }}>
-                        <input
-                          type="number" min="0" style={{ ...inp, width: 110 }}
-                          value={photoPrices[`${size}:${PHOTO_FINISHES[0]}`] ?? ''}
-                          onChange={e => updatePhotoPrice(size, e.target.value)}
-                        />
-                      </td>
+                      {PHOTO_FINISHES.map(finish => (
+                        <td key={finish} style={{ padding: '.6rem' }}>
+                          <input
+                            type="number" min="0" style={{ ...inp, width: 110 }}
+                            value={photoPrices[`${size}:${finish}`] ?? ''}
+                            onChange={e => updatePhotoPrice(size, finish, e.target.value)}
+                          />
+                        </td>
+                      ))}
                     </tr>
                   ))}
                 </tbody>
