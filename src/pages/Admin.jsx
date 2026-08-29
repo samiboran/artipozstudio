@@ -46,11 +46,13 @@ const EMPTY_PAPER = {
   texture_photo_url: '', preview_photo_url: '', featured_in_guide: false,
 }
 
-// Fotoğraf Baskı sayfasındaki boy/yüzey fiyat matrisi — sabit 5×2 ızgara.
+// Fotoğraf Baskı sayfasındaki boy/yüzey fiyat matrisi.
 // Fiyat tablosunun eksenleri — Fotoğraf Baskı sihirbazındaki Kağıt/Ölçü
 // butonlarıyla birebir aynı olmalı (Özel Ölçü'nün sabit fiyatı yok, bu
-// yüzden burada yer almıyor).
-const PHOTO_SIZES = ['10×15', '13×18', '20×30']
+// yüzden burada yer almıyor). Fiyat sadece boya göre değişiyor, yüzeye göre
+// değişmiyor — bu yüzden Admin'de tek bir "boy başına fiyat" alanı var,
+// kaydedilirken bu değer 4 yüzeyin de satırına aynen yazılıyor.
+const PHOTO_SIZES = ['A5', 'A4', 'A3', 'A2']
 const PHOTO_FINISHES = ['Glossy', 'Satin', 'Matte', 'Metallic']
 
 // Görseller sekmesinde yönetilen sabit alanlar. multiple:false => tek görsel (yeni yükleme
@@ -937,8 +939,14 @@ function Admin() {
     setPhotoPrices(map)
   }
 
-  function updatePhotoPrice(size, finish, value) {
-    setPhotoPrices(p => ({ ...p, [`${size}:${finish}`]: value }))
+  // Fiyat sadece boya göre değişiyor — girilen değer 4 kağıt yüzeyinin
+  // hepsine aynı şekilde yazılıyor (veritabanı yapısı hâlâ boy×yüzey).
+  function updatePhotoPrice(size, value) {
+    setPhotoPrices(p => {
+      const next = { ...p }
+      PHOTO_FINISHES.forEach(finish => { next[`${size}:${finish}`] = value })
+      return next
+    })
   }
 
   async function savePhotoPrices() {
@@ -1801,28 +1809,27 @@ function Admin() {
           {tab === 'fotofiyat' && (
             <>
               <h2 style={{ ...sectionHeading, marginBottom: '2rem' }}>Fotoğraf Baskı Fiyatları</h2>
-              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '.85rem', marginBottom: '1.5rem' }}>
+              <p style={{ fontSize: '.8rem', color: '#888', marginTop: '-1rem', marginBottom: '1.5rem' }}>
+                Fiyat sadece ölçüye göre değişir — tüm kağıt yüzeylerinde (Glossy, Satin, Matte, Metallic) aynıdır.
+              </p>
+              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '.85rem', marginBottom: '1.5rem', maxWidth: 360 }}>
                 <thead>
                   <tr style={{ borderBottom: '2px solid #eee' }}>
-                    <th style={{ textAlign: 'left', padding: '.6rem' }}>Boy</th>
-                    {PHOTO_FINISHES.map(f => (
-                      <th key={f} style={{ textAlign: 'left', padding: '.6rem' }}>{f} (₺)</th>
-                    ))}
+                    <th style={{ textAlign: 'left', padding: '.6rem' }}>Ölçü</th>
+                    <th style={{ textAlign: 'left', padding: '.6rem' }}>Fiyat (₺)</th>
                   </tr>
                 </thead>
                 <tbody>
                   {PHOTO_SIZES.map(size => (
                     <tr key={size} style={{ borderBottom: '1px solid #f5f5f5' }}>
                       <td style={{ padding: '.6rem', fontWeight: 500 }}>{size}</td>
-                      {PHOTO_FINISHES.map(finish => (
-                        <td key={finish} style={{ padding: '.6rem' }}>
-                          <input
-                            type="number" min="0" style={{ ...inp, width: 110 }}
-                            value={photoPrices[`${size}:${finish}`] ?? ''}
-                            onChange={e => updatePhotoPrice(size, finish, e.target.value)}
-                          />
-                        </td>
-                      ))}
+                      <td style={{ padding: '.6rem' }}>
+                        <input
+                          type="number" min="0" style={{ ...inp, width: 110 }}
+                          value={photoPrices[`${size}:${PHOTO_FINISHES[0]}`] ?? ''}
+                          onChange={e => updatePhotoPrice(size, e.target.value)}
+                        />
+                      </td>
                     </tr>
                   ))}
                 </tbody>
