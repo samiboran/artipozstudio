@@ -4,6 +4,16 @@ import { useFavorites } from '../hooks/useFavorites'
 import { useCart } from '../hooks/useCart'
 import { SIZE_MM } from '../lib/artworks'
 
+// Supabase Storage'ın görsel dönüştürme (image transformation) render
+// endpoint'ine çeviriyor — kart genişliği ~300-400px olduğundan orijinal
+// (genelde çok daha büyük) dosya yerine küçültülmüş bir kopya iniyor.
+// Bu özellik Supabase'in ücretli plan özelliği olabilir; desteklenmiyorsa
+// <img>'in onError'ı orijinal URL'e geri düşüyor, hiçbir görsel kırılmıyor.
+function transformedUrl(url, width) {
+  if (!url || !url.includes('/storage/v1/object/public/')) return url
+  return url.replace('/storage/v1/object/public/', '/storage/v1/render/image/public/') + `?width=${width}&quality=75`
+}
+
 function ArtCard({ artwork, index, onClick, noBottomGap = false }) {
   const { isFav, toggle } = useFavorites()
   const { addItem } = useCart()
@@ -61,8 +71,10 @@ function ArtCard({ artwork, index, onClick, noBottomGap = false }) {
         overflow: 'hidden', position: 'relative', background: 'var(--ink)', aspectRatio: '4/5',
       }}>
         {artwork.image_url
-          ? <img src={artwork.image_url} alt={artwork.title}
+          ? <img src={transformedUrl(artwork.image_url, 600)} alt={artwork.title}
+              width={480} height={600}
               loading={index < 4 ? 'eager' : 'lazy'} decoding="async"
+              onError={e => { if (e.target.src !== artwork.image_url) e.target.src = artwork.image_url }}
               style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
           : <div dangerouslySetInnerHTML={{ __html: makeSVG(index) }}
               style={{ width: '100%', height: '100%' }} />
