@@ -55,14 +55,15 @@ const KODAK_PAPERS = [
   },
 ]
 
-// Fiyat sadece ölçüye göre değişiyor, kağıt yüzeyine göre değişmiyor
-// (Meltem'in verdiği referans: A5 250, A4 350, A3 600, A2 1000 — tüm kağıt
-// seçeneklerinde aynı). Veritabanı yapısı hâlâ boy×yüzey olduğundan bu
-// değerler 4 yüzeyin hepsine aynı şekilde yazılıyor; Admin de tek bir
-// "boy başına fiyat" alanı üzerinden bunu güncelliyor.
-const SIZE_PRICES = { 'A5': 250, 'A4': 350, 'A3': 600, 'A2': 1000 }
-const FALLBACK_PRICES = {}
-PHOTO_SIZES.forEach(s => PHOTO_FINISHES.forEach(f => { FALLBACK_PRICES[`${s}:${f}`] = SIZE_PRICES[s] || 0 }))
+// Gerçek fiyatlar SADECE Admin panelindeki fiyat matrisinden gelir
+// (photo_print_prices tablosu, boy × kağıt yüzeyi bazında). Burada uydurma/
+// sabit bir tablo YOK — veri gelene kadar hepsi 0, sayfa açılışında
+// Supabase'den gerçek matris çekilip prices state'i bu değerlerin üzerine
+// yazılıyor (bkz. loadData). Kağıt yüzeyi fiyatı etkileyebilir ya da
+// etkilemeyebilir — bu, Admin'in matrise girdiği gerçek rakamlara bağlı,
+// kod bir varsayım yapmıyor.
+const EMPTY_PRICES = {}
+PHOTO_SIZES.forEach(s => PHOTO_FINISHES.forEach(f => { EMPTY_PRICES[`${s}:${f}`] = 0 }))
 
 const heading = { fontFamily: 'var(--font-heading)', fontWeight: 400, color: 'var(--ink)' }
 const eyebrow = {
@@ -90,6 +91,27 @@ const placeholderBox = (label) => (
   </div>
 )
 
+// Yeni, boş bir baskı kalemi (bir fotoğraf + o fotoğrafa özel ayarlar).
+// Her printItems elemanı diğerlerinden tamamen bağımsız — birini
+// değiştirmek diğerlerini etkilemez (bkz. updatePrintItem).
+function makePrintItem(file) {
+  return {
+    id: (typeof crypto !== 'undefined' && crypto.randomUUID) ? crypto.randomUUID() : `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`,
+    file,
+    fileName: file.name,
+    previewUrl: URL.createObjectURL(file),
+    uploadedUrl: '',
+    uploading: true,
+    uploadError: '',
+    finish: PHOTO_FINISHES[0],
+    size: PHOTO_SIZES[0],
+    quantity: 1,
+    border: BORDER_OPTIONS[0],
+    customWidth: '',
+    customHeight: '',
+  }
+}
+
 export default function FotografBaski() {
   const [images, setImages] = useState({
     hero: heroImgDefault,
@@ -98,22 +120,19 @@ export default function FotografBaski() {
     'wizard-mockup': null,
   })
   const [content, setContent] = useState({})
-  const [prices, setPrices] = useState(FALLBACK_PRICES)
+  // Gerçek fiyat matrisi yüklenene kadar hepsi 0 — pricesLoaded false iken
+  // arayüz "…" gösterir, gerçek (muhtemelen 0 olmayan) rakamla karıştırılmasın diye.
+  const [prices, setPrices] = useState(EMPTY_PRICES)
+  const [pricesLoaded, setPricesLoaded] = useState(false)
 
   // --- "Baskını Oluştur" sihirbazı: 01 Dosya + 02 Kağıt & Ölçü aynı ekranda
   // (wizardStep === 'form'), 03 Bilgiler ayrı ekran (wizardStep === 'bilgiler').
   const [wizardStep, setWizardStep] = useState('form') // form | bilgiler | sent
   const [wizardError, setWizardError] = useState('')
 
-  const [uploadedUrl, setUploadedUrl] = useState('')
-  const [uploading, setUploading] = useState(false)
-  const [uploadError, setUploadError] = useState('')
-  const [size, setSize] = useState(PHOTO_SIZES[0])
-  const [finish, setFinish] = useState(PHOTO_FINISHES[0])
-  const [quantity, setQuantity] = useState(1)
-  const [border, setBorder] = useState(BORDER_OPTIONS[0])
-  const [customWidth, setCustomWidth] = useState('')
-  const [customHeight, setCustomHeight] = useState('')
+  // Çoklu fotoğraf / bağımsız sipariş kalemi listesi — her fotoğrafın kendi
+  // kağıt, ölçü, adet ve beyaz kenarlık seçimi var (bkz. makePrintItem).
+  const [printItems, setPrintItems] = useState([])
   const fileRef = useRef()
 
   // --- Bilgiler formu (Ana Sayfa'daki Sipariş & İletişim ile aynı alan seti) ---
@@ -151,28 +170,40 @@ export default function FotografBaski() {
         })
       }
 
-      if (priceRows && priceRows.length) {
-        const map = {}
-        priceRows.forEach(p => { map[`${p.size}:${p.finish}`] = p.price })
-        setPrices(map)
-      }
+      // Gerçek fiyat matrisi — Admin panelinden (Fotoğraf Baskı Fiyatları)
+      // girilen boy × kağıt yüzeyi rakamları. Boş dönerse (Admin henüz
+      // girmediyse) prices EMPTY_PRICES'ta (hepsi 0) kalır — ama
+      // pricesLoaded true olduğu için bu artık "yükleniyor" değil,
+      // "gerçekten 0" olarak gösterilir.
+      const map = { ...EMPTY_PRICES }
+      ;(priceRows || []).forEach(p => { map[`${p.size}:${p.finish}`] = Number(p.price) || 0 })
+      setPrices(map)
+      setPricesLoaded(true)
     } catch (err) {
       console.error('Fotoğraf Baskı sayfası verisi yüklenemedi:', err)
+      setPricesLoaded(true)
     }
   }
 
-  // Fiyat sadece ölçüye bağlı (yüzeyden bağımsız) — hangi kağıt yüzeyi seçili
-  // olursa olsun aynı ölçü aynı fiyatı gösterir, bu yüzden lookup her zaman
-  // ilk yüzeyden (Glossy) okunuyor.
-  function getSizePrice(s) {
-    return prices[`${s}:${PHOTO_FINISHES[0]}`] || 0
+  // unitPrice, Admin'in gerçek matrisinden boy + kağıt yüzeyi baz alınarak
+  // okunur — kağıt fiyatı etkiliyorsa (Admin farklı rakamlar girmişse) bu
+  // otomatik yansır, "hepsi aynı fiyat" gibi bir varsayım yok.
+  function priceForItem(item) {
+    if (item.size === CUSTOM_SIZE) return null
+    return prices[`${item.size}:${item.finish}`] ?? 0
   }
-
-  // Özel Ölçü'nün sabit bir fiyatı yok — teklif üzerine gönderiliyor,
-  // bu yüzden unitPrice/lineTotal bu durumda null (fiyat hesaplanamaz).
-  const isCustomSize = size === CUSTOM_SIZE
-  const unitPrice = isCustomSize ? null : getSizePrice(size)
-  const lineTotal = isCustomSize ? null : unitPrice * (Number(quantity) || 0)
+  function totalForItem(item) {
+    const unit = priceForItem(item)
+    return unit === null ? null : unit * (Number(item.quantity) || 0)
+  }
+  // Genel toplam — Özel Ölçü kalemleri sabit fiyatı olmadığı için (teklif
+  // üzerine) sayısal toplama dahil edilmiyor.
+  const grandTotal = printItems.reduce((sum, it) => sum + (totalForItem(it) || 0), 0)
+  const hasCustomSizeItem = printItems.some(it => it.size === CUSTOM_SIZE)
+  const anyUploading = printItems.some(it => it.uploading)
+  const continueLabel = (pricesLoaded && grandTotal > 0)
+    ? `Devam Et — ₺${grandTotal.toLocaleString('tr-TR')} →`
+    : 'Devam Et →'
 
   // Supabase JS client'ının oturum kilidiyle ilgili bilinen bir durum: birden fazla
   // sekme/istemci aynı anda aynı Supabase session'ına erişmeye çalışınca "lock ...
@@ -189,40 +220,69 @@ export default function FotografBaski() {
     throw error
   }
 
-  async function handleFileSelect(file) {
-    if (!file) return
-    setUploadError('')
-    if (!file.type.startsWith('image/')) {
-      setUploadError('Lütfen bir görsel dosyası seçin.')
-      return
-    }
-    if (file.size > MAX_FILE_SIZE_MB * 1024 * 1024) {
-      setUploadError(`Dosya çok büyük — maksimum ${MAX_FILE_SIZE_MB} MB.`)
-      return
-    }
-    setUploading(true)
+  // Aynı anda seçilen/bırakılan tüm dosyalar için birer printItem oluşturur
+  // (anında yerel önizlemeyle), sonra her biri kendi başına arka planda
+  // yüklenir — biri başarısız olsa diğerlerini etkilemez.
+  function addFiles(fileList) {
+    const files = Array.from(fileList || [])
+    if (!files.length) return
+    const invalid = []
+    const valid = []
+    files.forEach(file => {
+      if (!file.type.startsWith('image/')) { invalid.push(`${file.name}: geçersiz dosya türü`); return }
+      if (file.size > MAX_FILE_SIZE_MB * 1024 * 1024) { invalid.push(`${file.name}: ${MAX_FILE_SIZE_MB} MB sınırını aşıyor`); return }
+      valid.push(file)
+    })
+    setWizardError(invalid.length ? invalid.join(' · ') : '')
+    if (!valid.length) return
+
+    const newItems = valid.map(makePrintItem)
+    setPrintItems(items => [...items, ...newItems])
+    newItems.forEach(item => uploadPrintItem(item.id, item.file))
+  }
+
+  async function uploadPrintItem(id, file) {
     const ext = file.name.split('.').pop()
     const path = `photo-print/${Date.now()}-${Math.random().toString(36).slice(2, 7)}.${ext}`
     try {
       await uploadWithRetry(path, file)
     } catch (error) {
       console.error('Fotoğraf yükleme hatası:', error)
-      setUploadError('Yükleme başarısız oldu, lütfen tekrar deneyin.')
-      setUploading(false)
+      setPrintItems(items => items.map(it => it.id === id ? { ...it, uploading: false, uploadError: 'Yükleme başarısız oldu, lütfen tekrar deneyin.' } : it))
       return
     }
     const { data } = supabase.storage.from('site-images').getPublicUrl(path)
-    setUploadedUrl(data.publicUrl)
-    setUploading(false)
+    setPrintItems(items => items.map(it => it.id === id ? { ...it, uploading: false, uploadedUrl: data.publicUrl } : it))
+  }
+
+  // Tek bir fotoğrafın ayarını günceller — diğer printItems elemanlarına
+  // dokunmaz (bağımsız sipariş kalemi gereksinimi).
+  function updatePrintItem(id, patch) {
+    setPrintItems(items => items.map(it => it.id === id ? { ...it, ...patch } : it))
+  }
+
+  function removePrintItem(id) {
+    setPrintItems(items => {
+      const target = items.find(it => it.id === id)
+      if (target?.previewUrl) URL.revokeObjectURL(target.previewUrl)
+      return items.filter(it => it.id !== id)
+    })
   }
 
   // 01 Dosya + 02 Kağıt & Ölçü ekranından 03 Bilgiler ekranına geçiş.
   function goToBilgiler() {
     setWizardError('')
-    if (!uploadedUrl) { setWizardError('Lütfen önce bir fotoğraf yükleyin.'); return }
-    if (isCustomSize && (!customWidth.trim() || !customHeight.trim())) {
-      setWizardError('Lütfen özel ölçü için genişlik ve yükseklik girin.')
+    if (printItems.length === 0) { setWizardError('Lütfen en az bir fotoğraf yükleyin.'); return }
+    if (anyUploading) { setWizardError('Fotoğraflar yükleniyor, lütfen bekleyin.'); return }
+    if (printItems.some(it => it.uploadError || !it.uploadedUrl)) {
+      setWizardError('Bazı fotoğraflar yüklenemedi — lütfen tekrar deneyin veya listeden kaldırın.')
       return
+    }
+    for (const it of printItems) {
+      if (it.size === CUSTOM_SIZE && (!it.customWidth.trim() || !it.customHeight.trim())) {
+        setWizardError(`"${it.fileName}" için özel ölçü genişlik/yükseklik girilmedi.`)
+        return
+      }
     }
     setWizardStep('bilgiler')
   }
@@ -250,14 +310,17 @@ export default function FotografBaski() {
       address: orderForm.address,
       note: orderForm.mesaj,
       session_id: getSessionId(),
-      items: [{
-        image_url: uploadedUrl,
-        size: isCustomSize ? CUSTOM_SIZE : size,
-        finish,
-        quantity: Math.max(1, Number(quantity) || 1),
-        white_border: border === 'Var',
-        note: isCustomSize ? `Özel ölçü: ${customWidth.trim()}×${customHeight.trim()} cm` : null,
-      }],
+      // Her fotoğraf kendi kağıt/ölçü/adet/beyaz kenarlık ayarıyla bağımsız
+      // bir sipariş kalemi olarak gönderiliyor — create-photo-print-order
+      // zaten bir items dizisi bekliyor (backend'de değişiklik gerekmedi).
+      items: printItems.map(it => ({
+        image_url: it.uploadedUrl,
+        size: it.size === CUSTOM_SIZE ? CUSTOM_SIZE : it.size,
+        finish: it.finish,
+        quantity: Math.max(1, Number(it.quantity) || 1),
+        white_border: it.border === 'Var',
+        note: it.size === CUSTOM_SIZE ? `Özel ölçü: ${it.customWidth.trim()}×${it.customHeight.trim()} cm` : null,
+      })),
     }
 
     try {
@@ -403,7 +466,7 @@ export default function FotografBaski() {
 
             <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '.5rem', marginBottom: '2.5rem' }}>
               {[{ n: '01', label: 'DOSYA' }, { n: '02', label: 'KAĞIT & ÖLÇÜ' }, { n: '03', label: 'BİLGİLER' }].map((s, i) => {
-                const currentIndex = wizardStep === 'bilgiler' ? 2 : wizardStep === 'sent' ? 3 : (uploadedUrl ? 1 : 0)
+                const currentIndex = wizardStep === 'bilgiler' ? 2 : wizardStep === 'sent' ? 3 : (printItems.length > 0 ? 1 : 0)
                 const active = i === currentIndex
                 const done = i < currentIndex
                 return (
@@ -509,143 +572,208 @@ export default function FotografBaski() {
               <>
                 <h3 style={{ ...heading, fontSize: '1.3rem', margin: '0 0 1.5rem' }}>Baskını Oluştur</h3>
 
-                <div
-                  onClick={() => fileRef.current?.click()}
-                  onDragOver={e => e.preventDefault()}
-                  onDrop={e => { e.preventDefault(); handleFileSelect(e.dataTransfer.files[0]) }}
-                  style={{
-                    border: '1px dashed var(--border)', padding: '1.6rem 1rem',
-                    textAlign: 'center', cursor: 'pointer', minHeight: 160,
-                    display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '.6rem',
-                    background: uploadedUrl ? 'transparent' : 'var(--surface)', marginBottom: '1.4rem',
-                  }}
-                >
-                  {uploading ? (
-                    <span style={{ ...body, fontSize: '.82rem' }}>Yükleniyor…</span>
-                  ) : uploadedUrl ? (
-                    <img src={uploadedUrl} alt="Yüklenen fotoğraf önizlemesi" style={{ maxWidth: '100%', maxHeight: 200, objectFit: 'contain', display: 'block' }} />
-                  ) : (
-                    <>
-                      <span style={{ ...body, fontSize: '.85rem', color: 'var(--ink)' }}>Fotoğrafını buraya bırak</span>
-                      <span style={{ ...body, fontSize: '.72rem' }}>JPG, TIFF veya PNG</span>
-                      <button
-                        type="button" onClick={e => { e.stopPropagation(); fileRef.current?.click() }}
-                        style={{
-                          marginTop: '.3rem', padding: '.55rem 1.2rem', background: 'var(--ink)', color: '#fff',
-                          border: 'none', fontFamily: 'var(--font-body)', fontSize: '.68rem',
-                          letterSpacing: '.14em', textTransform: 'uppercase', cursor: 'pointer',
-                        }}
-                      >
-                        Dosya Seç
-                      </button>
-                    </>
-                  )}
-                </div>
-                <input ref={fileRef} type="file" accept="image/*" style={{ display: 'none' }}
-                  onChange={e => handleFileSelect(e.target.files[0])} />
-                {uploadError && <p style={{ color: '#c33', fontSize: '.78rem', marginTop: '-1rem', marginBottom: '1rem' }}>{uploadError}</p>}
-
-                <div style={{ marginBottom: '1.2rem' }}>
-                  <label style={{ ...label, display: 'block', marginBottom: '.5rem', fontSize: '.68rem' }}>Kağıt</label>
-                  <div className="fb-btn-group">
-                    {PHOTO_FINISHES.map(f => (
-                      <button key={f} type="button" onClick={() => setFinish(f)} style={{
-                        padding: '.5rem 1rem', border: `1px solid ${finish === f ? 'var(--ink)' : 'var(--border)'}`,
-                        background: finish === f ? 'var(--ink)' : 'none', color: finish === f ? '#fff' : 'var(--ink)',
-                        fontFamily: 'var(--font-body)', fontSize: '.78rem', cursor: 'pointer',
-                      }}>
-                        {f}
-                      </button>
-                    ))}
-                  </div>
-                  <p style={{ ...body, fontSize: '.7rem', margin: '.5rem 0 0' }}>Tüm kağıt seçeneklerinde fiyat aynıdır.</p>
-                </div>
-
-                <div style={{ marginBottom: '1.2rem' }}>
-                  <label style={{ ...label, display: 'block', marginBottom: '.5rem', fontSize: '.68rem' }}>Ölçü</label>
-                  <div className="fb-btn-group">
-                    {PHOTO_SIZES.map(s => (
-                      <button key={s} type="button" onClick={() => setSize(s)} style={{
-                        padding: '.5rem 1rem', border: `1px solid ${size === s ? 'var(--ink)' : 'var(--border)'}`,
-                        background: size === s ? 'var(--ink)' : 'none', color: size === s ? '#fff' : 'var(--ink)',
-                        fontFamily: 'var(--font-body)', fontSize: '.78rem', cursor: 'pointer',
-                        display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '.2rem', minWidth: 62,
-                      }}>
-                        <span>{s}</span>
-                        <span style={{ fontSize: '.66rem', opacity: .75 }}>{getSizePrice(s).toLocaleString('tr-TR')} TL</span>
-                      </button>
-                    ))}
-                    <button type="button" onClick={() => setSize(CUSTOM_SIZE)} style={{
-                      padding: '.5rem 1rem', border: `1px solid ${isCustomSize ? 'var(--ink)' : 'var(--border)'}`,
-                      background: isCustomSize ? 'var(--ink)' : 'none', color: isCustomSize ? '#fff' : 'var(--ink)',
-                      fontFamily: 'var(--font-body)', fontSize: '.78rem', cursor: 'pointer',
-                      display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '.2rem', minWidth: 62,
-                    }}>
-                      <span>{CUSTOM_SIZE}</span>
-                      <span style={{ fontSize: '.66rem', opacity: .75 }}>Teklif üzerine</span>
+                {printItems.length === 0 && (
+                  <div
+                    onClick={() => fileRef.current?.click()}
+                    onDragOver={e => e.preventDefault()}
+                    onDrop={e => { e.preventDefault(); addFiles(e.dataTransfer.files) }}
+                    style={{
+                      border: '1px dashed var(--border)', padding: '1.6rem 1rem',
+                      textAlign: 'center', cursor: 'pointer', minHeight: 160,
+                      display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '.6rem',
+                      background: 'var(--surface)', marginBottom: '1.4rem',
+                    }}
+                  >
+                    <span style={{ ...body, fontSize: '.85rem', color: 'var(--ink)' }}>Fotoğraflarını buraya bırak</span>
+                    <span style={{ ...body, fontSize: '.72rem' }}>JPG, TIFF veya PNG · birden fazla seçebilirsin</span>
+                    <button
+                      type="button" onClick={e => { e.stopPropagation(); fileRef.current?.click() }}
+                      style={{
+                        marginTop: '.3rem', padding: '.55rem 1.2rem', background: 'var(--ink)', color: '#fff',
+                        border: 'none', fontFamily: 'var(--font-body)', fontSize: '.68rem',
+                        letterSpacing: '.14em', textTransform: 'uppercase', cursor: 'pointer',
+                      }}
+                    >
+                      Dosya Seç
                     </button>
                   </div>
-                  {isCustomSize && (
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: '.6rem', marginTop: '.7rem' }}>
-                      <input value={customWidth} onChange={e => setCustomWidth(e.target.value)} style={inputStyle} placeholder="Genişlik (cm)" inputMode="decimal" />
-                      <input value={customHeight} onChange={e => setCustomHeight(e.target.value)} style={inputStyle} placeholder="Yükseklik (cm)" inputMode="decimal" />
-                    </div>
-                  )}
-                </div>
+                )}
+                <input ref={fileRef} type="file" accept="image/*" multiple style={{ display: 'none' }}
+                  onChange={e => { addFiles(e.target.files); e.target.value = '' }} />
 
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: '1rem', marginBottom: '1.4rem' }}>
-                  <div>
-                    <label style={{ ...label, display: 'block', marginBottom: '.5rem', fontSize: '.68rem' }}>Adet</label>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '.6rem' }}>
-                      <button type="button" onClick={() => setQuantity(q => Math.max(1, (Number(q) || 1) - 1))} style={{
-                        width: 32, height: 32, border: '1px solid var(--border)', background: '#fff',
-                        fontSize: '1rem', color: 'var(--ink)', cursor: 'pointer', lineHeight: 1,
-                      }}>−</button>
-                      <span style={{ ...label, color: 'var(--ink)', minWidth: 24, textAlign: 'center' }}>{quantity}</span>
-                      <button type="button" onClick={() => setQuantity(q => Math.min(100, (Number(q) || 1) + 1))} style={{
-                        width: 32, height: 32, border: '1px solid var(--border)', background: '#fff',
-                        fontSize: '1rem', color: 'var(--ink)', cursor: 'pointer', lineHeight: 1,
-                      }}>+</button>
-                    </div>
-                  </div>
-                  <div>
-                    <label style={{ ...label, display: 'block', marginBottom: '.5rem', fontSize: '.68rem' }}>Beyaz Kenarlık</label>
-                    <select value={border} onChange={e => setBorder(e.target.value)} style={inputStyle}>
-                      {BORDER_OPTIONS.map(o => <option key={o} value={o}>{o}</option>)}
-                    </select>
-                  </div>
-                </div>
+                {/* Her fotoğraf kendi bağımsız kartında — kağıt/ölçü/adet/beyaz
+                    kenarlık seçimi burada değiştirilirse yalnızca bu kartı ve
+                    genel toplamı etkiler, diğer fotoğraflara dokunmaz. */}
+                {printItems.length > 0 && (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '1.4rem', marginBottom: '1.2rem' }}>
+                    {printItems.map((item, idx) => {
+                      const itemIsCustom = item.size === CUSTOM_SIZE
+                      const itemTotal = totalForItem(item)
+                      return (
+                        <div key={item.id} style={{ border: '1px solid var(--border)', padding: '1rem' }}>
+                          <div style={{ display: 'flex', gap: '.9rem', marginBottom: '1rem', alignItems: 'flex-start' }}>
+                            <div style={{ width: 60, height: 60, flexShrink: 0, background: 'var(--surface)', overflow: 'hidden' }}>
+                              <img src={item.previewUrl} alt={item.fileName} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+                            </div>
+                            <div style={{ flex: 1, minWidth: 0 }}>
+                              <p style={{ ...label, color: 'var(--ink)', margin: '0 0 .3rem' }}>Fotoğraf {idx + 1}</p>
+                              <p style={{ ...body, fontSize: '.75rem', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.fileName}</p>
+                              {item.uploading && <p style={{ ...body, fontSize: '.72rem', margin: '.3rem 0 0' }}>Yükleniyor…</p>}
+                              {item.uploadError && <p style={{ color: '#c33', fontSize: '.72rem', margin: '.3rem 0 0' }}>{item.uploadError}</p>}
+                            </div>
+                            <button
+                              type="button" onClick={() => removePrintItem(item.id)} aria-label="Fotoğrafı kaldır"
+                              style={{
+                                flexShrink: 0, width: 26, height: 26, border: '1px solid var(--border)', background: '#fff',
+                                color: 'var(--ink)', cursor: 'pointer', fontSize: '.8rem', lineHeight: 1,
+                              }}
+                            >
+                              ✕
+                            </button>
+                          </div>
 
-                <div style={{ ...body, fontSize: '.85rem', color: 'var(--ink)', marginBottom: '1.2rem', paddingTop: '.9rem', borderTop: '1px solid var(--border)' }}>
-                  {isCustomSize ? (
-                    'Fiyat, ölçü kontrol edildikten sonra teklif olarak iletilecek.'
-                  ) : (
-                    <>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 600 }}>
-                        <span>{quantity} × {size} Baskı</span>
-                        <span>₺{lineTotal.toLocaleString('tr-TR')}</span>
-                      </div>
-                      <p style={{ ...body, fontSize: '.72rem', margin: '.4rem 0 0' }}>Kargo ücreti dahil değildir.</p>
-                    </>
-                  )}
-                </div>
+                          <div style={{ marginBottom: '1rem' }}>
+                            <label style={{ ...label, display: 'block', marginBottom: '.5rem', fontSize: '.68rem' }}>Kağıt</label>
+                            <div className="fb-btn-group">
+                              {PHOTO_FINISHES.map(f => (
+                                <button key={f} type="button" onClick={() => updatePrintItem(item.id, { finish: f })} style={{
+                                  padding: '.5rem 1rem', border: `1px solid ${item.finish === f ? 'var(--ink)' : 'var(--border)'}`,
+                                  background: item.finish === f ? 'var(--ink)' : 'none', color: item.finish === f ? '#fff' : 'var(--ink)',
+                                  fontFamily: 'var(--font-body)', fontSize: '.78rem', cursor: 'pointer',
+                                }}>
+                                  {f}
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+
+                          <div style={{ marginBottom: '1rem' }}>
+                            <label style={{ ...label, display: 'block', marginBottom: '.5rem', fontSize: '.68rem' }}>Ölçü</label>
+                            <div className="fb-btn-group">
+                              {PHOTO_SIZES.map(s => (
+                                <button key={s} type="button" onClick={() => updatePrintItem(item.id, { size: s })} style={{
+                                  padding: '.5rem 1rem', border: `1px solid ${item.size === s ? 'var(--ink)' : 'var(--border)'}`,
+                                  background: item.size === s ? 'var(--ink)' : 'none', color: item.size === s ? '#fff' : 'var(--ink)',
+                                  fontFamily: 'var(--font-body)', fontSize: '.78rem', cursor: 'pointer',
+                                  display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '.2rem', minWidth: 62,
+                                }}>
+                                  <span>{s}</span>
+                                  <span style={{ fontSize: '.66rem', opacity: .75 }}>
+                                    {pricesLoaded ? `${(prices[`${s}:${item.finish}`] ?? 0).toLocaleString('tr-TR')} TL` : '…'}
+                                  </span>
+                                </button>
+                              ))}
+                              <button type="button" onClick={() => updatePrintItem(item.id, { size: CUSTOM_SIZE })} style={{
+                                padding: '.5rem 1rem', border: `1px solid ${itemIsCustom ? 'var(--ink)' : 'var(--border)'}`,
+                                background: itemIsCustom ? 'var(--ink)' : 'none', color: itemIsCustom ? '#fff' : 'var(--ink)',
+                                fontFamily: 'var(--font-body)', fontSize: '.78rem', cursor: 'pointer',
+                                display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '.2rem', minWidth: 62,
+                              }}>
+                                <span>{CUSTOM_SIZE}</span>
+                                <span style={{ fontSize: '.66rem', opacity: .75 }}>Teklif üzerine</span>
+                              </button>
+                            </div>
+                            {itemIsCustom && (
+                              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: '.6rem', marginTop: '.7rem' }}>
+                                <input value={item.customWidth} onChange={e => updatePrintItem(item.id, { customWidth: e.target.value })} style={inputStyle} placeholder="Genişlik (cm)" inputMode="decimal" />
+                                <input value={item.customHeight} onChange={e => updatePrintItem(item.id, { customHeight: e.target.value })} style={inputStyle} placeholder="Yükseklik (cm)" inputMode="decimal" />
+                              </div>
+                            )}
+                          </div>
+
+                          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: '1rem', marginBottom: '1rem' }}>
+                            <div>
+                              <label style={{ ...label, display: 'block', marginBottom: '.5rem', fontSize: '.68rem' }}>Adet</label>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '.6rem' }}>
+                                <button type="button" onClick={() => updatePrintItem(item.id, { quantity: Math.max(1, (Number(item.quantity) || 1) - 1) })} style={{
+                                  width: 32, height: 32, border: '1px solid var(--border)', background: '#fff',
+                                  fontSize: '1rem', color: 'var(--ink)', cursor: 'pointer', lineHeight: 1,
+                                }}>−</button>
+                                <span style={{ ...label, color: 'var(--ink)', minWidth: 24, textAlign: 'center' }}>{item.quantity}</span>
+                                <button type="button" onClick={() => updatePrintItem(item.id, { quantity: Math.min(100, (Number(item.quantity) || 1) + 1) })} style={{
+                                  width: 32, height: 32, border: '1px solid var(--border)', background: '#fff',
+                                  fontSize: '1rem', color: 'var(--ink)', cursor: 'pointer', lineHeight: 1,
+                                }}>+</button>
+                              </div>
+                            </div>
+                            <div>
+                              <label style={{ ...label, display: 'block', marginBottom: '.5rem', fontSize: '.68rem' }}>Beyaz Kenarlık</label>
+                              <select value={item.border} onChange={e => updatePrintItem(item.id, { border: e.target.value })} style={inputStyle}>
+                                {BORDER_OPTIONS.map(o => <option key={o} value={o}>{o}</option>)}
+                              </select>
+                            </div>
+                          </div>
+
+                          <div style={{ ...body, fontSize: '.82rem', color: 'var(--ink)', paddingTop: '.8rem', borderTop: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', fontWeight: 600 }}>
+                            <span>Bu fotoğraf</span>
+                            <span>{itemIsCustom ? 'Teklif üzerine' : (pricesLoaded ? `₺${(itemTotal || 0).toLocaleString('tr-TR')}` : '…')}</span>
+                          </div>
+                        </div>
+                      )
+                    })}
+                  </div>
+                )}
+
+                {printItems.length > 0 && (
+                  <button
+                    type="button" onClick={() => fileRef.current?.click()}
+                    style={{
+                      width: '100%', padding: '.8rem', background: 'none', color: 'var(--ink)',
+                      border: '1px dashed var(--border)', fontFamily: 'var(--font-body)', fontSize: '.75rem',
+                      letterSpacing: '.1em', textTransform: 'uppercase', cursor: 'pointer', marginBottom: '1.4rem',
+                    }}
+                  >
+                    + Fotoğraf Ekle
+                  </button>
+                )}
+
+                {printItems.length > 0 && (
+                  <div style={{ marginBottom: '1.2rem', paddingTop: '.9rem', borderTop: '1px solid var(--border)' }}>
+                    <p style={{ ...label, color: 'var(--ink)', margin: '0 0 .8rem', fontSize: '.7rem' }}>Sipariş Özeti</p>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '.55rem', marginBottom: '.8rem' }}>
+                      {printItems.map((item, idx) => {
+                        const itemIsCustom = item.size === CUSTOM_SIZE
+                        const itemTotal = totalForItem(item)
+                        return (
+                          <div key={item.id} style={{ ...body, fontSize: '.8rem', display: 'flex', justifyContent: 'space-between', gap: '.6rem' }}>
+                            <span>Fotoğraf {idx + 1} — {item.size} · {item.finish} · {item.quantity} adet</span>
+                            <span style={{ color: 'var(--ink)', whiteSpace: 'nowrap' }}>
+                              {itemIsCustom ? 'Teklif üzerine' : (pricesLoaded ? `₺${(itemTotal || 0).toLocaleString('tr-TR')}` : '…')}
+                            </span>
+                          </div>
+                        )
+                      })}
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 600, fontSize: '.9rem', paddingTop: '.7rem', borderTop: '1px solid var(--border)' }}>
+                      <span>TOPLAM</span>
+                      <span>{pricesLoaded ? `₺${grandTotal.toLocaleString('tr-TR')}` : '…'}</span>
+                    </div>
+                    {hasCustomSizeItem && (
+                      <p style={{ ...body, fontSize: '.72rem', margin: '.5rem 0 0' }}>
+                        Özel ölçü seçilen fotoğraflar toplama dahil değildir — fiyat kontrol sonrası teklif olarak iletilecek.
+                      </p>
+                    )}
+                    <p style={{ ...body, fontSize: '.72rem', margin: '.4rem 0 0' }}>Kargo ücreti dahil değildir.</p>
+                  </div>
+                )}
 
                 {wizardError && <p style={{ color: '#c33', fontSize: '.78rem', marginTop: '-.6rem', marginBottom: '1rem' }}>{wizardError}</p>}
 
                 <button
-                  type="button" onClick={goToBilgiler} disabled={uploading}
+                  type="button" onClick={goToBilgiler} disabled={anyUploading || printItems.length === 0}
                   style={{
                     width: '100%', padding: '.9rem', background: 'var(--accent)', color: '#fff',
                     border: 'none', fontFamily: 'var(--font-body)', fontSize: '.75rem',
-                    letterSpacing: '.14em', textTransform: 'uppercase', cursor: uploading ? 'not-allowed' : 'pointer',
-                    opacity: uploading ? .6 : 1,
+                    letterSpacing: '.14em', textTransform: 'uppercase',
+                    cursor: (anyUploading || printItems.length === 0) ? 'not-allowed' : 'pointer',
+                    opacity: (anyUploading || printItems.length === 0) ? .6 : 1,
                   }}
                 >
-                  {isCustomSize ? 'Devam Et →' : `Devam Et — ₺${lineTotal.toLocaleString('tr-TR')} →`}
+                  {continueLabel}
                 </button>
 
                 <p style={{ ...body, fontSize: '.7rem', textAlign: 'center', marginTop: '1rem' }}>
-                  Dosyan baskıdan önce kontrol edilir.
+                  Dosyaların baskıdan önce kontrol edilir.
                 </p>
               </>
             )}
