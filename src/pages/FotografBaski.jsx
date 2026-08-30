@@ -360,34 +360,20 @@ export default function FotografBaski() {
         <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(180deg, rgba(17,17,17,.15), rgba(17,17,17,.55))' }} />
       </section>
 
-      {/* Hero'nun hemen altında, ortalı tanıtım metni + 2 öne çıkan özellik. */}
+      {/* Hero'nun hemen altında, ortalı tanıtım metni + öne çıkan özellik. */}
       <section style={{ maxWidth: 720, margin: '0 auto', padding: '3.5rem 2rem 1rem', textAlign: 'center' }}>
-        <style>{`
-          .fb-intro-features { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 2rem; }
-          @media (max-width: 560px) {
-            .fb-intro-features { grid-template-columns: 1fr; gap: 1.6rem; }
-          }
-        `}</style>
         <h2 style={{ ...heading, fontSize: '2rem', margin: '0 0 1.2rem' }}>Fotoğraf Baskı</h2>
         <p style={{ ...body, fontSize: '.92rem', marginBottom: '2.5rem' }}>
           Fotoğraflarınızı profesyonel pigment mürekkepler ve özenle seçilmiş fotoğraf kâğıtlarıyla
           basıyoruz. Parlak ve saten yüzey seçenekleri; güçlü siyahlar, temiz ayrıntılar ve canlı
           tonlarla fotoğrafın karakterini korur.
         </p>
-        <div className="fb-intro-features" style={{ textAlign: 'center' }}>
-          <div>
-            <h3 style={{ ...heading, fontSize: '1.05rem', margin: '0 0 .5rem' }}>Pigment Mürekkep</h3>
-            <p style={{ ...body, fontSize: '.85rem' }}>
-              Solmaya karşı dirençli, net ve uzun ömürlü baskılar elde edilmesini sağlar.
-            </p>
-          </div>
-          <div>
-            <h3 style={{ ...heading, fontSize: '1.05rem', margin: '0 0 .5rem' }}>Profesyonel Renk Yönetimi</h3>
-            <p style={{ ...body, fontSize: '.85rem' }}>
-              Her çalışma, tutarlı tonlar ve doğru renkler için baskı öncesinde kontrollü bir renk
-              sürecinden geçirilir.
-            </p>
-          </div>
+        <div style={{ maxWidth: 400, margin: '0 auto' }}>
+          <h3 style={{ ...heading, fontSize: '1.05rem', margin: '0 0 .5rem' }}>Profesyonel Renk Yönetimi</h3>
+          <p style={{ ...body, fontSize: '.85rem' }}>
+            Her çalışma, tutarlı tonlar ve doğru renkler için baskı öncesinde kontrollü bir renk
+            sürecinden geçirilir.
+          </p>
         </div>
       </section>
 
