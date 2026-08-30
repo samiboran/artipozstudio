@@ -109,8 +109,7 @@ function makePrintItem(file) {
     size: PHOTO_SIZES[0],
     quantity: 1,
     border: BORDER_OPTIONS[0],
-    customWidth: '',
-    customHeight: '',
+    customSize: '',
   }
 }
 
@@ -286,8 +285,8 @@ export default function FotografBaski() {
       return
     }
     for (const it of printItems) {
-      if (it.size === CUSTOM_SIZE && (!it.customWidth.trim() || !it.customHeight.trim())) {
-        setWizardError(`"${it.fileName}" için özel ölçü genişlik/yükseklik girilmedi.`)
+      if (it.size === CUSTOM_SIZE && !it.customSize.trim()) {
+        setWizardError(`"${it.fileName}" için özel ölçü belirtilmedi.`)
         return
       }
     }
@@ -326,7 +325,7 @@ export default function FotografBaski() {
         finish: it.finish,
         quantity: Math.max(1, Number(it.quantity) || 1),
         white_border: it.border === 'Var',
-        note: it.size === CUSTOM_SIZE ? `Özel ölçü: ${it.customWidth.trim()}×${it.customHeight.trim()} cm` : null,
+        note: it.size === CUSTOM_SIZE ? `Özel ölçü: ${it.customSize.trim()}` : null,
       })),
     }
 
@@ -681,9 +680,16 @@ export default function FotografBaski() {
                               </button>
                             </div>
                             {itemIsCustom && (
-                              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: '.6rem', marginTop: '.7rem' }}>
-                                <input value={item.customWidth} onChange={e => updatePrintItem(item.id, { customWidth: e.target.value })} style={inputStyle} placeholder="Genişlik (cm)" inputMode="decimal" />
-                                <input value={item.customHeight} onChange={e => updatePrintItem(item.id, { customHeight: e.target.value })} style={inputStyle} placeholder="Yükseklik (cm)" inputMode="decimal" />
+                              <div style={{ marginTop: '.9rem' }}>
+                                <label style={{ ...label, display: 'block', marginBottom: '.5rem', fontSize: '.68rem' }}>
+                                  İstediğiniz ölçüyü belirtiniz
+                                </label>
+                                <input
+                                  value={item.customSize}
+                                  onChange={e => updatePrintItem(item.id, { customSize: e.target.value })}
+                                  style={inputStyle}
+                                  placeholder="Örn. 30 × 45 cm"
+                                />
                               </div>
                             )}
                           </div>
@@ -711,9 +717,16 @@ export default function FotografBaski() {
                             </div>
                           </div>
 
-                          <div style={{ ...body, fontSize: '.82rem', color: 'var(--ink)', paddingTop: '.8rem', borderTop: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', fontWeight: 600 }}>
-                            <span>Bu fotoğraf</span>
-                            <span>{itemIsCustom ? 'Teklif üzerine' : (pricesLoaded ? `₺${(itemTotal || 0).toLocaleString('tr-TR')}` : '…')}</span>
+                          <div style={{ paddingTop: '.8rem', borderTop: '1px solid var(--border)' }}>
+                            <div style={{ ...body, fontSize: '.82rem', color: 'var(--ink)', display: 'flex', justifyContent: 'space-between', fontWeight: 600 }}>
+                              <span>Bu fotoğraf</span>
+                              <span>{itemIsCustom ? 'Teklif üzerine' : (pricesLoaded ? `₺${(itemTotal || 0).toLocaleString('tr-TR')}` : '…')}</span>
+                            </div>
+                            {itemIsCustom && (
+                              <p style={{ ...body, fontSize: '.72rem', margin: '.4rem 0 0' }}>
+                                Özel ölçünüz fiyatlandırıldıktan sonra sizinle iletişime geçilecektir.
+                              </p>
+                            )}
                           </div>
                         </div>
                       )
