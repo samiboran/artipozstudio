@@ -105,12 +105,12 @@ export default function FineArtBaski() {
       </section>
 
       {/* Tanıtım bölümü — hero'nun hemen altında, referans tasarıma göre:
-          sol %50 metin (etiket + büyük başlık + açıklama + 3 özellik),
-          sağ %50 stüdyo fotoğrafı + siyah etiket. Görsel Admin'den
+          sol %51 metin (etiket + büyük başlık + açıklama + 3 özellik),
+          sağ %49 stüdyo fotoğrafı + siyah etiket. Görsel Admin'den
           değiştirilebilir (section: tanitim-gorsel). */}
       <section>
         <style>{`
-          .fab-intro { display: grid; grid-template-columns: 1fr 1fr; min-height: 800px; }
+          .fab-intro { display: grid; grid-template-columns: 51fr 49fr; min-height: 800px; }
           .fab-intro-left { padding: 0 7vw; }
           @media (max-width: 768px) {
             .fab-intro { grid-template-columns: 1fr; min-height: 0; }
