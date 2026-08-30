@@ -68,10 +68,6 @@ const DEFAULT_PRICES = {}
 PHOTO_SIZES.forEach(s => PHOTO_FINISHES.forEach(f => { DEFAULT_PRICES[`${s}:${f}`] = SIZE_DEFAULT_PRICES[s] || 0 }))
 
 const heading = { fontFamily: 'var(--font-heading)', fontWeight: 400, color: 'var(--ink)' }
-const eyebrow = {
-  fontFamily: 'var(--font-body)', fontSize: '.72rem', fontWeight: 500,
-  letterSpacing: '.18em', textTransform: 'uppercase', color: 'var(--accent)',
-}
 const body = { fontFamily: 'var(--font-body)', fontSize: '.9rem', lineHeight: 1.7, color: 'var(--muted)' }
 const label = { fontFamily: 'var(--font-body)', fontSize: '.72rem', fontWeight: 500, letterSpacing: '.08em', textTransform: 'uppercase', color: 'var(--ink)' }
 
@@ -362,15 +358,6 @@ export default function FotografBaski() {
           style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }}
         />
         <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(180deg, rgba(17,17,17,.15), rgba(17,17,17,.55))' }} />
-        <div style={{ position: 'relative', zIndex: 1, padding: '0 1.5rem' }}>
-          <p style={{ ...eyebrow, color: '#fff', opacity: .85, marginBottom: '1rem' }}>Hizmetlerimiz</p>
-          <h1 style={{ ...heading, fontSize: 'clamp(2rem, 5vw, 3.2rem)', color: '#fff', margin: '0 0 1rem' }}>
-            Fotoğraf Baskı
-          </h1>
-          <p style={{ ...body, color: 'rgba(255,255,255,.85)', maxWidth: 480, margin: '0 auto' }}>
-            {content['hero-aciklama'] || 'Yüksek çözünürlükte, profesyonel fotoğraf kağıtlarına baskı.'}
-          </p>
-        </div>
       </section>
 
       {/* Hero'nun hemen altında, ortalı tanıtım metni + 2 öne çıkan özellik. */}
