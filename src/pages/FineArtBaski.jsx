@@ -269,10 +269,21 @@ export default function FineArtBaski() {
           />
         </div>
 
-        <div style={{ maxWidth: 1000, margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '3.5rem' }}>
+        <style>{`
+          .fab-papers-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 3rem 2.5rem; }
+          @media (max-width: 640px) {
+            .fab-papers-grid { grid-template-columns: 1fr; }
+          }
+        `}</style>
+        <div className="fab-papers-grid" style={{ maxWidth: 1000, margin: '0 auto' }}>
           {papers.map(p => (
             <div key={p.no}>
-              <div style={{ display: 'flex', alignItems: 'baseline', gap: '1rem', marginBottom: '1.2rem' }}>
+              <div style={{ aspectRatio: '4/3', marginBottom: '1.2rem' }}>
+                {p.texturePhoto
+                  ? <img src={p.texturePhoto} alt={`${p.name} kağıt dokusu`} loading="lazy" decoding="async" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+                  : placeholderBox('Kağıt dokusu yakın çekim')}
+              </div>
+              <div style={{ display: 'flex', alignItems: 'baseline', gap: '1rem', marginBottom: '.9rem' }}>
                 <span style={{ ...heading, fontSize: '2.2rem', color: 'var(--border)' }}>{p.no}</span>
                 <div>
                   <h3 style={{ ...heading, fontSize: '1.4rem', margin: 0 }}>{p.name}</h3>
@@ -284,11 +295,6 @@ export default function FineArtBaski() {
                     {p.gsm} · {p.composition} · {p.color} · {p.surface}
                   </p>
                 </div>
-              </div>
-              <div style={{ maxWidth: 420, aspectRatio: '4/3', marginBottom: '1.2rem' }}>
-                {p.texturePhoto
-                  ? <img src={p.texturePhoto} alt={`${p.name} kağıt dokusu`} loading="lazy" decoding="async" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
-                  : placeholderBox('Kağıt dokusu yakın çekim')}
               </div>
               {p.description && <p style={body}>{p.description}</p>}
             </div>
