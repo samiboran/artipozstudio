@@ -49,11 +49,15 @@ const EMPTY_PAPER = {
 // Fotoğraf Baskı sayfasındaki boy/yüzey fiyat matrisi.
 // Fiyat tablosunun eksenleri — Fotoğraf Baskı sihirbazındaki Kağıt/Ölçü
 // butonlarıyla birebir aynı olmalı (Özel Ölçü'nün sabit fiyatı yok, bu
-// yüzden burada yer almıyor). Fiyat sadece boya göre değişiyor, yüzeye göre
-// değişmiyor — bu yüzden Admin'de tek bir "boy başına fiyat" alanı var,
-// kaydedilirken bu değer 4 yüzeyin de satırına aynen yazılıyor.
+// yüzden burada yer almıyor). Her (boy, yüzey) hücresi bağımsız düzenlenebilir
+// — kağıt yüzeyi fiyatı etkileyebilir, kod bir varsayım yapmıyor.
 const PHOTO_SIZES = ['A5', 'A4', 'A3', 'A2']
 const PHOTO_FINISHES = ['Glossy', 'Satin', 'Matte', 'Metallic']
+
+// Güncel fiyat tablosu (Sami/Meltem'in onayladığı rakamlar) — Admin'de bir
+// (boy, yüzey) hücresi için henüz kayıt yoksa (veya 0 kaydedilmişse) bu
+// varsayılan değer gösterilir; siteyle (FotografBaski.jsx) aynı mantık.
+const SIZE_DEFAULT_PRICES = { 'A5': 250, 'A4': 350, 'A3': 600, 'A2': 1000 }
 
 // Görseller sekmesinde yönetilen sabit alanlar. multiple:false => tek görsel (yeni yükleme
 // eskisinin yerine geçer). multiple:true => istenildiği kadar görsel eklenip silinebilir.
@@ -935,7 +939,13 @@ function Admin() {
   async function loadPhotoPrices() {
     const { data } = await supabase.from('photo_print_prices').select('*')
     const map = {}
-    ;(data || []).forEach(row => { map[`${row.size}:${row.finish}`] = row.price })
+    PHOTO_SIZES.forEach(size => PHOTO_FINISHES.forEach(finish => {
+      map[`${size}:${finish}`] = SIZE_DEFAULT_PRICES[size] || 0
+    }))
+    ;(data || []).forEach(row => {
+      const price = Number(row.price) || 0
+      if (price > 0) map[`${row.size}:${row.finish}`] = price
+    })
     setPhotoPrices(map)
   }
 
