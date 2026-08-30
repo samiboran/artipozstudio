@@ -112,9 +112,6 @@ export default function FineArtBaski() {
           background: 'linear-gradient(180deg, rgba(17,17,17,.15), rgba(17,17,17,.55))'
         }} />
         <div style={{ position: 'relative', zIndex: 1, padding: '0 1.5rem' }}>
-          <p style={{ ...eyebrow, color: '#fff', opacity: .85, marginBottom: '1rem' }}>
-            Meltem Sarı
-          </p>
           <h1 style={{ ...heading, fontSize: 'clamp(2rem, 5vw, 3.2rem)', color: '#fff', margin: '0 0 1rem' }}>
             Fine Art Baskı
           </h1>
@@ -127,7 +124,6 @@ export default function FineArtBaski() {
       {/* Nedir? / Kimler için? / Özellikleri */}
       <section style={{ maxWidth: 900, margin: '0 auto', padding: '4rem 2rem', display: 'flex', flexDirection: 'column', gap: '2.5rem' }}>
         <div>
-          <p style={{ ...eyebrow, marginBottom: '.6rem' }}>01</p>
           <h2 style={{ ...heading, fontSize: '1.3rem', margin: '0 0 .8rem' }}>Fine Art Baskı Nedir?</h2>
           <p style={body}>
             Fine art baskı, sanat ve fotoğraf eserlerini müze ve galeri standartlarında,
@@ -137,7 +133,6 @@ export default function FineArtBaski() {
           </p>
         </div>
         <div style={{ borderTop: '1px solid var(--border)', paddingTop: '2.5rem' }}>
-          <p style={{ ...eyebrow, marginBottom: '.6rem' }}>02</p>
           <h2 style={{ ...heading, fontSize: '1.3rem', margin: '0 0 .8rem' }}>Kimler ve Hangi İşler İçin Uygun?</h2>
           <p style={body}>
             Sanatçılar, fotoğrafçılar ve koleksiyonerler için idealdir. Portreler,
@@ -145,7 +140,6 @@ export default function FineArtBaski() {
           </p>
         </div>
         <div style={{ borderTop: '1px solid var(--border)', paddingTop: '2.5rem' }}>
-          <p style={{ ...eyebrow, marginBottom: '.6rem' }}>03</p>
           <h2 style={{ ...heading, fontSize: '1.3rem', margin: '0 0 .8rem' }}>Özellikleri ve Kalitesi</h2>
           <ul style={{ ...body, margin: 0, paddingLeft: '1.2rem' }}>
             <li>Uzun ömürlü, asitsiz arşiv kağıdı</li>
@@ -291,17 +285,10 @@ export default function FineArtBaski() {
                   </p>
                 </div>
               </div>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: '1rem', marginBottom: '1.2rem' }}>
-                <div style={{ aspectRatio: '4/3' }}>
-                  {p.texturePhoto
-                    ? <img src={p.texturePhoto} alt={`${p.name} kağıt dokusu`} loading="lazy" decoding="async" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
-                    : placeholderBox('Kağıt dokusu yakın çekim')}
-                </div>
-                <div style={{ aspectRatio: '4/3' }}>
-                  {p.previewPhoto
-                    ? <img src={p.previewPhoto} alt={`${p.name} baskı önizlemesi`} loading="lazy" decoding="async" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
-                    : placeholderBox('Baskı önizlemesi')}
-                </div>
+              <div style={{ maxWidth: 420, aspectRatio: '4/3', marginBottom: '1.2rem' }}>
+                {p.texturePhoto
+                  ? <img src={p.texturePhoto} alt={`${p.name} kağıt dokusu`} loading="lazy" decoding="async" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+                  : placeholderBox('Kağıt dokusu yakın çekim')}
               </div>
               {p.description && <p style={body}>{p.description}</p>}
             </div>
