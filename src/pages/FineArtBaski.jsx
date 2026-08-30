@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { supabase } from '../lib/supabase'
 import heroImgDefault from '../assets/fine-art/hero.jpg'
 import kagitSecenekleriImgDefault from '../assets/fine-art/kagit-secenekleri.jpg'
+import tanitimImgDefault from '../assets/process/baski-sureci.jpg'
 import ornekBotanikImgDefault from '../assets/fine-art/ornek-botanik.jpg'
 import ornekBotanik2ImgDefault from '../assets/fine-art/ornek-botanik-2.jpg'
 import ornekDoku1ImgDefault from '../assets/fine-art/ornek-doku-1.jpg'
@@ -24,24 +25,13 @@ const heading = { fontFamily: 'var(--font-heading)', fontWeight: 400, color: 'va
 const eyebrow = { fontFamily: 'var(--font-body)', fontSize: '.72rem', fontWeight: 500, letterSpacing: '.18em', textTransform: 'uppercase', color: 'var(--accent)' }
 const body = { fontFamily: 'var(--font-body)', fontSize: '.92rem', lineHeight: 1.7, color: 'var(--muted)' }
 
-const placeholderBox = (label) => (
-  <div style={{
-    width: '100%', height: '100%', minHeight: 220,
-    background: 'var(--surface)', display: 'flex',
-    alignItems: 'center', justifyContent: 'center',
-    fontFamily: 'var(--font-body)', fontSize: '.7rem',
-    letterSpacing: '.05em', color: 'var(--muted)', textAlign: 'center', padding: '1rem'
-  }}>
-    {label}
-  </div>
-)
-
 export default function FineArtBaski() {
   const [papers, setPapers] = useState(FALLBACK_PAPERS)
   const [content, setContent] = useState({})
   const [images, setImages] = useState({
     hero: heroImgDefault,
     'kagit-secenekleri': kagitSecenekleriImgDefault,
+    'tanitim-gorsel': tanitimImgDefault,
     ornekler: [
       { image_url: ornekBotanikImgDefault, alt: 'Botanik seri fine art baskı örneği' },
       { image_url: ornekBotanik2ImgDefault, alt: 'Botanik seri fine art baskı, detay' },
@@ -83,6 +73,7 @@ export default function FineArtBaski() {
           imgs.forEach(row => { (bySection[row.section] ||= []).push(row) })
           if (bySection.hero?.[0]) next.hero = bySection.hero[0].image_url
           if (bySection['kagit-secenekleri']?.[0]) next['kagit-secenekleri'] = bySection['kagit-secenekleri'][0].image_url
+          if (bySection['tanitim-gorsel']?.[0]) next['tanitim-gorsel'] = bySection['tanitim-gorsel'][0].image_url
           if (bySection.ornekler?.length) next.ornekler = bySection.ornekler
           return next
         })
@@ -113,59 +104,63 @@ export default function FineArtBaski() {
         }} />
       </section>
 
-      {/* Nedir? / Kimler için? / Özellikleri */}
-      <section style={{ maxWidth: 900, margin: '0 auto', padding: '4rem 2rem', display: 'flex', flexDirection: 'column', gap: '2.5rem' }}>
-        <div>
-          <h2 style={{ ...heading, fontSize: '1.3rem', margin: '0 0 .8rem' }}>Fine Art Baskı Nedir?</h2>
-          <p style={body}>
-            Fine art baskı, sanat ve fotoğraf eserlerini müze ve galeri standartlarında,
-            uzun ömürlü ve yüksek kaliteyle çoğaltan bir baskı yöntemidir. Hahnemühle gibi
-            %100 pamuklu fine art kağıtlara yapılan baskılar, detayları, ton geçişlerini
-            ve dokuyu olağanüstü netlikte sunar.
-          </p>
-        </div>
-        <div style={{ borderTop: '1px solid var(--border)', paddingTop: '2.5rem' }}>
-          <h2 style={{ ...heading, fontSize: '1.3rem', margin: '0 0 .8rem' }}>Kimler ve Hangi İşler İçin Uygun?</h2>
-          <p style={body}>
-            Sanatçılar, fotoğrafçılar ve koleksiyonerler için idealdir. Portreler,
-            manzaralar, soyut ve estetik odaklı tüm eserler fine art baskıyla değer kazanır.
-          </p>
-        </div>
-        <div style={{ borderTop: '1px solid var(--border)', paddingTop: '2.5rem' }}>
-          <h2 style={{ ...heading, fontSize: '1.3rem', margin: '0 0 .8rem' }}>Özellikleri ve Kalitesi</h2>
-          <ul style={{ ...body, margin: 0, paddingLeft: '1.2rem' }}>
-            <li>Uzun ömürlü, asitsiz arşiv kağıdı</li>
-            <li>Derin siyahlar ve hassas ton geçişleri</li>
-            <li>Dokusal yüzey ve mükemmel renk doğruluğu</li>
-            <li>Müze ve galeri sergileri için premium kalite</li>
-          </ul>
-        </div>
-      </section>
-
-      {/* Spesifikasyon tablosu */}
-      <section style={{ maxWidth: 1100, margin: '0 auto', padding: '0 2rem 4rem', overflowX: 'auto' }}>
-        <table style={{ width: '100%', borderCollapse: 'collapse', fontFamily: 'var(--font-body)', fontSize: '.82rem' }}>
-          <thead>
-            <tr style={{ borderBottom: '2px solid var(--ink)' }}>
-              {['Marka', 'Kağıt Adı', 'Yüzey', 'Gramaj', 'Doku', 'Renk', 'Kompozisyon'].map(h => (
-                <th key={h} style={{ textAlign: 'left', padding: '.7rem .6rem', color: 'var(--ink)', fontWeight: 600 }}>{h}</th>
+      {/* Tanıtım bölümü — hero'nun hemen altında, referans tasarıma göre:
+          sol %50 metin (etiket + büyük başlık + açıklama + 3 özellik),
+          sağ %50 stüdyo fotoğrafı + siyah etiket. Görsel Admin'den
+          değiştirilebilir (section: tanitim-gorsel). */}
+      <section>
+        <style>{`
+          .fab-intro { display: grid; grid-template-columns: 1fr 1fr; min-height: 800px; }
+          .fab-intro-left { padding: 0 7vw; }
+          @media (max-width: 768px) {
+            .fab-intro { grid-template-columns: 1fr; min-height: 0; }
+            .fab-intro-left { padding: 3.5rem 40px 2.5rem; }
+            .fab-intro-title { font-size: clamp(2.75rem, 11vw, 3.25rem) !important; }
+            .fab-intro-right { height: 580px; }
+          }
+        `}</style>
+        <div className="fab-intro">
+          <div className="fab-intro-left" style={{ background: '#f3efe6', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '.6rem', marginBottom: '2.2rem' }}>
+              <span style={{ fontFamily: 'var(--font-body)', fontSize: '.78rem', fontWeight: 600, letterSpacing: '.22em', textTransform: 'uppercase', color: '#111' }}>
+                Fine Art Baskı
+              </span>
+              <span style={{ width: 9, height: 9, borderRadius: '50%', background: '#e0492e', display: 'inline-block', flexShrink: 0 }} />
+            </div>
+            <h2 className="fab-intro-title" style={{ ...heading, fontSize: 'clamp(4.25rem, 5vw, 5.25rem)', lineHeight: 1.05, color: '#111', margin: '0 0 1.6rem' }}>
+              Eseriniz için<br />arşiv kalitesinde<br />baskı.
+            </h2>
+            <p style={{ ...body, fontSize: '1.05rem', lineHeight: 1.75, maxWidth: 470, color: '#333' }}>
+              Renk, ton ve dokuyu en ince ayrıntısına kadar koruyan; sergileme, koleksiyon ve
+              sınırlı edisyonlar için üretilen Fine Art baskılar.
+            </p>
+            <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '.9rem', marginTop: '3.5rem' }}>
+              {['ASİTSİZ KÂĞIT', 'YÜKSEK RENK DOĞRULUĞU', 'UZUN ÖMÜR'].map((f, i) => (
+                <span key={f} style={{ display: 'flex', alignItems: 'center', gap: '.9rem' }}>
+                  {i > 0 && <span style={{ color: '#e0492e', fontFamily: 'var(--font-body)', fontSize: '.8rem' }}>/</span>}
+                  <span style={{ fontFamily: 'var(--font-body)', fontSize: '.72rem', fontWeight: 700, letterSpacing: '.1em', color: '#111', whiteSpace: 'nowrap' }}>{f}</span>
+                </span>
               ))}
-            </tr>
-          </thead>
-          <tbody>
-            {papers.map(p => (
-              <tr key={p.no} style={{ borderBottom: '1px solid var(--border)' }}>
-                <td style={{ padding: '.7rem .6rem', color: 'var(--muted)' }}>Hahnemühle</td>
-                <td style={{ padding: '.7rem .6rem', color: 'var(--ink)' }}>{p.name}</td>
-                <td style={{ padding: '.7rem .6rem', color: 'var(--muted)' }}>{p.surface}</td>
-                <td style={{ padding: '.7rem .6rem', color: 'var(--muted)' }}>{p.gsm}</td>
-                <td style={{ padding: '.7rem .6rem', color: 'var(--muted)' }}>{p.texture}</td>
-                <td style={{ padding: '.7rem .6rem', color: 'var(--muted)' }}>{p.color}</td>
-                <td style={{ padding: '.7rem .6rem', color: 'var(--muted)' }}>{p.composition}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+            </div>
+          </div>
+          <div className="fab-intro-right" style={{ position: 'relative', overflow: 'hidden' }}>
+            <img
+              src={images['tanitim-gorsel']}
+              alt="Fine Art baskı stüdyosunda geniş format yazıcıdan çıkan renkli bir sanat eseri baskısı"
+              loading="lazy" decoding="async"
+              style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+            />
+            <div style={{ position: 'absolute', left: '1.5rem', bottom: '1.5rem', background: '#111' }}>
+              <span style={{
+                display: 'block', padding: '.9rem 1.2rem', fontFamily: 'var(--font-body)',
+                fontSize: '.68rem', fontWeight: 700, letterSpacing: '.08em', textTransform: 'uppercase',
+                color: '#fff', lineHeight: 1.5,
+              }}>
+                Müze ve Galeri<br />Standardında
+              </span>
+            </div>
+          </div>
+        </div>
       </section>
 
       {/* Örnek Baskılarımız */}
@@ -238,56 +233,6 @@ export default function FineArtBaski() {
               </div>
             ))}
           </div>
-        </div>
-      </section>
-
-      {/* Kağıt seçenekleri — detaylı kartlar */}
-      <section style={{ background: 'var(--surface)', padding: '4rem 2rem' }}>
-        <div style={{ maxWidth: 900, margin: '0 auto 3.5rem', textAlign: 'center' }}>
-          <p style={{ ...eyebrow, marginBottom: '.6rem' }}>Kağıt Seçenekleri</p>
-          <h2 style={{ ...heading, fontSize: '1.8rem', margin: '0 0 1rem' }}>Hahnemühle Fine Art Kağıtları</h2>
-          <p style={body}>
-            Her eser, kendine özgü bir yüzey gerektirir. Aşağıda sunduğumuz Hahnemühle
-            kağıt seçeneklerini keşfedin ve sanatınıza en uygun zemini bulun.
-          </p>
-        </div>
-
-        <div style={{ maxWidth: 900, margin: '0 auto 3.5rem' }}>
-          <img
-            src={images['kagit-secenekleri']}
-            alt="Hahnemühle fine art kağıt numuneleri"
-            loading="lazy" decoding="async"
-            style={{ width: '100%', aspectRatio: '4 / 3', objectFit: 'contain', display: 'block' }}
-          />
-        </div>
-
-        <style>{`
-          .fab-papers-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 3rem 2.5rem; }
-          @media (max-width: 640px) {
-            .fab-papers-grid { grid-template-columns: 1fr; }
-          }
-        `}</style>
-        <div className="fab-papers-grid" style={{ maxWidth: 1000, margin: '0 auto' }}>
-          {papers.map(p => (
-            <div key={p.no}>
-              <div style={{ aspectRatio: '4/3', marginBottom: '1.2rem' }}>
-                {p.texturePhoto
-                  ? <img src={p.texturePhoto} alt={`${p.name} kağıt dokusu`} loading="lazy" decoding="async" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
-                  : placeholderBox('Kağıt dokusu yakın çekim')}
-              </div>
-              <div style={{ marginBottom: '.9rem' }}>
-                <h3 style={{ ...heading, fontSize: '1.4rem', margin: 0 }}>{p.name}</h3>
-                {/* gsm/kompozisyon/renk hep İngilizce kağıt terminolojisi (Cotton,
-                    Fibre, White vb.) — doküman lang="tr" olduğu için
-                    text-transform:uppercase Türkçe İ kuralını uyguluyor ve
-                    "FİBRE"/"WHİTE" gibi yanlış sonuçlar üretiyordu. */}
-                <p lang="en" style={{ ...body, fontSize: '.72rem', letterSpacing: '.05em', textTransform: 'uppercase', margin: '.3rem 0 0' }}>
-                  {p.gsm} · {p.composition} · {p.color} · {p.surface}
-                </p>
-              </div>
-              {p.description && <p style={body}>{p.description}</p>}
-            </div>
-          ))}
         </div>
       </section>
 
