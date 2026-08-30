@@ -226,14 +226,6 @@ export default function Cerceve() {
           position: 'absolute', inset: 0,
           background: 'linear-gradient(180deg, rgba(17,17,17,.1), rgba(17,17,17,.5))'
         }} />
-        <div style={{ position: 'relative', zIndex: 1, padding: '0 1.5rem' }}>
-          <h1 style={{ ...heading, fontSize: 'clamp(2rem, 5vw, 3.2rem)', color: '#fff', margin: '0 0 1rem' }}>
-            Çerçeve
-          </h1>
-          <p style={{ ...body, color: 'rgba(255,255,255,.9)', maxWidth: 520, margin: '0 auto' }}>
-            {content['hero-aciklama'] || 'Fotoğraflarınızı kalıcı kılın. Siyah, beyaz ve doğal ahşap çerçeve seçenekleriyle anılarınızı sanat eserine dönüştürün.'}
-          </p>
-        </div>
       </section>
 
       {/* Özellikler */}
