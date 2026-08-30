@@ -283,18 +283,15 @@ export default function FineArtBaski() {
                   ? <img src={p.texturePhoto} alt={`${p.name} kağıt dokusu`} loading="lazy" decoding="async" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
                   : placeholderBox('Kağıt dokusu yakın çekim')}
               </div>
-              <div style={{ display: 'flex', alignItems: 'baseline', gap: '1rem', marginBottom: '.9rem' }}>
-                <span style={{ ...heading, fontSize: '2.2rem', color: 'var(--border)' }}>{p.no}</span>
-                <div>
-                  <h3 style={{ ...heading, fontSize: '1.4rem', margin: 0 }}>{p.name}</h3>
-                  {/* gsm/kompozisyon/renk hep İngilizce kağıt terminolojisi (Cotton,
-                      Fibre, White vb.) — doküman lang="tr" olduğu için
-                      text-transform:uppercase Türkçe İ kuralını uyguluyor ve
-                      "FİBRE"/"WHİTE" gibi yanlış sonuçlar üretiyordu. */}
-                  <p lang="en" style={{ ...body, fontSize: '.72rem', letterSpacing: '.05em', textTransform: 'uppercase', margin: '.3rem 0 0' }}>
-                    {p.gsm} · {p.composition} · {p.color} · {p.surface}
-                  </p>
-                </div>
+              <div style={{ marginBottom: '.9rem' }}>
+                <h3 style={{ ...heading, fontSize: '1.4rem', margin: 0 }}>{p.name}</h3>
+                {/* gsm/kompozisyon/renk hep İngilizce kağıt terminolojisi (Cotton,
+                    Fibre, White vb.) — doküman lang="tr" olduğu için
+                    text-transform:uppercase Türkçe İ kuralını uyguluyor ve
+                    "FİBRE"/"WHİTE" gibi yanlış sonuçlar üretiyordu. */}
+                <p lang="en" style={{ ...body, fontSize: '.72rem', letterSpacing: '.05em', textTransform: 'uppercase', margin: '.3rem 0 0' }}>
+                  {p.gsm} · {p.composition} · {p.color} · {p.surface}
+                </p>
               </div>
               {p.description && <p style={body}>{p.description}</p>}
             </div>

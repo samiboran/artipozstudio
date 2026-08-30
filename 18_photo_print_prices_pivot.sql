@@ -1,12 +1,10 @@
 -- ============================================================
--- UYARI (sonradan eklendi): Bu dosyadaki A5=250/A4=350/A3=600/A2=1000
--- rakamları GERÇEK değildi — Code'un o an elindeki referanstan uydurduğu
--- placeholder değerlerdi. Gerçek fiyatlar bunlar değil. Bu migration'ı
--- daha önce çalıştırdıysan, Admin panelinden (Fotoğraf Baskı Fiyatları)
--- bu 16 hücrenin (4 ölçü × 4 kağıt yüzeyi) üzerine gerçek rakamları
--- elle yaz. Çalıştırmadıysan bu dosyayı hiç çalıştırma — sadece Admin
--- panelinden gerçek fiyatları gir, site artık o tabloyu birebir okuyor.
--- ============================================================
+-- GÜNCELLEME: Sami/Meltem A5=250/A4=350/A3=600/A2=1000 rakamlarını güncel
+-- fiyat tablosu olarak onayladı. Kod tarafında (FotografBaski.jsx,
+-- Admin.jsx) bu değerler artık varsayılan olarak zaten gömülü — bu SQL'i
+-- hiç çalıştırmasan da site/Admin bu rakamları gösterir. Yine de bu
+-- migration'ı çalıştırmak, rakamları gerçek veritabanı kaydı olarak
+-- kalıcı hale getirir (önerilir, ama zorunlu değil).
 --
 -- Fotoğraf Baskı fiyat pivotu: ölçü ekseni A5/A4/A3/A2'ye sabitlendi,
 -- fiyat artık sadece ölçüye göre değişiyor (kağıt yüzeyinden bağımsız —

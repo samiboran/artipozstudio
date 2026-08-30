@@ -55,15 +55,17 @@ const KODAK_PAPERS = [
   },
 ]
 
-// Gerçek fiyatlar SADECE Admin panelindeki fiyat matrisinden gelir
-// (photo_print_prices tablosu, boy × kağıt yüzeyi bazında). Burada uydurma/
-// sabit bir tablo YOK — veri gelene kadar hepsi 0, sayfa açılışında
-// Supabase'den gerçek matris çekilip prices state'i bu değerlerin üzerine
-// yazılıyor (bkz. loadData). Kağıt yüzeyi fiyatı etkileyebilir ya da
-// etkilemeyebilir — bu, Admin'in matrise girdiği gerçek rakamlara bağlı,
-// kod bir varsayım yapmıyor.
-const EMPTY_PRICES = {}
-PHOTO_SIZES.forEach(s => PHOTO_FINISHES.forEach(f => { EMPTY_PRICES[`${s}:${f}`] = 0 }))
+// Güncel fiyat tablosu (Sami/Meltem'in onayladığı rakamlar): A5=250, A4=350,
+// A3=600, A2=1000 — Özel Ölçü'nün sabit fiyatı yok (teklif üzerine).
+// Bu değerler varsayılan/başlangıç değeri olarak kullanılıyor; Admin
+// panelindeki fiyat matrisinde (photo_print_prices, boy × kağıt yüzeyi
+// bazında) bir (boy, yüzey) kombinasyonu için gerçek bir kayıt varsa o
+// değer bunun üzerine yazılır (bkz. loadData) — yani Admin istediği an
+// belirli bir ölçü/kağıt kombinasyonunu bu varsayılandan farklı bir
+// fiyatla güncelleyebilir, kod bunu engellemiyor.
+const SIZE_DEFAULT_PRICES = { 'A5': 250, 'A4': 350, 'A3': 600, 'A2': 1000 }
+const DEFAULT_PRICES = {}
+PHOTO_SIZES.forEach(s => PHOTO_FINISHES.forEach(f => { DEFAULT_PRICES[`${s}:${f}`] = SIZE_DEFAULT_PRICES[s] || 0 }))
 
 const heading = { fontFamily: 'var(--font-heading)', fontWeight: 400, color: 'var(--ink)' }
 const eyebrow = {
@@ -120,9 +122,10 @@ export default function FotografBaski() {
     'wizard-mockup': null,
   })
   const [content, setContent] = useState({})
-  // Gerçek fiyat matrisi yüklenene kadar hepsi 0 — pricesLoaded false iken
-  // arayüz "…" gösterir, gerçek (muhtemelen 0 olmayan) rakamla karıştırılmasın diye.
-  const [prices, setPrices] = useState(EMPTY_PRICES)
+  // Gerçek fiyat matrisi yüklenene kadar güncel varsayılan tablo (DEFAULT_PRICES)
+  // gösterilir — pricesLoaded false iken arayüz "…" gösterir, bu varsayımsal
+  // değerle gerçek Admin verisi karıştırılmasın diye.
+  const [prices, setPrices] = useState(DEFAULT_PRICES)
   const [pricesLoaded, setPricesLoaded] = useState(false)
 
   // --- "Baskını Oluştur" sihirbazı: 01 Dosya + 02 Kağıt & Ölçü aynı ekranda
@@ -171,12 +174,16 @@ export default function FotografBaski() {
       }
 
       // Gerçek fiyat matrisi — Admin panelinden (Fotoğraf Baskı Fiyatları)
-      // girilen boy × kağıt yüzeyi rakamları. Boş dönerse (Admin henüz
-      // girmediyse) prices EMPTY_PRICES'ta (hepsi 0) kalır — ama
-      // pricesLoaded true olduğu için bu artık "yükleniyor" değil,
-      // "gerçekten 0" olarak gösterilir.
-      const map = { ...EMPTY_PRICES }
-      ;(priceRows || []).forEach(p => { map[`${p.size}:${p.finish}`] = Number(p.price) || 0 })
+      // girilen boy × kağıt yüzeyi rakamları. Admin bir kombinasyon için
+      // 0'dan büyük bir fiyat girmişse o değer güncel varsayılan tabloyu
+      // (DEFAULT_PRICES) geçersiz kılar; boş/0 ise (henüz hiç girilmemiş
+      // ya da yanlışlıkla 0 kaydedilmiş) güncel varsayılan gösterilmeye
+      // devam eder — 0 TL hiçbir zaman gerçek bir baskı fiyatı olamaz.
+      const map = { ...DEFAULT_PRICES }
+      ;(priceRows || []).forEach(p => {
+        const price = Number(p.price) || 0
+        if (price > 0) map[`${p.size}:${p.finish}`] = price
+      })
       setPrices(map)
       setPricesLoaded(true)
     } catch (err) {
