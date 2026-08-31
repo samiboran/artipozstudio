@@ -163,8 +163,12 @@ export default function FineArtBaski() {
         </div>
       </section>
 
-      {/* Örnek Baskılarımız */}
-      <section style={{ maxWidth: 1000, margin: '0 auto', padding: '0 2rem 4rem' }}>
+      {/* Örnek Baskılarımız — üstteki tam genişlik tanıtım bölümünden
+          (kenardan kenara fotoğraf, kendi iç boşluğu yok) hemen sonra
+          geldiği için burada üstte de yeterli boşluk olması gerekiyor;
+          önceden padding'in üst değeri 0'dı, bu da eyebrow'un fotoğrafa
+          yapışık ve sıkışmış görünmesine yol açıyordu. */}
+      <section style={{ maxWidth: 1000, margin: '0 auto', padding: '4.5rem 2rem 4rem' }}>
         <p style={{ ...eyebrow, textAlign: 'center', marginBottom: '1.5rem' }}>Örnek Baskılarımız</p>
         {/* auto-fit yerine auto-fill — sadece 2-3 görsel yüklendiğinde
             auto-fit boş sütunları kaldırıp kalan görselleri konteynerin
