@@ -6,7 +6,6 @@ import heroImgDefault from '../assets/cerceve/hero.jpg'
 // Supabase Storage'ta tek dosya için pratik üst sınır.
 const MAX_FILE_SIZE_MB = 10
 import renkSecenekleriImgDefault from '../assets/cerceve/renk-secenekleri.jpg'
-import renkDetayImgDefault from '../assets/cerceve/renk-secenekleri-detay.jpg'
 import ornekSiyahImgDefault from '../assets/cerceve/ornek-siyah-cerceve.jpg'
 import ornekAhsapImgDefault from '../assets/cerceve/ornek-ahsap-cerceve.jpg'
 
@@ -23,39 +22,28 @@ const FALLBACK_SWATCH = { Siyah: '#1a1a1a', Beyaz: '#f5f4f0', 'Doğal Ahşap': '
 
 const FEATURES = [
   {
-    title: 'UV Korumalı Cam',
+    title: 'UV korumalı cam',
     icon: (
-      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
         <path d="M12 3l7 3v6c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V6l7-3z" />
       </svg>
     ),
   },
   {
-    title: 'Doğal Malzeme',
+    title: 'Doğal malzeme',
     icon: (
-      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
         <path d="M20 4c-8 0-14 5-14 13 0 1.5 0 3 1 3s1-1.5 1-3c0-8 6-13 12-13z" />
         <path d="M7 20c2-6 6-10 12-13" />
       </svg>
     ),
   },
   {
-    title: 'Hazır Asma',
+    title: 'Hazır asma',
     icon: (
-      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
         <path d="M9 6a3 3 0 116 0v2H9V6z" />
         <rect x="5" y="8" width="14" height="12" rx="1" />
-      </svg>
-    ),
-  },
-  {
-    title: '3 Renk Seçeneği',
-    icon: (
-      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-        <circle cx="12" cy="12" r="9" />
-        <circle cx="12" cy="8" r="1.4" fill="currentColor" />
-        <circle cx="9" cy="14" r="1.4" fill="currentColor" />
-        <circle cx="15" cy="14" r="1.4" fill="currentColor" />
       </svg>
     ),
   },
@@ -91,7 +79,6 @@ export default function Cerceve() {
   const [images, setImages] = useState({
     hero: heroImgDefault,
     'renk-secenekleri': renkSecenekleriImgDefault,
-    'renk-detay': renkDetayImgDefault,
     ornekler: [
       { image_url: ornekSiyahImgDefault, alt: 'Siyah çerçeveli örnek eser' },
       { image_url: ornekAhsapImgDefault, alt: 'Koyu ahşap çerçeveli örnek eser' },
@@ -135,7 +122,6 @@ export default function Cerceve() {
           imgs.forEach(row => { (bySection[row.section] ||= []).push(row) })
           if (bySection.hero?.[0]) next.hero = bySection.hero[0].image_url
           if (bySection['renk-secenekleri']?.[0]) next['renk-secenekleri'] = bySection['renk-secenekleri'][0].image_url
-          if (bySection['renk-detay']?.[0]) next['renk-detay'] = bySection['renk-detay'][0].image_url
           if (bySection.ornekler?.length) next.ornekler = bySection.ornekler
           return next
         })
@@ -228,36 +214,50 @@ export default function Cerceve() {
         }} />
       </section>
 
-      {/* Özellikler */}
-      <section style={{ maxWidth: 1000, margin: '0 auto', padding: '3rem 2rem' }}>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '1.5rem' }}>
-          {FEATURES.map(f => (
-            <div key={f.title} style={{
-              border: '1px solid var(--border)', padding: '1.8rem 1rem',
-              display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '.8rem',
-              textAlign: 'center',
-            }}>
-              <div style={{ color: 'var(--accent)' }}>{f.icon}</div>
-              <p style={label}>{f.title}</p>
+      {/* Çerçeve detayları — sol görsel, sağ özellik listesi + renk seçenekleri. */}
+      <section style={{ maxWidth: 1300, margin: '0 auto', padding: '3.5rem 2rem 1rem' }}>
+        <style>{`
+          .cerceve-detay { display: grid; grid-template-columns: 55fr 45fr; gap: 3.5rem; align-items: center; }
+          @media (max-width: 768px) {
+            .cerceve-detay { grid-template-columns: 1fr; gap: 2rem; }
+          }
+        `}</style>
+        <div className="cerceve-detay">
+          <div style={{ aspectRatio: '3 / 2', overflow: 'hidden' }}>
+            <img
+              src={images['renk-secenekleri']}
+              alt="Siyah, beyaz ve doğal ahşap çerçeve renk seçenekleri"
+              loading="lazy" decoding="async"
+              style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+            />
+          </div>
+          <div>
+            <h2 style={{ ...heading, fontSize: '1.9rem', margin: '0 0 1.6rem' }}>Çerçeve detayları</h2>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1.3rem', marginBottom: '2.2rem' }}>
+              {FEATURES.map(f => (
+                <div key={f.title} style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                  <span style={{ color: 'var(--accent)', display: 'flex', flexShrink: 0 }}>{f.icon}</span>
+                  <span style={{ width: 1, height: 22, background: 'var(--border)', flexShrink: 0 }} />
+                  <span style={{ fontFamily: 'var(--font-body)', fontSize: '1rem', color: 'var(--ink)' }}>{f.title}</span>
+                </div>
+              ))}
             </div>
-          ))}
+            <p style={{ ...label, marginBottom: '1rem' }}>Renk seçenekleri</p>
+            <div style={{ display: 'flex', gap: '2rem' }}>
+              {Object.keys(colorSwatch).map(color => (
+                <div key={color} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '.6rem' }}>
+                  <span style={{
+                    width: 48, height: 48, borderRadius: '50%',
+                    background: colorSwatch[color] || '#ccc',
+                    border: color === 'Beyaz' ? '1px solid var(--border)' : 'none',
+                    display: 'inline-block',
+                  }} />
+                  <span style={{ fontFamily: 'var(--font-body)', fontSize: '.82rem', color: 'var(--muted)' }}>{color}</span>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
-      </section>
-
-      {/* Renk seçenekleri */}
-      <section style={{ maxWidth: 900, margin: '0 auto', padding: '0 2rem 1rem' }}>
-        <img
-          src={images['renk-secenekleri']}
-          alt="Siyah, beyaz ve doğal ahşap çerçeve renk seçenekleri"
-          loading="lazy" decoding="async"
-          style={{ width: '100%', aspectRatio: '4 / 3', objectFit: 'contain', display: 'block', marginBottom: '1rem' }}
-        />
-        <img
-          src={images['renk-detay']}
-          alt="Ahşap çerçeve köşe detayı"
-          loading="lazy" decoding="async"
-          style={{ width: '100%', aspectRatio: '4 / 3', objectFit: 'contain', display: 'block' }}
-        />
       </section>
 
       {/* Örnek çerçeveli işler */}
@@ -272,45 +272,6 @@ export default function Cerceve() {
                 loading="lazy" decoding="async"
                 style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
               />
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* Boy / renk / fiyat tablosu */}
-      <section style={{ maxWidth: 1000, margin: '0 auto', padding: '1rem 2rem 3.5rem' }}>
-        <p style={{ ...body, fontSize: '.78rem', textAlign: 'center', marginBottom: '2rem' }}>
-          Tüm çerçeveler UV korumalı cam ve hazır asma aparatıyla teslim edilir.
-        </p>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '1.5rem' }}>
-          {sizes.map(s => (
-            <div key={s.size} style={{ border: '1px solid var(--border)', padding: '1.5rem' }}>
-              <h3 style={{ ...heading, fontSize: '1.1rem', margin: '0 0 .3rem' }}>{s.size}</h3>
-              <p style={{ ...body, fontSize: '.78rem', marginBottom: '1rem' }}>{s.note}</p>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '.5rem', marginBottom: '1.2rem' }}>
-                {Object.keys(s.prices).map(color => (
-                  <div key={color} style={{ display: 'flex', alignItems: 'center', gap: '.5rem', ...body, fontSize: '.85rem' }}>
-                    <span style={{
-                      width: 14, height: 14, borderRadius: '50%',
-                      background: colorSwatch[color] || '#ccc',
-                      border: color === 'Beyaz' ? '1px solid var(--border)' : 'none',
-                      display: 'inline-block',
-                    }} />
-                    {color}
-                  </div>
-                ))}
-              </div>
-              <button
-                onClick={() => setForm(f => ({ ...f, size: s.size }))}
-                style={{
-                  width: '100%', padding: '.8rem', background: 'none',
-                  border: '1px solid var(--ink)', color: 'var(--ink)',
-                  fontFamily: 'var(--font-body)', fontSize: '.72rem',
-                  letterSpacing: '.14em', textTransform: 'uppercase', cursor: 'pointer',
-                }}
-              >
-                Sipariş Ver
-              </button>
             </div>
           ))}
         </div>

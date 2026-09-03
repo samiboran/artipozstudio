@@ -14,7 +14,6 @@ import galleryFineArtDefault from '../assets/process/baski-sureci.jpg'
 import galleryCerceveDefault from '../assets/cerceve/ornek-ahsap-cerceve.jpg'
 import cerceveHeroDefault from '../assets/cerceve/hero.jpg'
 import cerceveRenkSecenekleriDefault from '../assets/cerceve/renk-secenekleri.jpg'
-import cerceveRenkDetayDefault from '../assets/cerceve/renk-secenekleri-detay.jpg'
 import cerceveOrnekSiyahDefault from '../assets/cerceve/ornek-siyah-cerceve.jpg'
 import cerceveOrnekAhsapDefault from '../assets/cerceve/ornek-ahsap-cerceve.jpg'
 import fineArtHeroDefault from '../assets/fine-art/hero.jpg'
@@ -24,7 +23,9 @@ import fineArtOrnekBotanik2Default from '../assets/fine-art/ornek-botanik-2.jpg'
 import fineArtOrnekDoku1Default from '../assets/fine-art/ornek-doku-1.jpg'
 import fineArtOrnekDoku2Default from '../assets/fine-art/ornek-doku-2.jpg'
 import fineArtTanitimDefault from '../assets/fine-art/tanitim-studyo.jpg'
-import fotografBaskiHeroDefault from '../assets/process/studyo.jpg'
+import fotografBaskiHero1Default from '../assets/fotograf-baski/hero-1.jpg'
+import fotografBaskiHero2Default from '../assets/fotograf-baski/hero-2.jpg'
+import fotografBaskiHero3Default from '../assets/fotograf-baski/hero-3.jpg'
 import filmYikamaHeroDefault from '../assets/film-yikama/hero.jpg'
 import filmYikamaAdim01Default from '../assets/film-yikama/adim-01-teslim.jpg'
 import filmYikamaAdim02Default from '../assets/film-yikama/adim-02-yikama-tarama.jpg'
@@ -98,13 +99,12 @@ const IMAGE_SLOTS = [
   { page: 'gallery', section: 'iletisim-gorsel', label: 'Ana Sayfa — İletişim Üstü Görsel', multiple: false, aspect: '16 / 7' },
   { page: 'cerceve', section: 'hero', label: 'Çerçeve — Hero Görseli', multiple: false, aspect: '21 / 9', defaultImg: cerceveHeroDefault },
   { page: 'cerceve', section: 'renk-secenekleri', label: 'Çerçeve — Renk Seçenekleri', multiple: false, aspect: '4 / 3', defaultImg: cerceveRenkSecenekleriDefault },
-  { page: 'cerceve', section: 'renk-detay', label: 'Çerçeve — Renk Detayı', multiple: false, aspect: '4 / 3', defaultImg: cerceveRenkDetayDefault },
   { page: 'cerceve', section: 'ornekler', label: 'Çerçeve — Örnek Çerçeveli İşler', multiple: true, aspect: '4 / 5', defaultImgs: [cerceveOrnekSiyahDefault, cerceveOrnekAhsapDefault] },
   { page: 'fine-art-baski', section: 'hero', label: 'Fine Art Baskı — Hero Görseli', multiple: false, aspect: '21 / 9', defaultImg: fineArtHeroDefault },
   { page: 'fine-art-baski', section: 'kagit-secenekleri', label: 'Fine Art Baskı — Kağıt Seçenekleri', multiple: false, aspect: '4 / 3', defaultImg: fineArtKagitSecenekleriDefault },
   { page: 'fine-art-baski', section: 'tanitim-gorsel', label: 'Fine Art Baskı — Tanıtım Bölümü Görseli (hero altı)', multiple: false, aspect: '4 / 5', defaultImg: fineArtTanitimDefault },
   { page: 'fine-art-baski', section: 'ornekler', label: 'Fine Art Baskı — Örnek Baskılarımız', multiple: true, aspect: '4 / 5', defaultImgs: [fineArtOrnekBotanikDefault, fineArtOrnekBotanik2Default, fineArtOrnekDoku1Default, fineArtOrnekDoku2Default] },
-  { page: 'fotograf-baski', section: 'hero', label: 'Fotoğraf Baskı — Hero Görseli', multiple: false, aspect: '21 / 9', defaultImg: fotografBaskiHeroDefault },
+  { page: 'fotograf-baski', section: 'hero', label: 'Fotoğraf Baskı — Hero Görselleri (sırayla dönen slayt, birden çok görsel eklenebilir)', multiple: true, aspect: '21 / 9', defaultImgs: [fotografBaskiHero1Default, fotografBaskiHero2Default, fotografBaskiHero3Default] },
   { page: 'fotograf-baski', section: 'kodak-glossy-gorsel', label: 'Fotoğraf Baskı — Kodak Glossy Görseli', multiple: false, aspect: '4 / 3' },
   { page: 'fotograf-baski', section: 'kodak-satin-gorsel', label: 'Fotoğraf Baskı — Kodak Satin Görseli', multiple: false, aspect: '4 / 3' },
   { page: 'fotograf-baski', section: 'kodak-matte-gorsel', label: 'Fotoğraf Baskı — Kodak Matte Görseli', multiple: false, aspect: '4 / 3' },
