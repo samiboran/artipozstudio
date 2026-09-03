@@ -38,6 +38,7 @@ const NAV_LINKS = [
   { label: 'Ana Sayfa', to: '/' },
   { label: 'Fotoğraf Baskı', to: '/fotograf-baski' },
   { label: 'Fine Art Baskı', to: '/fine-art-baski', lang: 'en' },
+  { label: 'Film Yıkama & Tarama', to: '/film-yikama-tarama' },
   { label: 'Çerçeve', to: '/cerceve' },
   { label: <><span lang="en">Fine Art</span> Seçkisi</>, to: '/isler' },
 ]

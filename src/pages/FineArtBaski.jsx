@@ -110,31 +110,31 @@ export default function FineArtBaski() {
           değiştirilebilir (section: tanitim-gorsel). */}
       <section>
         <style>{`
-          .fab-intro { display: grid; grid-template-columns: 51fr 49fr; min-height: 800px; }
+          .fab-intro { display: grid; grid-template-columns: 51fr 49fr; min-height: 600px; }
           .fab-intro-left { padding: 0 7vw; }
           @media (max-width: 768px) {
             .fab-intro { grid-template-columns: 1fr; min-height: 0; }
-            .fab-intro-left { padding: 3.5rem 40px 2.5rem; }
-            .fab-intro-title { font-size: clamp(2.75rem, 11vw, 3.25rem) !important; }
-            .fab-intro-right { height: 580px; }
+            .fab-intro-left { padding: 2.2rem 40px 1.8rem; }
+            .fab-intro-title { font-size: clamp(2.3rem, 9vw, 2.7rem) !important; }
+            .fab-intro-right { height: 435px; }
           }
         `}</style>
         <div className="fab-intro">
           <div className="fab-intro-left" style={{ background: '#f3efe6', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '.6rem', marginBottom: '2.2rem' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '.6rem', marginBottom: '1.3rem' }}>
               <span style={{ fontFamily: 'var(--font-body)', fontSize: '.78rem', fontWeight: 600, letterSpacing: '.22em', textTransform: 'uppercase', color: '#111' }}>
                 Fine Art Baskı
               </span>
               <span style={{ width: 9, height: 9, borderRadius: '50%', background: '#e0492e', display: 'inline-block', flexShrink: 0 }} />
             </div>
-            <h2 className="fab-intro-title" style={{ ...heading, fontSize: 'clamp(4.25rem, 5vw, 5.25rem)', lineHeight: 1.05, color: '#111', margin: '0 0 1.6rem' }}>
+            <h2 className="fab-intro-title" style={{ ...heading, fontSize: 'clamp(3.4rem, 4vw, 4.2rem)', lineHeight: 1.05, color: '#111', margin: '0 0 1.2rem' }}>
               Eseriniz için<br />arşiv kalitesinde<br />baskı.
             </h2>
             <p style={{ ...body, fontSize: '1.05rem', lineHeight: 1.75, maxWidth: 470, color: '#333' }}>
               Renk, ton ve dokuyu en ince ayrıntısına kadar koruyan; sergileme, koleksiyon ve
               sınırlı edisyonlar için üretilen Fine Art baskılar.
             </p>
-            <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '.9rem', marginTop: '3.5rem' }}>
+            <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '.9rem', marginTop: '2rem' }}>
               {['ASİTSİZ KÂĞIT', 'YÜKSEK RENK DOĞRULUĞU', 'UZUN ÖMÜR'].map((f, i) => (
                 <span key={f} style={{ display: 'flex', alignItems: 'center', gap: '.9rem' }}>
                   {i > 0 && <span style={{ color: '#e0492e', fontFamily: 'var(--font-body)', fontSize: '.8rem' }}>/</span>}
@@ -163,34 +163,10 @@ export default function FineArtBaski() {
         </div>
       </section>
 
-      {/* Örnek Baskılarımız — üstteki tam genişlik tanıtım bölümünden
-          (kenardan kenara fotoğraf, kendi iç boşluğu yok) hemen sonra
-          geldiği için burada üstte de yeterli boşluk olması gerekiyor;
-          önceden padding'in üst değeri 0'dı, bu da eyebrow'un fotoğrafa
-          yapışık ve sıkışmış görünmesine yol açıyordu. */}
-      <section style={{ maxWidth: 1000, margin: '0 auto', padding: '4.5rem 2rem 4rem' }}>
-        <p style={{ ...eyebrow, textAlign: 'center', marginBottom: '1.5rem' }}>Örnek Baskılarımız</p>
-        {/* auto-fit yerine auto-fill — sadece 2-3 görsel yüklendiğinde
-            auto-fit boş sütunları kaldırıp kalan görselleri konteynerin
-            tamamına geriyordu, bu da masaüstünde fotoğrafların aşırı
-            büyük görünmesine yol açıyordu. auto-fill boş sütunları
-            (görünmez) yer tutucu olarak bırakıp görsellerin sabit bir
-            üst boyutu aşmamasını sağlıyor. */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: '1.2rem' }}>
-          {images.ornekler.map((img, i) => (
-            <div key={i} style={{ aspectRatio: '4 / 5', overflow: 'hidden' }}>
-              <img
-                src={img.image_url}
-                alt={img.alt || 'Fine art baskı örneği'}
-                loading="lazy" decoding="async"
-                style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
-              />
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* Sertifikalı Fine Art Kağıtları — kart grid'i (WhatsApp referans tasarımı) */}
+      {/* Sertifikalı Fine Art Kağıtları — kart grid'i (WhatsApp referans tasarımı).
+          Tanıtım bölümünün (kenardan kenara fotoğraf, kendi iç boşluğu yok)
+          hemen altında geliyor, kendi üst/alt padding'i olduğu için ekstra
+          boşluk gerekmiyor. */}
       <section style={{ background: '#111', padding: '4rem 2rem' }}>
         <div style={{ maxWidth: 1300, margin: '0 auto' }}>
           <div style={{ textAlign: 'center', marginBottom: '3rem' }}>
@@ -237,6 +213,30 @@ export default function FineArtBaski() {
               </div>
             ))}
           </div>
+        </div>
+      </section>
+
+      {/* Örnek Baskılarımız — artık Sertifikalı Fine Art Kağıtları'nın
+          altında (Sami'nin isteği: "kağıt seçeneklerinin altına gelsin"). */}
+      <section style={{ maxWidth: 1000, margin: '0 auto', padding: '4rem 2rem' }}>
+        <p style={{ ...eyebrow, textAlign: 'center', marginBottom: '1.5rem' }}>Örnek Baskılarımız</p>
+        {/* auto-fit yerine auto-fill — sadece 2-3 görsel yüklendiğinde
+            auto-fit boş sütunları kaldırıp kalan görselleri konteynerin
+            tamamına geriyordu, bu da masaüstünde fotoğrafların aşırı
+            büyük görünmesine yol açıyordu. auto-fill boş sütunları
+            (görünmez) yer tutucu olarak bırakıp görsellerin sabit bir
+            üst boyutu aşmamasını sağlıyor. */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: '1.2rem' }}>
+          {images.ornekler.map((img, i) => (
+            <div key={i} style={{ aspectRatio: '4 / 5', overflow: 'hidden' }}>
+              <img
+                src={img.image_url}
+                alt={img.alt || 'Fine art baskı örneği'}
+                loading="lazy" decoding="async"
+                style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+              />
+            </div>
+          ))}
         </div>
       </section>
 

@@ -25,6 +25,14 @@ import fineArtOrnekDoku1Default from '../assets/fine-art/ornek-doku-1.jpg'
 import fineArtOrnekDoku2Default from '../assets/fine-art/ornek-doku-2.jpg'
 import fineArtTanitimDefault from '../assets/fine-art/tanitim-studyo.jpg'
 import fotografBaskiHeroDefault from '../assets/process/studyo.jpg'
+import filmYikamaHeroDefault from '../assets/film-yikama/hero.jpg'
+import filmYikamaAdim01Default from '../assets/film-yikama/adim-01-teslim.jpg'
+import filmYikamaAdim02Default from '../assets/film-yikama/adim-02-yikama-tarama.jpg'
+import filmYikamaAdim03Default from '../assets/film-yikama/adim-03-karelerinize.jpg'
+import filmYikamaGaleri1Default from '../assets/film-yikama/galeri-1.jpg'
+import filmYikamaGaleri2Default from '../assets/film-yikama/galeri-2.jpg'
+import filmYikamaGaleri3Default from '../assets/film-yikama/galeri-3.jpg'
+import filmYikamaGaleri4Default from '../assets/film-yikama/galeri-4.jpg'
 
 // İşler ürünlerinde kullanılan sabit boy/fiyat seçenekleri — yeni eser
 // eklerken varsayılan olarak bunlarla başlanır (gerekirse elle değiştirilebilir).
@@ -101,6 +109,11 @@ const IMAGE_SLOTS = [
   { page: 'fotograf-baski', section: 'kodak-matte-gorsel', label: 'Fotoğraf Baskı — Kodak Matte Görseli', multiple: false, aspect: '4 / 3' },
   { page: 'fotograf-baski', section: 'kodak-metallic-gorsel', label: 'Fotoğraf Baskı — Kodak Metallic Görseli', multiple: false, aspect: '4 / 3' },
   { page: 'fotograf-baski', section: 'wizard-mockup', label: 'Fotoğraf Baskı — "Baskını Oluştur" Örnek Baskı Görseli', multiple: false, aspect: '4 / 5' },
+  { page: 'film-yikama', section: 'hero', label: 'Film Yıkama & Tarama — Hero Görseli', multiple: false, aspect: '21 / 9', defaultImg: filmYikamaHeroDefault },
+  { page: 'film-yikama', section: 'adim-01', label: 'Film Yıkama & Tarama — 01 Filminizi Teslim Edin Görseli', multiple: false, aspect: '4 / 3', defaultImg: filmYikamaAdim01Default },
+  { page: 'film-yikama', section: 'adim-02', label: 'Film Yıkama & Tarama — 02 Yıkayalım, Tarayalım Görseli', multiple: false, aspect: '4 / 3', defaultImg: filmYikamaAdim02Default },
+  { page: 'film-yikama', section: 'adim-03', label: 'Film Yıkama & Tarama — 03 Karelerinize Ulaşın Görseli', multiple: false, aspect: '4 / 3', defaultImg: filmYikamaAdim03Default },
+  { page: 'film-yikama', section: 'galeri', label: 'Film Yıkama & Tarama — Galeri', multiple: true, aspect: '4 / 5', defaultImgs: [filmYikamaAdim01Default, filmYikamaGaleri1Default, filmYikamaGaleri2Default, filmYikamaAdim02Default, filmYikamaAdim03Default, filmYikamaGaleri3Default, filmYikamaGaleri4Default] },
 ]
 
 // page_content tablosunda yönetilen düzenlenebilir metin alanları — page_images ile
@@ -132,6 +145,9 @@ const PAGE_TEXT_FIELDS = {
   ],
   cerceve: [
     { section: 'hero-aciklama', label: 'Hero — Alt Açıklama', placeholder: 'Fotoğraflarınızı kalıcı kılın. Siyah, beyaz ve doğal ahşap çerçeve seçenekleriyle anılarınızı sanat eserine dönüştürün.', tall: true },
+  ],
+  'film-yikama': [
+    { section: 'intro-aciklama', label: 'Başlık Altı — Açıklama', placeholder: 'Analog filmlerinizi özenle yıkıyor, karelerinizi yüksek çözünürlüklü taramalarla dijitale aktarıyoruz. Filmin kendine özgü dokusunu ve tonlarını gözeterek fotoğraflarınızı arşivlemeye, paylaşmaya ve baskıya hazırlıyoruz.', tall: true },
   ],
 }
 
@@ -215,6 +231,9 @@ function Admin() {
   const [photoOrders, setPhotoOrders] = useState([])
   const [photoOrderItems, setPhotoOrderItems] = useState({}) // order_id -> [items]
 
+  // --- Film Yıkama & Tarama Talepleri ---
+  const [filmRequests, setFilmRequests] = useState([])
+
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (!session) navigate('/login')
@@ -235,6 +254,7 @@ function Admin() {
   useEffect(() => { if (tab === 'istatistikler') loadPageViews() }, [tab])
   useEffect(() => { if (tab === 'fotofiyat') loadPhotoPrices() }, [tab])
   useEffect(() => { if (tab === 'fotosiparis') loadPhotoOrders() }, [tab])
+  useEffect(() => { if (tab === 'filmtalepleri') loadFilmRequests() }, [tab])
 
   async function loadArtworks() {
     const { data } = await supabase.from('artworks').select('*').order('created_at', { ascending: false })
@@ -992,6 +1012,17 @@ function Admin() {
     setPhotoOrders(rows => rows.map(o => o.id === id ? { ...o, status } : o))
   }
 
+  async function loadFilmRequests() {
+    const { data } = await supabase.from('film_requests').select('*').order('created_at', { ascending: false })
+    setFilmRequests(data || [])
+  }
+
+  async function updateFilmRequestStatus(id, status) {
+    const { error } = await supabase.from('film_requests').update({ status }).eq('id', id)
+    if (error) { alert('Durum güncellenemedi: ' + error.message); return }
+    setFilmRequests(rows => rows.map(r => r.id === id ? { ...r, status } : r))
+  }
+
   const inp ={ width: '100%', padding: '.6rem .8rem', border: '1px solid #ddd', fontSize: '.85rem', fontFamily: 'inherit', outline: 'none', boxSizing: 'border-box' }
   const label = { fontSize: '.62rem', letterSpacing: '.12em', textTransform: 'uppercase', color: '#888', marginBottom: '.3rem', display: 'block' }
   // Archivo Black Google Font'ta tek ağırlık (400) olarak yükleniyor — 300 istemek
@@ -1008,6 +1039,7 @@ function Admin() {
   const btnDanger = { background: 'none', border: '1px solid #ffcccc', color: '#cc4444', padding: '.4rem .9rem', fontSize: '.7rem', cursor: 'pointer' }
   const STATUS_COLORS = { yeni: '#f59e0b', hazirlaniyor: '#3b82f6', kargoda: '#8b5cf6', teslim: '#10b981', iptal: '#ef4444' }
   const STATUS_LABELS = { yeni: 'Yeni', hazirlaniyor: 'Hazırlanıyor', kargoda: 'Kargoda', teslim: 'Teslim Edildi', iptal: 'İptal' }
+  const FILM_STATUS_LABELS = { yeni: 'Yeni', iletisimde: 'İletişimde', tamamlandi: 'Tamamlandı', iptal: 'İptal' }
 
   const TAB_LABELS = {
     eserler: 'İşler',
@@ -1021,18 +1053,20 @@ function Admin() {
     istatistikler: 'İstatistikler',
     fotofiyat: 'Fotoğraf Baskı',
     fotosiparis: `Foto Baskı Siparişleri ${photoOrders.length > 0 ? `(${photoOrders.length})` : ''}`,
+    filmyikama: 'Film Yıkama & Tarama',
+    filmtalepleri: `Film Talepleri ${filmRequests.length > 0 ? `(${filmRequests.length})` : ''}`,
   }
 
   // Sol panel, sitenin kendi nav sırasını takip edecek şekilde gruplanmış:
-  // Ana Sayfa (Görseller) → Fotoğraf Baskı → Fine Art (Kağıtlar) → Çerçeve → İşler (Eserler).
+  // Ana Sayfa (Görseller) → Fotoğraf Baskı → Fine Art (Kağıtlar) → Film Yıkama & Tarama → Çerçeve → İşler (Eserler).
   const TAB_GROUPS = [
     {
       heading: 'Sayfa İçerikleri',
-      tabs: ['gorseller', 'fotofiyat', 'kagitlar', 'cerceve', 'eserler', 'site'],
+      tabs: ['gorseller', 'fotofiyat', 'kagitlar', 'filmyikama', 'cerceve', 'eserler', 'site'],
     },
     {
       heading: 'Siparişler',
-      tabs: ['siparisler', 'fotosiparis'],
+      tabs: ['siparisler', 'fotosiparis', 'filmtalepleri'],
     },
     {
       heading: 'Ziyaretçiler & Kullanıcılar',
@@ -1196,7 +1230,7 @@ function Admin() {
           </>
         )}
 
-        {(tab === 'gorseller' || tab === 'site' || tab === 'kullanicilar' || tab === 'sepetler' || tab === 'istatistikler' || tab === 'fotofiyat' || tab === 'fotosiparis') && (
+        {(tab === 'gorseller' || tab === 'site' || tab === 'kullanicilar' || tab === 'sepetler' || tab === 'istatistikler' || tab === 'fotofiyat' || tab === 'fotosiparis' || tab === 'filmyikama' || tab === 'filmtalepleri') && (
           <div style={{ padding: '1.5rem 1rem', fontSize: '.78rem', color: '#aaa', lineHeight: 1.6 }}>
             {tab === 'gorseller' && 'Ana sayfada (/) kullanılan görseller sağda listeleniyor. Değiştirmek istediğin alana tıkla.'}
             {tab === 'site' && 'Sitenin tamamında kullanılan font çiftini buradan değiştirebilirsin.'}
@@ -1205,6 +1239,8 @@ function Admin() {
             {tab === 'istatistikler' && 'Son 30 günlük ziyaretçi özeti. Admin panelinin kendi gezinmesi bu sayıma dahil değil.'}
             {tab === 'fotofiyat' && 'Fotoğraf Baskı sayfasının fiyat matrisi ve görselleri sağda. Değiştirip Kaydet\'e bas.'}
             {tab === 'fotosiparis' && 'Fotoğraf Baskı sayfasından gelen siparişler ve içindeki fotoğraf/boy/yüzey satırları.'}
+            {tab === 'filmyikama' && 'Film Yıkama & Tarama sayfasının görselleri ve metinleri sağda.'}
+            {tab === 'filmtalepleri' && 'Film Yıkama & Tarama sayfasındaki formdan gelen talepler.'}
           </div>
         )}
       </div>
@@ -1901,6 +1937,52 @@ function Admin() {
                             {item.note && <div style={{ marginTop: '.2rem', color: '#999' }}>{item.note}</div>}
                           </div>
                         ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </>
+          )}
+
+          {tab === 'filmyikama' && (
+            <>
+              <h2 style={{ ...sectionHeading, marginBottom: '2rem' }}>Film Yıkama & Tarama Sayfası Görselleri</h2>
+              {renderPageImageSlots('film-yikama')}
+
+              <div style={{ marginTop: '3rem', borderTop: '1px solid #eee', paddingTop: '2rem' }}>
+                <h2 style={{ ...sectionHeading, fontSize: '1.4rem', marginBottom: '1.5rem' }}>Film Yıkama & Tarama Sayfası Metinleri</h2>
+                {renderPageTextFields('film-yikama', PAGE_TEXT_FIELDS['film-yikama'])}
+              </div>
+            </>
+          )}
+
+          {tab === 'filmtalepleri' && (
+            <>
+              <h2 style={{ ...sectionHeading, marginBottom: '2rem' }}>Film Yıkama & Tarama Talepleri</h2>
+              {filmRequests.length === 0 ? (
+                <p style={{ color: '#aaa', fontSize: '.85rem' }}>Henüz talep yok.</p>
+              ) : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+                  {filmRequests.map(r => (
+                    <div key={r.id} style={{ border: '1px solid #eee', padding: '1.2rem' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '.8rem' }}>
+                        <div>
+                          <div style={{ fontSize: '.85rem', fontWeight: 600 }}>{r.isim}</div>
+                          <div style={{ fontSize: '.72rem', color: '#888' }}>{[r.telefon, r.email].filter(Boolean).join(' · ') || '—'}</div>
+                          <div style={{ fontSize: '.78rem', color: '#333', marginTop: '.4rem' }}>
+                            {r.hizmet} · {r.film_adedi} film{r.film_turu ? ` · ${r.film_turu}` : ''}
+                          </div>
+                          {r.notunuz && <div style={{ fontSize: '.72rem', color: '#888', marginTop: '.3rem' }}>Not: {r.notunuz}</div>}
+                          <div style={{ fontSize: '.68rem', color: '#aaa', marginTop: '.3rem' }}>{new Date(r.created_at).toLocaleString('tr-TR')}</div>
+                        </div>
+                        <select
+                          value={r.status}
+                          onChange={e => updateFilmRequestStatus(r.id, e.target.value)}
+                          style={{ ...inp, width: 'auto', fontSize: '.72rem', padding: '.35rem .6rem' }}
+                        >
+                          {Object.entries(FILM_STATUS_LABELS).map(([k, lbl]) => <option key={k} value={k}>{lbl}</option>)}
+                        </select>
                       </div>
                     </div>
                   ))}
