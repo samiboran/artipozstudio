@@ -444,7 +444,7 @@ export default function FotografBaski() {
         <style>{`
           .fb-wizard { display: grid; grid-template-columns: 1fr 1fr; gap: 3.5rem; max-width: 1200px; margin: 0 auto; align-items: stretch; }
           .fb-wizard-left { display: flex; flex-direction: column; height: 100%; }
-          .fb-wizard-mockup { flex: 1; min-height: 240px; }
+          .fb-wizard-mockup { flex: 0 0 auto; aspect-ratio: 4 / 5; }
           @media (max-width: 900px) {
             .fb-wizard { grid-template-columns: 1fr; gap: 2.5rem; }
           }
@@ -483,7 +483,7 @@ export default function FotografBaski() {
               })}
             </div>
 
-            <div className="fb-wizard-mockup" style={{ width: '100%', maxWidth: 380, overflow: 'hidden' }}>
+            <div className="fb-wizard-mockup" style={{ width: '100%', maxWidth: 240, overflow: 'hidden' }}>
               {images['wizard-mockup'] ? (
                 <img src={images['wizard-mockup']} alt="Örnek baskı" loading="lazy" decoding="async"
                   style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
