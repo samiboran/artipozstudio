@@ -5,7 +5,7 @@ import heroImgDefault from '../assets/cerceve/hero.jpg'
 
 // Supabase Storage'ta tek dosya için pratik üst sınır.
 const MAX_FILE_SIZE_MB = 10
-import renkSecenekleriImgDefault from '../assets/cerceve/renk-secenekleri.jpg'
+import renkSecenekleriImgDefault from '../assets/cerceve/renk-secenekleri.webp'
 import ornekSiyahImgDefault from '../assets/cerceve/ornek-siyah-cerceve.jpg'
 import ornekAhsapImgDefault from '../assets/cerceve/ornek-ahsap-cerceve.jpg'
 
