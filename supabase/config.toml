@@ -34,3 +34,9 @@ enabled = true
 verify_jwt = true
 import_map = "./functions/send-contact-email/deno.json"
 entrypoint = "./functions/send-contact-email/index.ts"
+
+[functions.create-film-request]
+enabled = true
+verify_jwt = true
+import_map = "./functions/create-film-request/deno.json"
+entrypoint = "./functions/create-film-request/index.ts"
