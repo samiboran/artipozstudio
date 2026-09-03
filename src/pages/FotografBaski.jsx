@@ -5,6 +5,7 @@ import HeroSlideStack from '../components/HeroSlideStack'
 import heroImg1Default from '../assets/fotograf-baski/hero-1.jpg'
 import heroImg2Default from '../assets/fotograf-baski/hero-2.jpg'
 import heroImg3Default from '../assets/fotograf-baski/hero-3.jpg'
+import wizardMockupDefault from '../assets/fotograf-baski/wizard-mockup.jpg'
 
 const HERO_DEFAULT_IMGS = [heroImg1Default, heroImg2Default, heroImg3Default]
 
@@ -119,7 +120,7 @@ export default function FotografBaski() {
     hero: HERO_DEFAULT_IMGS,
     'kodak-glossy-gorsel': null, 'kodak-satin-gorsel': null,
     'kodak-matte-gorsel': null, 'kodak-metallic-gorsel': null,
-    'wizard-mockup': null,
+    'wizard-mockup': wizardMockupDefault,
   })
   const [content, setContent] = useState({})
   // Gerçek fiyat matrisi yüklenene kadar güncel varsayılan tablo (DEFAULT_PRICES)
