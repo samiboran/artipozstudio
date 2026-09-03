@@ -8,6 +8,7 @@ import ArtCard from '../components/ArtCard'
 import fotografDefault from '../assets/fine-art/ornek-botanik.jpg'
 import fineArtDefault from '../assets/process/baski-sureci.jpg'
 import cerceveDefault from '../assets/cerceve/ornek-ahsap-cerceve.jpg'
+import filmYikamaDefault from '../assets/film-yikama/hero.jpg'
 
 // "Sertifikalı Fine Art Kağıtları" grid'i — Sami'nin mailde gönderdiği 9
 // kağıdın adı ve kısa bilgisi, mail/WhatsApp referansındaki sırayla (1→9).
@@ -102,6 +103,10 @@ const HIZMETLER = [
   {
     key: 'hizmet-sergi', to: '/fine-art-baski', title: 'Sergi & Portfolyo Baskıları',
     desc: 'Sergiler, portfolyolar ve projeleriniz için büyük format baskı ve sunum çözümleri.',
+  },
+  {
+    key: 'hizmet-film-yikama', to: '/film-yikama-tarama', title: 'Film Yıkama & Tarama', defaultImg: filmYikamaDefault,
+    desc: 'Analog filmlerinizi özenle yıkıyor, karelerinizi yüksek çözünürlüklü taramalarla dijitale aktarıyoruz.',
   },
   {
     key: 'hizmet-cerceve', to: '/cerceve', title: 'Çerçeveleme', defaultImg: cerceveDefault,
