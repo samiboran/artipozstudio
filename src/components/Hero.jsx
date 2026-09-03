@@ -1,39 +1,7 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../lib/supabase'
 import heroImgDefault from '../assets/fine-art/hero.jpg'
-
-// Masaüstü/mobil için ayrı yüklenen görsel setinden birer sırayla dönen
-// crossfade slayt gösterir. İki set birbirinden bağımsız kendi tempolarında
-// döner (aynı anda sadece biri CSS ile görünür oluyor).
-// object-fit: contain denendi ama etrafında gri/boş zemin bıraktığı için
-// istenen görünüm olmadı — diğer sayfalardaki hero'larla tutarlı olsun
-// diye cover'a geri dönüldü. Görselin "küçük" durmaması artık kadrajın
-// (fotoğrafın kendisinin, daha geniş çekilmiş/kırpılmış olmasının) işi,
-// CSS'in değil.
-function HeroSlideStack({ urls }) {
-  const [index, setIndex] = useState(0)
-
-  useEffect(() => {
-    setIndex(0)
-    if (urls.length < 2) return
-    const id = setInterval(() => setIndex(i => (i + 1) % urls.length), 3000)
-    return () => clearInterval(id)
-  }, [urls])
-
-  return urls.map((url, i) => (
-    <img
-      key={url}
-      src={url}
-      alt="Artı Poz"
-      loading="eager"
-      fetchPriority={i === 0 ? 'high' : 'auto'}
-      style={{
-        position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover',
-        opacity: i === index ? 1 : 0, transition: 'opacity 1s ease',
-      }}
-    />
-  ))
-}
+import HeroSlideStack from './HeroSlideStack'
 
 export default function Hero() {
   // Başlangıçta boş — Admin'de gerçek hero görselleri zaten yüklüyse,

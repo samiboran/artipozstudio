@@ -1,7 +1,12 @@
 import { useState, useEffect, useRef } from 'react'
 import { supabase } from '../lib/supabase'
 import { getSessionId } from '../lib/session'
-import heroImgDefault from '../assets/process/studyo.jpg'
+import HeroSlideStack from '../components/HeroSlideStack'
+import heroImg1Default from '../assets/fotograf-baski/hero-1.jpg'
+import heroImg2Default from '../assets/fotograf-baski/hero-2.jpg'
+import heroImg3Default from '../assets/fotograf-baski/hero-3.jpg'
+
+const HERO_DEFAULT_IMGS = [heroImg1Default, heroImg2Default, heroImg3Default]
 
 // Supabase Storage'ta tek dosya için pratik üst sınır — ihtiyaç olursa
 // buradan değiştir, kod içinde başka yerde hardcode edilmedi.
@@ -111,7 +116,7 @@ function makePrintItem(file) {
 
 export default function FotografBaski() {
   const [images, setImages] = useState({
-    hero: heroImgDefault,
+    hero: HERO_DEFAULT_IMGS,
     'kodak-glossy-gorsel': null, 'kodak-satin-gorsel': null,
     'kodak-matte-gorsel': null, 'kodak-metallic-gorsel': null,
     'wizard-mockup': null,
@@ -159,7 +164,8 @@ export default function FotografBaski() {
           const next = { ...prev }
           const bySection = {}
           imgs.forEach(row => { (bySection[row.section] ||= []).push(row) })
-          ;['hero', 'kodak-glossy-gorsel', 'kodak-satin-gorsel', 'kodak-matte-gorsel', 'kodak-metallic-gorsel',
+          if (bySection.hero?.length) next.hero = bySection.hero.map(row => row.image_url)
+          ;['kodak-glossy-gorsel', 'kodak-satin-gorsel', 'kodak-matte-gorsel', 'kodak-metallic-gorsel',
             'wizard-mockup',
           ].forEach(section => {
             if (bySection[section]?.[0]) next[section] = bySection[section][0].image_url
@@ -345,18 +351,15 @@ export default function FotografBaski() {
 
   return (
     <div style={{ paddingTop: '4.2rem' }}>
-      {/* Hero — site genelindeki diğer hero'larla (Fine Art Baskı referans) aynı boy: 58vh. */}
+      {/* Hero — Ana Sayfa'daki gibi sırayla dönen çoklu görsel slaytı (Sami'nin
+          mailde gönderdiği 3 görsel), site genelindeki diğer hero'larla
+          (Fine Art Baskı referans) aynı boy: 58vh. */}
       <section style={{
         position: 'relative', height: '58vh', minHeight: 380,
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         textAlign: 'center', overflow: 'hidden',
       }}>
-        <img
-          src={images.hero}
-          alt="Stüdyoda hazırlanan fotoğraf baskıları"
-          loading="eager" fetchPriority="high" decoding="async"
-          style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }}
-        />
+        <HeroSlideStack urls={images.hero} />
         <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(180deg, rgba(17,17,17,.15), rgba(17,17,17,.55))' }} />
       </section>
 

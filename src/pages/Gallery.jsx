@@ -109,7 +109,7 @@ const HIZMETLER = [
     desc: 'Analog filmlerinizi özenle yıkıyor, karelerinizi yüksek çözünürlüklü taramalarla dijitale aktarıyoruz.',
   },
   {
-    key: 'hizmet-cerceve', to: '/cerceve', title: 'Çerçeveleme', defaultImg: cerceveDefault,
+    key: 'hizmet-cerceve', to: '/film-yikama-tarama', title: 'Çerçeveleme', defaultImg: cerceveDefault,
     desc: 'Eserlerinizi estetik ve koruyucu çerçeve çözümleriyle tamamlıyoruz. Özel ölçü seçenekleriyle.',
   },
 ]
