@@ -26,6 +26,7 @@ import fineArtTanitimDefault from '../assets/fine-art/tanitim-studyo.jpg'
 import fotografBaskiHero1Default from '../assets/fotograf-baski/hero-1.jpg'
 import fotografBaskiHero2Default from '../assets/fotograf-baski/hero-2.jpg'
 import fotografBaskiHero3Default from '../assets/fotograf-baski/hero-3.jpg'
+import fotografBaskiWizardMockupDefault from '../assets/fotograf-baski/wizard-mockup.jpg'
 import filmYikamaHeroDefault from '../assets/film-yikama/hero.jpg'
 import filmYikamaAdim01Default from '../assets/film-yikama/adim-01-teslim.jpg'
 import filmYikamaAdim02Default from '../assets/film-yikama/adim-02-yikama-tarama.jpg'
@@ -108,7 +109,7 @@ const IMAGE_SLOTS = [
   { page: 'fotograf-baski', section: 'kodak-satin-gorsel', label: 'Fotoğraf Baskı — Kodak Satin Görseli', multiple: false, aspect: '4 / 3' },
   { page: 'fotograf-baski', section: 'kodak-matte-gorsel', label: 'Fotoğraf Baskı — Kodak Matte Görseli', multiple: false, aspect: '4 / 3' },
   { page: 'fotograf-baski', section: 'kodak-metallic-gorsel', label: 'Fotoğraf Baskı — Kodak Metallic Görseli', multiple: false, aspect: '4 / 3' },
-  { page: 'fotograf-baski', section: 'wizard-mockup', label: 'Fotoğraf Baskı — "Baskını Oluştur" Örnek Baskı Görseli', multiple: false, aspect: '4 / 5' },
+  { page: 'fotograf-baski', section: 'wizard-mockup', label: 'Fotoğraf Baskı — "Baskını Oluştur" Örnek Baskı Görseli', multiple: false, aspect: '4 / 5', defaultImg: fotografBaskiWizardMockupDefault },
   { page: 'film-yikama', section: 'hero', label: 'Film Yıkama & Tarama — Hero Görseli', multiple: false, aspect: '21 / 9', defaultImg: filmYikamaHeroDefault },
   { page: 'film-yikama', section: 'adim-01', label: 'Film Yıkama & Tarama — 01 Filminizi Teslim Edin Görseli', multiple: false, aspect: '4 / 3', defaultImg: filmYikamaAdim01Default },
   { page: 'film-yikama', section: 'adim-02', label: 'Film Yıkama & Tarama — 02 Yıkayalım, Tarayalım Görseli', multiple: false, aspect: '4 / 3', defaultImg: filmYikamaAdim02Default },
