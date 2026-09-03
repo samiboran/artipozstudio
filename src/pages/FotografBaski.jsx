@@ -15,7 +15,7 @@ const MAX_FILE_SIZE_MB = 50
 
 // Kodak kağıt tanıtım kartlarıyla aynı 4 seçenek (Fine Art kağıtları değil).
 const PHOTO_FINISHES = ['Glossy', 'Satin', 'Matte', 'Metallic']
-const PHOTO_SIZES = ['A5', 'A4', 'A3', 'A2']
+const PHOTO_SIZES = ['A6', 'A5', 'A4', 'A3', 'A2']
 const CUSTOM_SIZE = 'Özel Ölçü'
 const BORDER_OPTIONS = ['Yok', 'Var']
 
