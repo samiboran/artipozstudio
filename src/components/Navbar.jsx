@@ -44,7 +44,6 @@ const NAV_LINKS = [
 ]
 
 function Navbar({ cartCount = 0, onCartClick }) {
-  const [search, setSearch] = useState('')
   const [menuOpen, setMenuOpen] = useState(false)
   const [customerName, setCustomerName] = useState(null)
   const navigate = useNavigate()
@@ -85,13 +84,6 @@ function Navbar({ cartCount = 0, onCartClick }) {
     await supabase.auth.signOut()
     setCustomerName(null)
     navigate('/')
-  }
-
-  const handleSearch = (e) => {
-    if (e.key === 'Enter' && search.trim()) {
-      navigate(`/isler?search=${search}`)
-      setMenuOpen(false)
-    }
   }
 
   const linkColor = transparent ? 'rgba(255,255,255,.9)' : 'var(--muted)'
@@ -151,27 +143,6 @@ function Navbar({ cartCount = 0, onCartClick }) {
 
         {!transparent && (
           <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }} className="desktop-nav">
-            <div style={{ position: 'relative' }}>
-              <input
-                type="text"
-                placeholder="ara..."
-                value={search}
-                onChange={e => setSearch(e.target.value)}
-                onKeyDown={handleSearch}
-                style={{
-                  background: 'var(--surface)', border: '1px solid var(--border)',
-                  padding: '.42rem 2rem .42rem .85rem',
-                  fontFamily: "'Archivo', sans-serif",
-                  fontSize: '.7rem', color: 'var(--ink)',
-                  width: '190px', outline: 'none'
-                }}
-              />
-              <span style={{
-                position: 'absolute', right: '.6rem', top: '50%',
-                transform: 'translateY(-50%)', color: 'var(--muted)'
-              }}>⌕</span>
-            </div>
-
             <Link to="/favoriler" aria-label="Favoriler" style={{
               fontSize: '1rem', color: 'var(--muted)', lineHeight: 1
             }}>
@@ -273,24 +244,6 @@ function Navbar({ cartCount = 0, onCartClick }) {
               {item.label}
             </Link>
           ))}
-
-          <div style={{ position: 'relative' }}>
-            <input
-              type="text"
-              placeholder="ara..."
-              value={search}
-              onChange={e => setSearch(e.target.value)}
-              onKeyDown={handleSearch}
-              style={{
-                width: '100%', background: 'var(--surface)',
-                border: '1px solid var(--border)',
-                padding: '.55rem 2rem .55rem .85rem',
-                fontSize: '.8rem', color: 'var(--ink)', outline: 'none',
-                boxSizing: 'border-box'
-              }}
-            />
-            <span style={{ position: 'absolute', right: '.6rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--muted)' }}>⌕</span>
-          </div>
 
           <Link to="/favoriler" onClick={() => setMenuOpen(false)} style={{
             fontSize: '.8rem', letterSpacing: '.16em',
