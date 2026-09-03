@@ -1,10 +1,9 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../lib/supabase'
-import heroImgDefault from '../assets/fine-art/hero.jpg'
-import kagitSecenekleriImgDefault from '../assets/fine-art/kagit-secenekleri.jpg'
+import heroImgDefault from '../assets/fine-art/hero.webp'
 import tanitimImgDefault from '../assets/fine-art/tanitim-studyo.jpg'
-import ornekBotanikImgDefault from '../assets/fine-art/ornek-botanik.jpg'
-import ornekBotanik2ImgDefault from '../assets/fine-art/ornek-botanik-2.jpg'
+import ornekBotanikImgDefault from '../assets/fine-art/ornek-botanik.webp'
+import ornekBotanik2ImgDefault from '../assets/fine-art/ornek-botanik-2.webp'
 import ornekDoku1ImgDefault from '../assets/fine-art/ornek-doku-1.jpg'
 import ornekDoku2ImgDefault from '../assets/fine-art/ornek-doku-2.jpg'
 
@@ -30,7 +29,6 @@ export default function FineArtBaski() {
   const [content, setContent] = useState({})
   const [images, setImages] = useState({
     hero: heroImgDefault,
-    'kagit-secenekleri': kagitSecenekleriImgDefault,
     'tanitim-gorsel': tanitimImgDefault,
     ornekler: [
       { image_url: ornekBotanikImgDefault, alt: 'Botanik seri fine art baskı örneği' },
@@ -72,7 +70,6 @@ export default function FineArtBaski() {
           const bySection = {}
           imgs.forEach(row => { (bySection[row.section] ||= []).push(row) })
           if (bySection.hero?.[0]) next.hero = bySection.hero[0].image_url
-          if (bySection['kagit-secenekleri']?.[0]) next['kagit-secenekleri'] = bySection['kagit-secenekleri'][0].image_url
           if (bySection['tanitim-gorsel']?.[0]) next['tanitim-gorsel'] = bySection['tanitim-gorsel'][0].image_url
           if (bySection.ornekler?.length) next.ornekler = bySection.ornekler
           return next

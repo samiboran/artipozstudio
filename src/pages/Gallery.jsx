@@ -5,8 +5,8 @@ import { fetchArtworks, SIZE_MM } from '../lib/artworks'
 import { getSessionId } from '../lib/session'
 import Hero from '../components/Hero'
 import ArtCard from '../components/ArtCard'
-import fotografDefault from '../assets/fine-art/ornek-botanik.jpg'
-import fineArtDefault from '../assets/process/baski-sureci.jpg'
+import fotografDefault from '../assets/fine-art/ornek-botanik.webp'
+import fineArtDefault from '../assets/process/baski-sureci.webp'
 import cerceveDefault from '../assets/cerceve/ornek-ahsap-cerceve.jpg'
 
 // "Sertifikalı Fine Art Kağıtları" grid'i — Sami'nin mailde gönderdiği 9

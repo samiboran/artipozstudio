@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../lib/supabase'
-import heroImgDefault from '../assets/fine-art/hero.jpg'
+import heroImgDefault from '../assets/fine-art/hero.webp'
 import HeroSlideStack from './HeroSlideStack'
 
 export default function Hero() {

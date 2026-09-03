@@ -8,18 +8,17 @@ import { FONT_PRESETS, setFont } from '../lib/siteFonts'
 // dosyasındaki hardcoded fallback görsel sitede gösteriliyor, ama Admin bunu
 // bilmiyordu, sadece düz metin gösteriyordu. Aynı fallback görselleri burada
 // da import edip önizlemede göstermek için.
-import galleryHeroDefault from '../assets/fine-art/hero.jpg'
-import galleryFotografDefault from '../assets/fine-art/ornek-botanik.jpg'
-import galleryFineArtDefault from '../assets/process/baski-sureci.jpg'
+import galleryHeroDefault from '../assets/fine-art/hero.webp'
+import galleryFotografDefault from '../assets/fine-art/ornek-botanik.webp'
+import galleryFineArtDefault from '../assets/process/baski-sureci.webp'
 import galleryCerceveDefault from '../assets/cerceve/ornek-ahsap-cerceve.jpg'
 import cerceveHeroDefault from '../assets/cerceve/hero.jpg'
-import cerceveRenkSecenekleriDefault from '../assets/cerceve/renk-secenekleri.jpg'
+import cerceveRenkSecenekleriDefault from '../assets/cerceve/renk-secenekleri.webp'
 import cerceveOrnekSiyahDefault from '../assets/cerceve/ornek-siyah-cerceve.jpg'
 import cerceveOrnekAhsapDefault from '../assets/cerceve/ornek-ahsap-cerceve.jpg'
-import fineArtHeroDefault from '../assets/fine-art/hero.jpg'
-import fineArtKagitSecenekleriDefault from '../assets/fine-art/kagit-secenekleri.jpg'
-import fineArtOrnekBotanikDefault from '../assets/fine-art/ornek-botanik.jpg'
-import fineArtOrnekBotanik2Default from '../assets/fine-art/ornek-botanik-2.jpg'
+import fineArtHeroDefault from '../assets/fine-art/hero.webp'
+import fineArtOrnekBotanikDefault from '../assets/fine-art/ornek-botanik.webp'
+import fineArtOrnekBotanik2Default from '../assets/fine-art/ornek-botanik-2.webp'
 import fineArtOrnekDoku1Default from '../assets/fine-art/ornek-doku-1.jpg'
 import fineArtOrnekDoku2Default from '../assets/fine-art/ornek-doku-2.jpg'
 import fineArtTanitimDefault from '../assets/fine-art/tanitim-studyo.jpg'
@@ -101,7 +100,6 @@ const IMAGE_SLOTS = [
   { page: 'cerceve', section: 'renk-secenekleri', label: 'Çerçeve — Renk Seçenekleri', multiple: false, aspect: '4 / 3', defaultImg: cerceveRenkSecenekleriDefault },
   { page: 'cerceve', section: 'ornekler', label: 'Çerçeve — Örnek Çerçeveli İşler', multiple: true, aspect: '4 / 5', defaultImgs: [cerceveOrnekSiyahDefault, cerceveOrnekAhsapDefault] },
   { page: 'fine-art-baski', section: 'hero', label: 'Fine Art Baskı — Hero Görseli', multiple: false, aspect: '21 / 9', defaultImg: fineArtHeroDefault },
-  { page: 'fine-art-baski', section: 'kagit-secenekleri', label: 'Fine Art Baskı — Kağıt Seçenekleri', multiple: false, aspect: '4 / 3', defaultImg: fineArtKagitSecenekleriDefault },
   { page: 'fine-art-baski', section: 'tanitim-gorsel', label: 'Fine Art Baskı — Tanıtım Bölümü Görseli (hero altı)', multiple: false, aspect: '4 / 5', defaultImg: fineArtTanitimDefault },
   { page: 'fine-art-baski', section: 'ornekler', label: 'Fine Art Baskı — Örnek Baskılarımız', multiple: true, aspect: '4 / 5', defaultImgs: [fineArtOrnekBotanikDefault, fineArtOrnekBotanik2Default, fineArtOrnekDoku1Default, fineArtOrnekDoku2Default] },
   { page: 'fotograf-baski', section: 'hero', label: 'Fotoğraf Baskı — Hero Görselleri (sırayla dönen slayt, birden çok görsel eklenebilir)', multiple: true, aspect: '21 / 9', defaultImgs: [fotografBaskiHero1Default, fotografBaskiHero2Default, fotografBaskiHero3Default] },
