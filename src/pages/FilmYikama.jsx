@@ -208,68 +208,61 @@ export default function FilmYikama() {
         </div>
       </section>
 
-      {/* 01 / 02 / 03 — zigzag adım anlatımı */}
-      <section style={{ maxWidth: 1200, margin: '0 auto', padding: '0 2rem 2rem' }}>
+      {/* 01 / 02 / 03 — üç eşit sütun, hepsi aynı düzende (referans tasarıma
+          göre: zigzag değil, yan yana 3 sütun). */}
+      <section style={{ maxWidth: 1300, margin: '0 auto', padding: '0 2rem 2rem' }}>
         <style>{`
-          .fy-step { display: grid; grid-template-columns: 1fr 1fr; gap: 3rem; align-items: center; padding: 3rem 0; border-top: 1px solid var(--border); }
-          .fy-step-img { aspect-ratio: 4 / 3; overflow: hidden; }
-          @media (max-width: 700px) {
-            .fy-step { grid-template-columns: 1fr; gap: 1.5rem; padding: 2.2rem 0; }
-            .fy-step-text { order: 1; }
-            .fy-step-img { order: 2; }
+          .fy-steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2.5rem; }
+          .fy-step-img { aspect-ratio: 4 / 3; overflow: hidden; margin-bottom: 1.3rem; }
+          @media (max-width: 900px) {
+            .fy-steps { grid-template-columns: 1fr; gap: 2rem; }
           }
         `}</style>
-        {STEPS.map((s, i) => {
-          const imgFirst = i % 2 === 1
-          const textBlock = (
-            <div className="fy-step-text">
-              <p style={{ ...eyebrow, marginBottom: '.8rem' }}>{s.no} —</p>
-              <h2 style={{ ...heading, fontSize: '1.5rem', margin: '0 0 .9rem' }}>{s.title}</h2>
+        <div className="fy-steps">
+          {STEPS.map(s => (
+            <div key={s.no}>
+              <div className="fy-step-img">
+                {images[s.imgKey]
+                  ? <img src={images[s.imgKey]} alt={s.title} loading="lazy" decoding="async" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+                  : placeholderBox(`${s.title} — Admin'den yükle`)}
+              </div>
+              <p style={{ ...eyebrow, marginBottom: '.6rem' }}>{s.no} —</p>
+              <h2 style={{ ...heading, fontSize: '1.3rem', margin: '0 0 .7rem' }}>{s.title}</h2>
               <p style={body}>{s.text}</p>
             </div>
-          )
-          const imgBlock = (
-            <div className="fy-step-img">
-              {images[s.imgKey]
-                ? <img src={images[s.imgKey]} alt={s.title} loading="lazy" decoding="async" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
-                : placeholderBox(`${s.title} — Admin'den yükle`)}
-            </div>
-          )
-          return (
-            <div className="fy-step" key={s.no} style={{ borderTop: i === 0 ? 'none' : undefined }}>
-              {imgFirst ? <>{imgBlock}{textBlock}</> : <>{textBlock}{imgBlock}</>}
-            </div>
-          )
-        })}
+          ))}
+        </div>
       </section>
 
-      {/* Dijitalden kâğıda — CTA */}
-      <section style={{ maxWidth: 1200, margin: '0 auto', padding: '3rem 2rem 4.5rem' }}>
+      {/* Dijitalden kâğıda — CTA: başlık + açıklama + buton aynı satırda
+          (referans tasarıma göre), buton tam genişlik bir şerit değil. */}
+      <section style={{ maxWidth: 1300, margin: '0 auto', padding: '3rem 2rem 4.5rem' }}>
         <style>{`
-          .fy-cta { display: grid; grid-template-columns: 1fr 1fr; gap: 3rem; align-items: center; margin-bottom: 2.2rem; }
-          @media (max-width: 700px) {
-            .fy-cta { grid-template-columns: 1fr; gap: 1rem; }
+          .fy-cta-row { display: flex; align-items: center; justify-content: space-between; gap: 2.5rem; }
+          @media (max-width: 900px) {
+            .fy-cta-row { flex-direction: column; align-items: flex-start; gap: 1.2rem; }
+            .fy-cta-row button { width: 100%; justify-content: center; }
           }
         `}</style>
-        <div className="fy-cta">
-          <h2 style={{ ...heading, fontSize: '1.6rem', margin: 0 }}>Dijitalden kâğıda.</h2>
-          <p style={body}>
+        <div className="fy-cta-row">
+          <h2 style={{ ...heading, fontSize: '1.6rem', margin: 0, flexShrink: 0 }}>Dijitalden kâğıda.</h2>
+          <p style={{ ...body, flex: 1 }}>
             Dilerseniz seçtiğiniz kareleri fotoğraf veya fine art baskıyla tamamlayabilirsiniz.
             Baskı hizmeti ayrıca ücretlendirilir.
           </p>
+          <button
+            type="button" onClick={openModal}
+            style={{
+              flexShrink: 0, padding: '1.1rem 1.8rem', background: 'var(--ink)', color: '#fff',
+              border: 'none', fontFamily: 'var(--font-body)', fontSize: '.85rem',
+              letterSpacing: '.05em', display: 'flex', alignItems: 'center', gap: '.6rem',
+              whiteSpace: 'nowrap', cursor: 'pointer',
+            }}
+          >
+            Film Yıkama &amp; Tarama İçin İletişime Geçin
+            <span aria-hidden="true">→</span>
+          </button>
         </div>
-        <button
-          type="button" onClick={openModal}
-          style={{
-            width: '100%', padding: '1.1rem', background: 'var(--ink)', color: '#fff',
-            border: 'none', fontFamily: 'var(--font-body)', fontSize: '.85rem',
-            letterSpacing: '.05em', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '.6rem',
-            cursor: 'pointer',
-          }}
-        >
-          Film Yıkama &amp; Tarama İçin İletişime Geçin
-          <span aria-hidden="true">→</span>
-        </button>
       </section>
 
       {/* Galeri — auto-fill: sabit 4 sütun yerine, kaç görsel varsa ona göre
