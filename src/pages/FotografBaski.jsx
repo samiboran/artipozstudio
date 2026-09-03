@@ -15,7 +15,7 @@ const MAX_FILE_SIZE_MB = 50
 
 // Kodak kağıt tanıtım kartlarıyla aynı 4 seçenek (Fine Art kağıtları değil).
 const PHOTO_FINISHES = ['Glossy', 'Satin', 'Matte', 'Metallic']
-const PHOTO_SIZES = ['A5', 'A4', 'A3', 'A2']
+const PHOTO_SIZES = ['A6', 'A5', 'A4', 'A3', 'A2']
 const CUSTOM_SIZE = 'Özel Ölçü'
 const BORDER_OPTIONS = ['Yok', 'Var']
 
@@ -60,18 +60,6 @@ const KODAK_PAPERS = [
     bullets: ['Metalik ve parlak görünüm', 'Güçlü ve doygun renkler', 'Derin siyahlar ve parlak beyazlar', 'Gece, mimari, otomobil ve yüksek kontrastlı fotoğraflar için ideal'],
   },
 ]
-
-// Güncel fiyat tablosu (Sami/Meltem'in onayladığı rakamlar): A5=250, A4=350,
-// A3=600, A2=1000 — Özel Ölçü'nün sabit fiyatı yok (teklif üzerine).
-// Bu değerler varsayılan/başlangıç değeri olarak kullanılıyor; Admin
-// panelindeki fiyat matrisinde (photo_print_prices, boy × kağıt yüzeyi
-// bazında) bir (boy, yüzey) kombinasyonu için gerçek bir kayıt varsa o
-// değer bunun üzerine yazılır (bkz. loadData) — yani Admin istediği an
-// belirli bir ölçü/kağıt kombinasyonunu bu varsayılandan farklı bir
-// fiyatla güncelleyebilir, kod bunu engellemiyor.
-const SIZE_DEFAULT_PRICES = { 'A5': 250, 'A4': 350, 'A3': 600, 'A2': 1000 }
-const DEFAULT_PRICES = {}
-PHOTO_SIZES.forEach(s => PHOTO_FINISHES.forEach(f => { DEFAULT_PRICES[`${s}:${f}`] = SIZE_DEFAULT_PRICES[s] || 0 }))
 
 const heading = { fontFamily: 'var(--font-heading)', fontWeight: 400, color: 'var(--ink)' }
 const body = { fontFamily: 'var(--font-body)', fontSize: '.9rem', lineHeight: 1.7, color: 'var(--muted)' }
@@ -123,11 +111,15 @@ export default function FotografBaski() {
     'wizard-mockup': wizardMockupDefault,
   })
   const [content, setContent] = useState({})
-  // Gerçek fiyat matrisi yüklenene kadar güncel varsayılan tablo (DEFAULT_PRICES)
-  // gösterilir — pricesLoaded false iken arayüz "…" gösterir, bu varsayımsal
-  // değerle gerçek Admin verisi karıştırılmasın diye.
-  const [prices, setPrices] = useState(DEFAULT_PRICES)
+  // Gerçek fiyat matrisi Supabase'den yüklenene kadar (pricesLoaded false)
+  // fiyat gösterilen her yerde "…" görünür. Sorgu başarısız olursa
+  // (priceError true) uydurma bir varsayılan fiyat GÖSTERİLMEZ — bunun
+  // yerine "Fiyat bilgisi yüklenemedi" gösterilir ve sipariş verilemez;
+  // bilinmeyen fiyatla müşterinin sipariş oluşturması hiçbir koşulda
+  // mümkün olmamalı.
+  const [prices, setPrices] = useState({})
   const [pricesLoaded, setPricesLoaded] = useState(false)
+  const [priceError, setPriceError] = useState(false)
 
   // --- "Baskını Oluştur" sihirbazı: 01 Dosya + 02 Kağıt & Ölçü aynı ekranda
   // (wizardStep === 'form'), 03 Bilgiler ayrı ekran (wizardStep === 'bilgiler').
@@ -148,7 +140,7 @@ export default function FotografBaski() {
 
   async function loadData() {
     try {
-      const [{ data: imgs }, { data: priceRows }, { data: contentRows }] = await Promise.all([
+      const [{ data: imgs }, { data: priceRows, error: priceErr }, { data: contentRows }] = await Promise.all([
         supabase.from('page_images').select('*').eq('page', 'fotograf-baski').order('sort_order').order('id'),
         supabase.from('photo_print_prices').select('*'),
         supabase.from('page_content').select('section, content').eq('page', 'fotograf-baski'),
@@ -176,12 +168,23 @@ export default function FotografBaski() {
       }
 
       // Gerçek fiyat matrisi — Admin panelinden (Fotoğraf Baskı Fiyatları)
-      // girilen boy × kağıt yüzeyi rakamları. Admin bir kombinasyon için
-      // 0'dan büyük bir fiyat girmişse o değer güncel varsayılan tabloyu
-      // (DEFAULT_PRICES) geçersiz kılar; boş/0 ise (henüz hiç girilmemiş
-      // ya da yanlışlıkla 0 kaydedilmiş) güncel varsayılan gösterilmeye
-      // devam eder — 0 TL hiçbir zaman gerçek bir baskı fiyatı olamaz.
-      const map = { ...DEFAULT_PRICES }
+      // girilen boy × kağıt yüzeyi rakamları. Bir (boy, yüzey) kombinasyonu
+      // için 0'dan büyük bir fiyat girilmemişse map'te o anahtar hiç
+      // olmuyor — priceForItem/priceForCombo bunu "bilinmiyor" (null)
+      // olarak işler, 0 TL hiçbir zaman gerçek bir baskı fiyatı gibi
+      // gösterilmez.
+      //
+      // Supabase JS sorgu hatasında (ağ hatası, RLS, vs.) genelde promise'i
+      // reddetmez — { data: null, error } ile "başarıyla" resolve eder, bu
+      // yüzden gerçek hata durumunu yakalamak için priceErr burada AYRICA
+      // kontrol ediliyor; sadece aşağıdaki catch'e güvenmek yeterli değil.
+      if (priceErr) {
+        console.error('Fiyat matrisi yüklenemedi:', priceErr)
+        setPriceError(true)
+        return
+      }
+
+      const map = {}
       ;(priceRows || []).forEach(p => {
         const price = Number(p.price) || 0
         if (price > 0) map[`${p.size}:${p.finish}`] = price
@@ -190,16 +193,23 @@ export default function FotografBaski() {
       setPricesLoaded(true)
     } catch (err) {
       console.error('Fotoğraf Baskı sayfası verisi yüklenemedi:', err)
-      setPricesLoaded(true)
+      setPriceError(true)
     }
   }
 
   // unitPrice, Admin'in gerçek matrisinden boy + kağıt yüzeyi baz alınarak
   // okunur — kağıt fiyatı etkiliyorsa (Admin farklı rakamlar girmişse) bu
-  // otomatik yansır, "hepsi aynı fiyat" gibi bir varsayım yok.
+  // otomatik yansır, "hepsi aynı fiyat" gibi bir varsayım yok. Bir (boy,
+  // yüzey) kombinasyonu için Admin'de kayıt yoksa null döner — Özel Ölçü
+  // kalemleriyle aynı şekilde ele alınır (toplama dahil edilmez, "Fiyat
+  // için iletişime geçin" gösterilir).
+  function priceForCombo(size, finish) {
+    const key = `${size}:${finish}`
+    return Object.prototype.hasOwnProperty.call(prices, key) ? prices[key] : null
+  }
   function priceForItem(item) {
     if (item.size === CUSTOM_SIZE) return null
-    return prices[`${item.size}:${item.finish}`] ?? 0
+    return priceForCombo(item.size, item.finish)
   }
   function totalForItem(item) {
     const unit = priceForItem(item)
@@ -208,9 +218,14 @@ export default function FotografBaski() {
   // Genel toplam — Özel Ölçü kalemleri sabit fiyatı olmadığı için (teklif
   // üzerine) sayısal toplama dahil edilmiyor.
   const grandTotal = printItems.reduce((sum, it) => sum + (totalForItem(it) || 0), 0)
+  // grandTotal 0 iki farklı durumda oluşabilir: gerçekten 0 (sipariş yok) ya
+  // da HİÇBİR kalemin fiyatı bilinmiyor (hepsi Özel Ölçü ya da eşleşen kaydı
+  // olmayan bir kombinasyon) — ikincisinde ₺0 göstermek yanıltıcı olur, bu
+  // yüzden TOPLAM'da ayrıca kontrol ediliyor (bkz. aşağıdaki render).
+  const hasKnownPricedItem = printItems.some(it => totalForItem(it) !== null)
   const hasCustomSizeItem = printItems.some(it => it.size === CUSTOM_SIZE)
   const anyUploading = printItems.some(it => it.uploading)
-  const continueLabel = (pricesLoaded && grandTotal > 0)
+  const continueLabel = (pricesLoaded && !priceError && grandTotal > 0)
     ? `Devam Et — ₺${grandTotal.toLocaleString('tr-TR')} →`
     : 'Devam Et →'
 
@@ -281,6 +296,7 @@ export default function FotografBaski() {
   // 01 Dosya + 02 Kağıt & Ölçü ekranından 03 Bilgiler ekranına geçiş.
   function goToBilgiler() {
     setWizardError('')
+    if (priceError) { setWizardError('Fiyat bilgisi yüklenemedi. Lütfen sayfayı yenileyip tekrar deneyin.'); return }
     if (printItems.length === 0) { setWizardError('Lütfen en az bir fotoğraf yükleyin.'); return }
     if (anyUploading) { setWizardError('Fotoğraflar yükleniyor, lütfen bekleyin.'); return }
     if (printItems.some(it => it.uploadError || !it.uploadedUrl)) {
@@ -555,6 +571,12 @@ export default function FotografBaski() {
               <>
                 <h3 style={{ ...heading, fontSize: '1.3rem', margin: '0 0 1.5rem' }}>Baskını Oluştur</h3>
 
+                {priceError && (
+                  <p style={{ color: '#c33', fontSize: '.78rem', margin: '-.8rem 0 1.4rem' }}>
+                    Fiyat bilgisi şu anda yüklenemedi. Lütfen sayfayı yenileyip tekrar deneyin — fiyatlar doğrulanamadan sipariş verilemez.
+                  </p>
+                )}
+
                 {printItems.length === 0 && (
                   <div
                     onClick={() => fileRef.current?.click()}
@@ -642,7 +664,10 @@ export default function FotografBaski() {
                                 }}>
                                   <span>{s}</span>
                                   <span style={{ fontSize: '.66rem', opacity: .75 }}>
-                                    {pricesLoaded ? `${(prices[`${s}:${item.finish}`] ?? 0).toLocaleString('tr-TR')} TL` : '…'}
+                                    {priceError ? 'Fiyat bilgisi yüklenemedi'
+                                      : !pricesLoaded ? '…'
+                                      : priceForCombo(s, item.finish) === null ? 'Fiyat için iletişime geçin'
+                                      : `${priceForCombo(s, item.finish).toLocaleString('tr-TR')} TL`}
                                   </span>
                                 </button>
                               ))}
@@ -697,11 +722,19 @@ export default function FotografBaski() {
                           <div style={{ paddingTop: '.8rem', borderTop: '1px solid var(--border)' }}>
                             <div style={{ ...body, fontSize: '.82rem', color: 'var(--ink)', display: 'flex', justifyContent: 'space-between', fontWeight: 600 }}>
                               <span>Bu fotoğraf</span>
-                              <span>{itemIsCustom ? 'Teklif üzerine' : (pricesLoaded ? `₺${(itemTotal || 0).toLocaleString('tr-TR')}` : '…')}</span>
+                              <span>
+                                {itemIsCustom ? 'Teklif üzerine'
+                                  : priceError ? 'Fiyat bilgisi yüklenemedi'
+                                  : !pricesLoaded ? '…'
+                                  : itemTotal === null ? 'Fiyat için iletişime geçin'
+                                  : `₺${itemTotal.toLocaleString('tr-TR')}`}
+                              </span>
                             </div>
-                            {itemIsCustom && (
+                            {(itemIsCustom || (pricesLoaded && !priceError && itemTotal === null)) && (
                               <p style={{ ...body, fontSize: '.72rem', margin: '.4rem 0 0' }}>
-                                Özel ölçünüz fiyatlandırıldıktan sonra sizinle iletişime geçilecektir.
+                                {itemIsCustom
+                                  ? 'Özel ölçünüz fiyatlandırıldıktan sonra sizinle iletişime geçilecektir.'
+                                  : 'Bu kağıt/ölçü kombinasyonu için fiyat henüz tanımlanmadı, sizinle iletişime geçilecektir.'}
                               </p>
                             )}
                           </div>
@@ -735,7 +768,11 @@ export default function FotografBaski() {
                           <div key={item.id} style={{ ...body, fontSize: '.8rem', display: 'flex', justifyContent: 'space-between', gap: '.6rem' }}>
                             <span>Fotoğraf {idx + 1} — {item.size} · {item.finish} · {item.quantity} adet</span>
                             <span style={{ color: 'var(--ink)', whiteSpace: 'nowrap' }}>
-                              {itemIsCustom ? 'Teklif üzerine' : (pricesLoaded ? `₺${(itemTotal || 0).toLocaleString('tr-TR')}` : '…')}
+                              {itemIsCustom ? 'Teklif üzerine'
+                                : priceError ? 'Fiyat bilgisi yüklenemedi'
+                                : !pricesLoaded ? '…'
+                                : itemTotal === null ? 'Fiyat için iletişime geçin'
+                                : `₺${itemTotal.toLocaleString('tr-TR')}`}
                             </span>
                           </div>
                         )
@@ -743,7 +780,12 @@ export default function FotografBaski() {
                     </div>
                     <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 600, fontSize: '.9rem', paddingTop: '.7rem', borderTop: '1px solid var(--border)' }}>
                       <span>TOPLAM</span>
-                      <span>{pricesLoaded ? `₺${grandTotal.toLocaleString('tr-TR')}` : '…'}</span>
+                      <span>
+                        {priceError ? 'Fiyat bilgisi yüklenemedi'
+                          : !pricesLoaded ? '…'
+                          : !hasKnownPricedItem ? 'Fiyat için iletişime geçin'
+                          : `₺${grandTotal.toLocaleString('tr-TR')}`}
+                      </span>
                     </div>
                     {hasCustomSizeItem && (
                       <p style={{ ...body, fontSize: '.72rem', margin: '.5rem 0 0' }}>
@@ -757,13 +799,13 @@ export default function FotografBaski() {
                 {wizardError && <p style={{ color: '#c33', fontSize: '.78rem', marginTop: '-.6rem', marginBottom: '1rem' }}>{wizardError}</p>}
 
                 <button
-                  type="button" onClick={goToBilgiler} disabled={anyUploading || printItems.length === 0}
+                  type="button" onClick={goToBilgiler} disabled={anyUploading || printItems.length === 0 || priceError}
                   style={{
                     width: '100%', padding: '.9rem', background: 'var(--accent)', color: '#fff',
                     border: 'none', fontFamily: 'var(--font-body)', fontSize: '.75rem',
                     letterSpacing: '.14em', textTransform: 'uppercase',
-                    cursor: (anyUploading || printItems.length === 0) ? 'not-allowed' : 'pointer',
-                    opacity: (anyUploading || printItems.length === 0) ? .6 : 1,
+                    cursor: (anyUploading || printItems.length === 0 || priceError) ? 'not-allowed' : 'pointer',
+                    opacity: (anyUploading || printItems.length === 0 || priceError) ? .6 : 1,
                   }}
                 >
                   {continueLabel}

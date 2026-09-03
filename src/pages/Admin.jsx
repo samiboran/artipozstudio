@@ -62,7 +62,7 @@ const EMPTY_PAPER = {
 // butonlarıyla birebir aynı olmalı (Özel Ölçü'nün sabit fiyatı yok, bu
 // yüzden burada yer almıyor). Her (boy, yüzey) hücresi bağımsız düzenlenebilir
 // — kağıt yüzeyi fiyatı etkileyebilir, kod bir varsayım yapmıyor.
-const PHOTO_SIZES = ['A5', 'A4', 'A3', 'A2']
+const PHOTO_SIZES = ['A6', 'A5', 'A4', 'A3', 'A2']
 const PHOTO_FINISHES = ['Glossy', 'Satin', 'Matte', 'Metallic']
 
 // Güncel fiyat tablosu (Sami/Meltem'in onayladığı rakamlar) — Admin'de bir
