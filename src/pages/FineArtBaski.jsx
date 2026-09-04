@@ -143,7 +143,7 @@ export default function FineArtBaski() {
               src={images['tanitim-gorsel']}
               alt="Fine Art baskı stüdyosunda geniş format yazıcıdan çıkan renkli bir sanat eseri baskısı"
               loading="lazy" decoding="async"
-              style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+              style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center 65%', display: 'block' }}
             />
             <div style={{ position: 'absolute', left: '1.5rem', bottom: '1.5rem', background: '#111' }}>
               <span style={{
