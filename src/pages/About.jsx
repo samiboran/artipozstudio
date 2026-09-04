@@ -49,7 +49,7 @@ function About() {
         <h2 style={h2}>İletişim</h2>
         <p style={p}>
           Sorularınız için <a href="mailto:info@artipozstudio.com" style={{ color: 'var(--gold)' }}>info@artipozstudio.com</a> adresinden
-          ya da ürün sayfalarındaki WhatsApp hattından bize ulaşabilirsiniz.
+          ya da Instagram hesabımızdan bize ulaşabilirsiniz.
         </p>
       </div>
     </div>
