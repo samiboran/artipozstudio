@@ -7,14 +7,19 @@
 // (Archivo) — başlıklar dahil. Eskiden burada Playfair Display / Cormorant
 // Garamond / EB Garamond gibi serif seçenekler de vardı (admin'den
 // değiştirilebiliyordu); tutarsız görünüme yol açtığı için kaldırıldı.
+// Not: heading da body ile AYNI Archivo ailesi — "Archivo Black" ayrı bir
+// font (yalnızca 900 ağırlık, fontWeight ile incelemiyor) olduğu için
+// önceden tüm başlıklar gereğinden kalın görünüyordu; bu artık düzeltildi,
+// ağırlık artık her başlığın kendi fontWeight'ıyla gerçek anlamda kontrol
+// ediliyor (bkz. sayfalardaki heading sabitleri, çoğu 600).
 // Archivo'nun geniş ağırlık + italik aralığı yüklü (300-700 + italik),
 // context'e göre (örn. vurgu için italik, ince metin için 300) kullanılabilir.
 export const FONT_PRESETS = {
   archivo: {
     label: 'Archivo (tek sistem)',
-    googleFontsUrl: 'https://fonts.googleapis.com/css2?family=Archivo:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400;1,600&family=Archivo+Black&display=swap',
+    googleFontsUrl: 'https://fonts.googleapis.com/css2?family=Archivo:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400;1,600&display=swap',
     body: "'Archivo', sans-serif",
-    heading: "'Archivo Black', sans-serif",
+    heading: "'Archivo', sans-serif",
   },
 }
 

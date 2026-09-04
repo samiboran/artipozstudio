@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Archivo:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400;1,600&family=Archivo+Black&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Archivo:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400;1,600&display=swap');
 
 *, *::before, *::after {
   margin: 0;
@@ -21,7 +21,7 @@
   /* Admin panelden ("Site Ayarları" sekmesi) seçilen fonta göre JS tarafından
      runtime'da güncellenir — src/lib/siteFonts.js. Varsayılan: Archivo. */
   --font-body: 'Archivo', sans-serif;
-  --font-heading: 'Archivo Black', sans-serif;
+  --font-heading: 'Archivo', sans-serif;
 }
 
 html {

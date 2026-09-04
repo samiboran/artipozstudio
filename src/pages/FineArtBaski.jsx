@@ -21,7 +21,7 @@ const FALLBACK_PAPERS = [
   { no: '09', name: 'German Etching', surface: 'Mat', gsm: '310gsm', texture: 'Kabartılı', color: 'White', composition: '100% α-Cellulose' },
 ]
 
-const heading = { fontFamily: 'var(--font-heading)', fontWeight: 400, color: 'var(--ink)' }
+const heading = { fontFamily: 'var(--font-heading)', fontWeight: 600, color: 'var(--ink)' }
 const eyebrow = { fontFamily: 'var(--font-body)', fontSize: '.72rem', fontWeight: 500, letterSpacing: '.18em', textTransform: 'uppercase', color: 'var(--accent)' }
 const body = { fontFamily: 'var(--font-body)', fontSize: '.92rem', lineHeight: 1.7, color: 'var(--muted)' }
 
@@ -105,17 +105,17 @@ export default function FineArtBaski() {
           değiştirilebilir (section: tanitim-gorsel). */}
       <section>
         <style>{`
-          .fab-intro { display: grid; grid-template-columns: 51fr 49fr; min-height: 600px; }
-          .fab-intro-left { padding: 0 7vw; }
+          .fab-intro { display: grid; grid-template-columns: 51fr 49fr; height: 460px; }
+          .fab-intro-left { padding: 3.5rem 7vw; }
           @media (max-width: 768px) {
-            .fab-intro { grid-template-columns: 1fr; min-height: 0; }
+            .fab-intro { grid-template-columns: 1fr; height: auto; }
             .fab-intro-left { padding: 2.2rem 40px 1.8rem; }
             .fab-intro-title { font-size: clamp(2.3rem, 9vw, 2.7rem) !important; }
             .fab-intro-right { height: 435px; }
           }
         `}</style>
         <div className="fab-intro">
-          <div className="fab-intro-left" style={{ background: '#f3efe6', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+          <div className="fab-intro-left" style={{ background: '#f3efe6', display: 'flex', flexDirection: 'column', justifyContent: 'flex-start' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '.6rem', marginBottom: '1.3rem' }}>
               <span style={{ fontFamily: 'var(--font-body)', fontSize: '.78rem', fontWeight: 600, letterSpacing: '.22em', textTransform: 'uppercase', color: '#111' }}>
                 Fine Art Baskı
