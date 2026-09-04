@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { supabase } from '../lib/supabase'
 import heroImgDefault from '../assets/fine-art/hero.webp'
 import HeroSlideStack from './HeroSlideStack'
+import { HERO_OVERLAY_GRADIENT } from '../lib/heroOverlay'
 
 export default function Hero() {
   // Başlangıçta boş — Admin'de gerçek hero görselleri zaten yüklüyse,
@@ -94,10 +95,7 @@ export default function Hero() {
           yok — sadece altta hafif bir derinlik hissi için çok hafif bir
           gölge bırakıyoruz, fotoğrafın kendi ışığı/rengi olduğu gibi
           görünsün diye. */}
-      <div style={{
-        position: 'absolute', inset: 0,
-        background: 'linear-gradient(180deg, rgba(0,0,0,0) 55%, rgba(0,0,0,.18) 100%)'
-      }} />
+      <div style={{ position: 'absolute', inset: 0, background: HERO_OVERLAY_GRADIENT }} />
     </section>
   )
 }

@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { supabase } from '../lib/supabase'
 import { getSessionId } from '../lib/session'
+import { HERO_OVERLAY_GRADIENT } from '../lib/heroOverlay'
 import HeroSlideStack from '../components/HeroSlideStack'
 import heroImg1Default from '../assets/fotograf-baski/hero-1.jpg'
 import heroImg2Default from '../assets/fotograf-baski/hero-2.jpg'
@@ -377,7 +378,7 @@ export default function FotografBaski() {
         textAlign: 'center', overflow: 'hidden',
       }}>
         <HeroSlideStack urls={images.hero} />
-        <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(180deg, rgba(17,17,17,.15), rgba(17,17,17,.55))' }} />
+        <div style={{ position: 'absolute', inset: 0, background: HERO_OVERLAY_GRADIENT }} />
       </section>
 
       {/* Hero'nun hemen altında, ortalı tanıtım metni. */}
@@ -435,7 +436,7 @@ export default function FotografBaski() {
           kullanılıyor — sadece arayüz değişti. */}
       <section style={{ background: 'var(--ink)', padding: '4rem 2rem' }}>
         <style>{`
-          .fb-wizard { display: grid; grid-template-columns: 1fr 1fr; gap: 3.5rem; max-width: 1200px; margin: 0 auto; align-items: stretch; }
+          .fb-wizard { display: grid; grid-template-columns: 1fr 1fr; gap: 3.5rem; max-width: 1400px; margin: 0 auto; align-items: stretch; }
           .fb-wizard-left { display: flex; flex-direction: column; height: 100%; }
           .fb-wizard-mockup { flex: 0 0 auto; aspect-ratio: 4 / 5; }
           @media (max-width: 900px) {
@@ -449,14 +450,14 @@ export default function FotografBaski() {
               flex column + görsel flex:1, sağdaki "Baskını Oluştur" kartıyla
               aynı yükseklikte bitsin diye (kartın uzunluğuna göre esner). */}
           <div className="fb-wizard-left">
-            <h2 style={{ ...heading, color: '#fff', fontSize: 'clamp(1.8rem, 3.5vw, 2.6rem)', margin: '0 0 1rem' }}>
+            <h2 style={{ ...heading, color: '#fff', fontSize: 'clamp(1.8rem, 3.5vw, 2.6rem)', margin: '0 0 .8rem' }}>
               Fotoğrafını baskıya dönüştür.
             </h2>
-            <p style={{ ...body, color: 'rgba(255,255,255,.65)', marginBottom: '2.2rem', maxWidth: 420 }}>
+            <p style={{ ...body, color: 'rgba(255,255,255,.65)', marginBottom: '1.5rem', maxWidth: 420 }}>
               Kağıdını ve ölçünü seç, dosyanı yükle. Baskıya uygunluğunu kontrol edip seninle iletişime geçelim.
             </p>
 
-            <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '.5rem', marginBottom: '2.5rem' }}>
+            <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '.5rem', marginBottom: '1.6rem' }}>
               {[{ n: '01', label: 'DOSYA' }, { n: '02', label: 'KAĞIT & ÖLÇÜ' }, { n: '03', label: 'BİLGİLER' }].map((s, i) => {
                 const currentIndex = wizardStep === 'bilgiler' ? 2 : wizardStep === 'sent' ? 3 : (printItems.length > 0 ? 1 : 0)
                 const active = i === currentIndex
@@ -476,7 +477,7 @@ export default function FotografBaski() {
               })}
             </div>
 
-            <div className="fb-wizard-mockup" style={{ width: '100%', maxWidth: 240, overflow: 'hidden' }}>
+            <div className="fb-wizard-mockup" style={{ width: '100%', maxWidth: 320, overflow: 'hidden' }}>
               {images['wizard-mockup'] ? (
                 <img src={images['wizard-mockup']} alt="Örnek baskı" loading="lazy" decoding="async"
                   style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />

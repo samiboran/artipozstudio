@@ -1,7 +1,7 @@
 function About() {
   const wrap = { maxWidth: 720, margin: '0 auto', padding: '3.5rem 2rem 6rem' }
   const h2 = {
-    fontFamily: "'Playfair Display', serif", color: 'var(--blue)',
+    fontFamily: 'var(--font-heading)', color: 'var(--blue)',
     fontSize: '1.5rem', fontWeight: 600, marginTop: '3rem', marginBottom: '1rem'
   }
   const p = { fontSize: '.88rem', lineHeight: 1.9, color: '#333', marginBottom: '1rem' }
@@ -10,7 +10,7 @@ function About() {
     <div style={{ paddingTop: '4.2rem' }}>
       <div style={wrap}>
         <h1 style={{
-          fontFamily: "'Playfair Display', serif", color: 'var(--blue)',
+          fontFamily: 'var(--font-heading)', color: 'var(--blue)',
           fontSize: '2.4rem', fontWeight: 600, marginBottom: '.5rem'
         }}>
           Hakkımızda
@@ -35,7 +35,7 @@ function About() {
         <h2 style={h2}>Baskı Kalitesi</h2>
         <p style={p}>
           Fine art baskılarımız için Hahnemühle ve Awagami kağıtları, arşivsel
-          pigment mürekkeplerle kullanıyoruz. Doğru saklama koşullarında
+          pigment mürekkepler kullanıyoruz. Doğru saklama koşullarında
           solmadan nesiller boyu dayanacak şekilde üretilir.
         </p>
 

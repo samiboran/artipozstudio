@@ -24,18 +24,18 @@ function Isler() {
 
       <div style={{ maxWidth: 1300, margin: '0 auto', padding: '3rem 2rem 1.5rem' }}>
         <h1 style={{
-          fontFamily: "'Playfair Display', serif", fontWeight: 600,
+          fontFamily: 'var(--font-heading)', fontWeight: 600,
           fontSize: '2.2rem', margin: '0 0 .4rem'
         }}>
           <span lang="en">Fine Art</span> Seçkisi
         </h1>
         {search && (
-          <p style={{ fontFamily: "'Archivo', sans-serif", fontSize: '.82rem', color: 'var(--muted)' }}>
+          <p style={{ fontFamily: 'var(--font-body)', fontSize: '.82rem', color: 'var(--muted)' }}>
             "{search}" için {artworks.length} sonuç
           </p>
         )}
         {!search && category && (
-          <p style={{ fontFamily: "'Archivo', sans-serif", fontSize: '.82rem', color: 'var(--muted)' }}>
+          <p style={{ fontFamily: 'var(--font-body)', fontSize: '.82rem', color: 'var(--muted)' }}>
             "{category}" kategorisinde {artworks.length} sonuç
           </p>
         )}
@@ -44,7 +44,7 @@ function Isler() {
       {loading ? (
         <div style={{
           textAlign: 'center', padding: '6rem 2rem',
-          fontFamily: "'Archivo Black', sans-serif",
+          fontFamily: 'var(--font-heading)',
           fontSize: '1.5rem', color: '#bbb', fontStyle: 'italic'
         }}>
           Yükleniyor…
@@ -52,7 +52,7 @@ function Isler() {
       ) : artworks.length === 0 ? (
         <div style={{
           textAlign: 'center', padding: '6rem 2rem',
-          fontFamily: "'Archivo', sans-serif",
+          fontFamily: 'var(--font-body)',
           fontSize: '.9rem', color: 'var(--muted)'
         }}>
           Sonuç bulunamadı.

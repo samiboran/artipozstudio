@@ -121,20 +121,20 @@ function ArtCard({ artwork, index, onClick, noBottomGap = false }) {
       {/* Bilgi — Fiyat / Başlık / Malzeme / Ölçü */}
       <div style={{ padding: '.6rem .2rem 0' }}>
         {priceLabel && (
-          <div style={{ fontFamily: "'Archivo', sans-serif", fontWeight: 400, fontSize: '.82rem', color: 'var(--ink)', marginBottom: '.3rem' }}>
+          <div style={{ fontFamily: 'var(--font-body)', fontWeight: 400, fontSize: '.82rem', color: 'var(--ink)', marginBottom: '.3rem' }}>
             {priceLabel}
           </div>
         )}
-        <div style={{ fontFamily: "'Archivo', sans-serif", fontSize: '.78rem', fontWeight: 500, color: 'var(--ink)', lineHeight: 1.3, marginBottom: '.2rem' }}>
+        <div style={{ fontFamily: 'var(--font-body)', fontSize: '.78rem', fontWeight: 500, color: 'var(--ink)', lineHeight: 1.3, marginBottom: '.2rem' }}>
           {titleLine}
         </div>
         {artwork.material && (
-          <div style={{ fontFamily: "'Archivo', sans-serif", fontSize: '.7rem', color: 'var(--muted)', lineHeight: 1.4, marginBottom: '.1rem' }}>
+          <div style={{ fontFamily: 'var(--font-body)', fontSize: '.7rem', color: 'var(--muted)', lineHeight: 1.4, marginBottom: '.1rem' }}>
             {artwork.material}
           </div>
         )}
         {sizeLabel && (
-          <div style={{ fontFamily: "'Archivo', sans-serif", fontWeight: 400, fontSize: '.7rem', color: 'var(--muted)' }}>
+          <div style={{ fontFamily: 'var(--font-body)', fontWeight: 400, fontSize: '.7rem', color: 'var(--muted)' }}>
             {sizeLabel}
           </div>
         )}

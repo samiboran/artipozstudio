@@ -633,11 +633,16 @@ function Admin() {
     return 'done'
   }
 
-  async function compressAllExistingImages() {
+  // auto=true: Admin her açıldığında images_compressed_at boşsa arka planda
+  // sessizce (onay penceresi olmadan) tetiklenir — bkz. loadSiteSettings.
+  // Tamamlandığında hiç hata olmadıysa images_compressed_at damgalanır,
+  // böylece bir daha otomatik çalışmaz (elle "Mevcut Görselleri Sıkıştır"
+  // butonu yeni toplu yüklemeler için hâlâ kullanılabilir).
+  async function compressAllExistingImages(auto = false) {
     if (compressing) return
-    if (!confirm('Sistemde şu anda kayıtlı tüm görseller (hero, eser, kağıt vb.) indirilip sıkıştırılıp yeniden yüklenecek. Görsel sayısına göre birkaç dakika sürebilir, sayfadan ayrılma. Devam edilsin mi?')) return
+    if (!auto && !confirm('Sistemde şu anda kayıtlı tüm görseller (hero, eser, kağıt vb.) indirilip sıkıştırılıp yeniden yüklenecek. Görsel sayısına göre birkaç dakika sürebilir, sayfadan ayrılma. Devam edilsin mi?')) return
     setCompressing(true)
-    setCompressLog(['Başlıyor…'])
+    setCompressLog([auto ? 'Arka planda otomatik sıkıştırma başlıyor…' : 'Başlıyor…'])
     const log = msg => setCompressLog(l => [...l, msg])
     let done = 0, skipped = 0, failed = 0
 
@@ -670,6 +675,11 @@ function Admin() {
     log(`Tamamlandı — ${done} sıkıştırıldı, ${skipped} zaten küçüktü, ${failed} hata.`)
     setCompressing(false)
     loadPageImages()
+    // failed > 0 ise damgalamıyoruz — Admin bir sonraki açılışta kalan
+    // görseller için otomatik olarak tekrar dener.
+    if (failed === 0) {
+      supabase.from('site_settings').upsert({ id: 'default', images_compressed_at: new Date().toISOString() }).then(() => {})
+    }
   }
 
   async function loadPageImages() {
@@ -893,10 +903,20 @@ function Admin() {
   // SİTE AYARLARI — font seçimi
   // ============================================================
   async function loadSiteSettings() {
-    const { data } = await supabase.from('site_settings').select('font_pair, artist_bio, artist_photo_url').eq('id', 'default').single()
+    const { data } = await supabase.from('site_settings').select('font_pair, artist_bio, artist_photo_url, images_compressed_at').eq('id', 'default').single()
     if (data?.font_pair) setFontPairState(data.font_pair)
     setArtistBio(data?.artist_bio || '')
     setArtistPhotoUrl(data?.artist_photo_url || '')
+    // Carousel'lerdeki takılmanın kök nedeni: sistemde eskiden yüklenmiş,
+    // hâlâ büyük boyutlu görseller. Sami'nin elle "Mevcut Görselleri
+    // Sıkıştır" butonuna basmasına gerek kalmasın diye — bu bir kere hiç
+    // çalışmadıysa (images_compressed_at boşsa) Admin her açıldığında
+    // arka planda sessizce otomatik tetikleniyor. `data` null ise (henüz
+    // migration çalışmadıysa, images_compressed_at sütunu yoksa) hiç
+    // dokunmuyoruz — SQL çalışana kadar bekliyor, hata vermiyor.
+    if (data && !data.images_compressed_at) {
+      compressAllExistingImages(true)
+    }
   }
 
   function previewFontPair(key) { setFontPairState(key); setFont(key) }
@@ -1027,7 +1047,7 @@ function Admin() {
   // Archivo Black Google Font'ta tek ağırlık (400) olarak yükleniyor — 300 istemek
   // font takas anında (FOUT) yedek fontla eşleşmediği için başlıkların kesik/yarım
   // görünmesine sebep oluyordu.
-  const sectionHeading = { fontFamily: "'Archivo Black', sans-serif", fontSize: '1.8rem', fontWeight: 400, margin: 0 }
+  const sectionHeading = { fontFamily: 'var(--font-heading)', fontSize: '1.8rem', fontWeight: 400, margin: 0 }
   const listItem = (active) => ({
     padding: '.8rem 1rem', cursor: 'pointer', borderBottom: '1px solid #f5f5f5',
     background: active ? '#f9f6f1' : 'white',
@@ -1097,7 +1117,7 @@ function Admin() {
   }
 
   return (
-    <div style={{ display: 'flex', height: '100vh', fontFamily: "'DM Sans', sans-serif", paddingTop: '4.2rem' }}>
+    <div style={{ display: 'flex', height: '100vh', fontFamily: 'var(--font-body)', paddingTop: '4.2rem' }}>
       <style>{`
         nav { display: none !important; }
         .admin-mobile-toggle { display: none; }
@@ -1250,7 +1270,7 @@ function Admin() {
 
           {tab === 'siparisler' && (() => {
             const o = orders.find(x => x.id === selected)
-            if (!o) return <div style={{ color: '#aaa', paddingTop: '3rem', textAlign: 'center', fontFamily: "'Archivo Black', sans-serif", fontSize: '1.2rem', fontStyle: 'italic' }}>Bir sipariş seçin</div>
+            if (!o) return <div style={{ color: '#aaa', paddingTop: '3rem', textAlign: 'center', fontFamily: 'var(--font-heading)', fontSize: '1.2rem', fontStyle: 'italic' }}>Bir sipariş seçin</div>
             return (
               <div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>

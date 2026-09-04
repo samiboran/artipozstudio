@@ -3,30 +3,18 @@
 // Yeni bir hazır çift eklemek istersen FONT_PRESETS'e bir satır eklemen yeterli —
 // admin panelin "Site Ayarları" sekmesinde otomatik olarak seçilebilir hale gelir.
 
+// Sami'nin kararı: sitede serif YOK, tek bir modern sans-serif aile
+// (Archivo) — başlıklar dahil. Eskiden burada Playfair Display / Cormorant
+// Garamond / EB Garamond gibi serif seçenekler de vardı (admin'den
+// değiştirilebiliyordu); tutarsız görünüme yol açtığı için kaldırıldı.
+// Archivo'nun geniş ağırlık + italik aralığı yüklü (300-700 + italik),
+// context'e göre (örn. vurgu için italik, ince metin için 300) kullanılabilir.
 export const FONT_PRESETS = {
   archivo: {
-    label: 'Archivo (şu anki)',
-    googleFontsUrl: 'https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600&family=Archivo+Black&display=swap',
+    label: 'Archivo (tek sistem)',
+    googleFontsUrl: 'https://fonts.googleapis.com/css2?family=Archivo:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400;1,600&family=Archivo+Black&display=swap',
     body: "'Archivo', sans-serif",
     heading: "'Archivo Black', sans-serif",
-  },
-  playfair_inter: {
-    label: 'Playfair Display + Inter',
-    googleFontsUrl: 'https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;700&family=Inter:wght@400;500;600&display=swap',
-    body: "'Inter', sans-serif",
-    heading: "'Playfair Display', serif",
-  },
-  cormorant_dm: {
-    label: 'Cormorant Garamond + DM Sans (eski Fossil Garden)',
-    googleFontsUrl: 'https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600&family=DM+Sans:wght@400;500&display=swap',
-    body: "'DM Sans', sans-serif",
-    heading: "'Cormorant Garamond', serif",
-  },
-  garamond_work: {
-    label: 'EB Garamond + Work Sans',
-    googleFontsUrl: 'https://fonts.googleapis.com/css2?family=EB+Garamond:wght@500;600&family=Work+Sans:wght@400;500;600&display=swap',
-    body: "'Work Sans', sans-serif",
-    heading: "'EB Garamond', serif",
   },
 }
 

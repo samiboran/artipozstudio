@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { supabase } from '../lib/supabase'
 import { getSessionId } from '../lib/session'
+import { HERO_OVERLAY_GRADIENT } from '../lib/heroOverlay'
 import heroImgDefault from '../assets/cerceve/hero.jpg'
 
 // Supabase Storage'ta tek dosya için pratik üst sınır.
@@ -8,6 +9,7 @@ const MAX_FILE_SIZE_MB = 10
 import renkSecenekleriImgDefault from '../assets/cerceve/renk-secenekleri.webp'
 import ornekSiyahImgDefault from '../assets/cerceve/ornek-siyah-cerceve.jpg'
 import ornekAhsapImgDefault from '../assets/cerceve/ornek-ahsap-cerceve.jpg'
+import ornekDetayImgDefault from '../assets/cerceve/renk-secenekleri-detay.jpg'
 
 // Supabase'e hiç bağlanamazsa veya frame_options boşsa gösterilecek yedek veri —
 // admin panel açılana kadar site hep bu haliyle doğru görünsün diye duruyor.
@@ -82,6 +84,7 @@ export default function Cerceve() {
     ornekler: [
       { image_url: ornekSiyahImgDefault, alt: 'Siyah çerçeveli örnek eser' },
       { image_url: ornekAhsapImgDefault, alt: 'Koyu ahşap çerçeveli örnek eser' },
+      { image_url: ornekDetayImgDefault, alt: 'Duvarda asılı, ahşap çerçeveli eser — köşe detayı' },
     ],
   })
 
@@ -221,36 +224,29 @@ export default function Cerceve() {
       <section style={{ background: '#fff', padding: '2.5rem 2rem 3.5rem' }}>
         <style>{`
           .cerceve-wrap { max-width: 1360px; margin: 0 auto; }
-          .cerceve-detay { display: grid; grid-template-columns: 56fr 44fr; gap: 48px; align-items: start; }
+          .cerceve-detay { display: grid; grid-template-columns: 56fr 44fr; gap: 48px; align-items: stretch; }
+          .cerceve-detay-right { display: flex; flex-direction: column; height: 100%; }
+          .cerceve-features { flex: 1; display: flex; flex-direction: column; justify-content: space-evenly; margin: 1.6rem 0; }
           .cerceve-gallery { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 24px; }
           .cerceve-gallery-img { aspect-ratio: 6 / 5; overflow: hidden; }
           @media (max-width: 1024px) {
             .cerceve-detay { grid-template-columns: 1fr; gap: 2rem; }
+            .cerceve-features { margin: 1.3rem 0; }
             .cerceve-gallery { grid-template-columns: 1fr; }
           }
         `}</style>
         <div className="cerceve-wrap">
           <div className="cerceve-detay">
-            <div style={{ aspectRatio: '3 / 2', overflow: 'hidden' }}>
-              <img
-                src={images['renk-secenekleri']}
-                alt="Siyah, beyaz ve doğal ahşap çerçeve renk seçenekleri"
-                loading="lazy" decoding="async"
-                style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
-              />
-            </div>
             <div>
-              <h2 style={{ ...heading, fontSize: '1.9rem', margin: '0 0 1.6rem' }}>Çerçeve detayları</h2>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '1.3rem', marginBottom: '2.2rem' }}>
-                {FEATURES.map(f => (
-                  <div key={f.title} style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                    <span style={{ color: 'var(--accent)', display: 'flex', flexShrink: 0 }}>{f.icon}</span>
-                    <span style={{ width: 1, height: 22, background: 'var(--border)', flexShrink: 0 }} />
-                    <span style={{ fontFamily: 'var(--font-body)', fontSize: '1rem', color: 'var(--ink)' }}>{f.title}</span>
-                  </div>
-                ))}
+              <div style={{ aspectRatio: '3 / 2', overflow: 'hidden' }}>
+                <img
+                  src={images['renk-secenekleri']}
+                  alt="Siyah, beyaz ve doğal ahşap çerçeve renk seçenekleri"
+                  loading="lazy" decoding="async"
+                  style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+                />
               </div>
-              <p style={{ ...label, marginBottom: '1rem' }}>Renk seçenekleri</p>
+              <p style={{ ...label, margin: '1.5rem 0 1rem' }}>Renk seçenekleri</p>
               <div style={{ display: 'flex', gap: '2rem' }}>
                 {[
                   ...COLOR_DISPLAY_ORDER.filter(c => c in colorSwatch),
@@ -264,6 +260,18 @@ export default function Cerceve() {
                       display: 'inline-block',
                     }} />
                     <span style={{ fontFamily: 'var(--font-body)', fontSize: '.82rem', color: 'var(--muted)' }}>{color}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+            <div className="cerceve-detay-right">
+              <h2 style={{ ...heading, fontSize: '1.9rem', margin: 0 }}>Çerçeve detayları</h2>
+              <div className="cerceve-features">
+                {FEATURES.map(f => (
+                  <div key={f.title} style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                    <span style={{ color: 'var(--accent)', display: 'flex', flexShrink: 0 }}>{f.icon}</span>
+                    <span style={{ width: 1, height: 22, background: 'var(--border)', flexShrink: 0 }} />
+                    <span style={{ fontFamily: 'var(--font-body)', fontSize: '1rem', color: 'var(--ink)' }}>{f.title}</span>
                   </div>
                 ))}
               </div>
