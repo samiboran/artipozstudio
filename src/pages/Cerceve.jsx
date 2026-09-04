@@ -224,45 +224,26 @@ export default function Cerceve() {
       <section style={{ background: '#fff', padding: '2.5rem 2rem 3.5rem' }}>
         <style>{`
           .cerceve-wrap { max-width: 1360px; margin: 0 auto; }
-          .cerceve-detay { display: grid; grid-template-columns: 56fr 44fr; gap: 48px; align-items: stretch; }
-          .cerceve-detay-right { display: flex; flex-direction: column; height: 100%; }
-          .cerceve-features { flex: 1; display: flex; flex-direction: column; justify-content: space-evenly; margin: 1.6rem 0; }
+          .cerceve-detay { display: grid; grid-template-columns: 56fr 44fr; gap: 48px; align-items: start; }
+          .cerceve-detay-right { display: flex; flex-direction: column; }
+          .cerceve-features { display: flex; flex-direction: column; gap: 1.3rem; margin: 1.6rem 0 2.2rem; }
           .cerceve-gallery { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 24px; }
           .cerceve-gallery-img { aspect-ratio: 6 / 5; overflow: hidden; }
           @media (max-width: 1024px) {
             .cerceve-detay { grid-template-columns: 1fr; gap: 2rem; }
-            .cerceve-features { margin: 1.3rem 0; }
+            .cerceve-features { margin: 1.3rem 0 1.8rem; }
             .cerceve-gallery { grid-template-columns: 1fr; }
           }
         `}</style>
         <div className="cerceve-wrap">
           <div className="cerceve-detay">
-            <div>
-              <div style={{ aspectRatio: '3 / 2', overflow: 'hidden' }}>
-                <img
-                  src={images['renk-secenekleri']}
-                  alt="Siyah, beyaz ve doğal ahşap çerçeve renk seçenekleri"
-                  loading="lazy" decoding="async"
-                  style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
-                />
-              </div>
-              <p style={{ ...label, margin: '1.5rem 0 1rem' }}>Renk seçenekleri</p>
-              <div style={{ display: 'flex', gap: '2rem' }}>
-                {[
-                  ...COLOR_DISPLAY_ORDER.filter(c => c in colorSwatch),
-                  ...Object.keys(colorSwatch).filter(c => !COLOR_DISPLAY_ORDER.includes(c)),
-                ].map(color => (
-                  <div key={color} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '.6rem' }}>
-                    <span style={{
-                      width: 48, height: 48, borderRadius: '50%',
-                      background: colorSwatch[color] || '#ccc',
-                      border: color === 'Beyaz' ? '1px solid var(--border)' : 'none',
-                      display: 'inline-block',
-                    }} />
-                    <span style={{ fontFamily: 'var(--font-body)', fontSize: '.82rem', color: 'var(--muted)' }}>{color}</span>
-                  </div>
-                ))}
-              </div>
+            <div style={{ aspectRatio: '3 / 2', overflow: 'hidden' }}>
+              <img
+                src={images['renk-secenekleri']}
+                alt="Siyah, beyaz ve doğal ahşap çerçeve renk seçenekleri"
+                loading="lazy" decoding="async"
+                style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+              />
             </div>
             <div className="cerceve-detay-right">
               <h2 style={{ ...heading, fontSize: '1.9rem', margin: 0 }}>Çerçeve detayları</h2>
@@ -274,6 +255,25 @@ export default function Cerceve() {
                     <span style={{ fontFamily: 'var(--font-body)', fontSize: '1rem', color: 'var(--ink)' }}>{f.title}</span>
                   </div>
                 ))}
+              </div>
+              <div>
+                <p style={{ ...label, marginBottom: '1rem' }}>Renk seçenekleri</p>
+                <div style={{ display: 'flex', gap: '2rem' }}>
+                  {[
+                    ...COLOR_DISPLAY_ORDER.filter(c => c in colorSwatch),
+                    ...Object.keys(colorSwatch).filter(c => !COLOR_DISPLAY_ORDER.includes(c)),
+                  ].map(color => (
+                    <div key={color} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '.6rem' }}>
+                      <span style={{
+                        width: 48, height: 48, borderRadius: '50%',
+                        background: colorSwatch[color] || '#ccc',
+                        border: color === 'Beyaz' ? '1px solid var(--border)' : 'none',
+                        display: 'inline-block',
+                      }} />
+                      <span style={{ fontFamily: 'var(--font-body)', fontSize: '.82rem', color: 'var(--muted)' }}>{color}</span>
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
           </div>
