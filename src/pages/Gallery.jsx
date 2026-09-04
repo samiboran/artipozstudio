@@ -78,7 +78,7 @@ const FILE_PREP_CARDS = [
   { key: 'dosya-gonderimi', title: 'Dosya Gönderimi', hasDesc: true, zoom: 1 },
 ]
 
-const displayHeading = { fontFamily: "'Playfair Display', serif", fontWeight: 600, color: 'var(--ink)' }
+const displayHeading = { fontFamily: 'var(--font-heading)', fontWeight: 600, color: 'var(--ink)' }
 
 const HIZMETLER = [
   {
@@ -109,17 +109,17 @@ const HIZMETLER = [
   },
 ]
 
-const eyebrow = { fontFamily: "'Archivo', sans-serif", fontSize: '.68rem', letterSpacing: '.14em', textTransform: 'uppercase', color: 'var(--muted)' }
+const eyebrow = { fontFamily: 'var(--font-body)', fontSize: '.68rem', letterSpacing: '.14em', textTransform: 'uppercase', color: 'var(--muted)' }
 
 // Sipariş & İletişim formundaki "Kağıt Seçenekleri"nde, admin panelinden
 // yönetilen fine art kağıtlarına ek olarak Kodak dijital baskı (Fotoğraf
 // Baskı hizmeti) kağıtları da seçilebilsin diye sabit olarak ekleniyor.
 const KODAK_PAPERS = ['Kodak Mat', 'Kodak Parlak']
 
-const contactLabel = { display: 'block', marginBottom: '.4rem', fontFamily: "'Archivo', sans-serif", fontSize: '.68rem', fontWeight: 600, letterSpacing: '.1em', textTransform: 'uppercase', color: 'var(--ink)' }
+const contactLabel = { display: 'block', marginBottom: '.4rem', fontFamily: 'var(--font-body)', fontSize: '.68rem', fontWeight: 600, letterSpacing: '.1em', textTransform: 'uppercase', color: 'var(--ink)' }
 const contactInput = {
   width: '100%', padding: '.65rem .85rem', border: '1px solid var(--border)',
-  fontFamily: "'Archivo', sans-serif", fontSize: '.85rem', color: 'var(--ink)',
+  fontFamily: 'var(--font-body)', fontSize: '.85rem', color: 'var(--ink)',
   outline: 'none', boxSizing: 'border-box', background: '#fff',
 }
 
@@ -233,23 +233,23 @@ function PaperCarousel({ papers, images }) {
                 <div style={{
                   width: '100%', height: '100%', display: 'flex', alignItems: 'center',
                   justifyContent: 'center', textAlign: 'center', padding: '1rem',
-                  fontFamily: "'Archivo', sans-serif", fontSize: '.68rem', color: 'rgba(255,255,255,.4)',
+                  fontFamily: 'var(--font-body)', fontSize: '.68rem', color: 'rgba(255,255,255,.4)',
                 }}>
                   {`${paper.name} — Admin'den yükle`}
                 </div>
               )}
               <span style={{
                 position: 'absolute', top: 10, left: 10, background: '#fff', color: '#111',
-                fontFamily: "'Archivo', sans-serif", fontSize: '.56rem', fontWeight: 600,
+                fontFamily: 'var(--font-body)', fontSize: '.56rem', fontWeight: 600,
                 letterSpacing: '.1em', textTransform: 'uppercase', padding: '.3rem .6rem',
               }}>
                 Hahnemühle
               </span>
             </div>
-            <h3 style={{ fontFamily: "'Playfair Display', serif", fontWeight: 600, color: '#fff', fontSize: '1.02rem', margin: '0 0 .4rem' }}>
+            <h3 style={{ fontFamily: 'var(--font-heading)', fontWeight: 600, color: '#fff', fontSize: '1.02rem', margin: '0 0 .4rem' }}>
               {paper.name}
             </h3>
-            <p lang="en" style={{ fontFamily: "'Archivo', sans-serif", fontSize: '.76rem', lineHeight: 1.6, color: 'rgba(255,255,255,.6)', margin: 0 }}>
+            <p lang="en" style={{ fontFamily: 'var(--font-body)', fontSize: '.76rem', lineHeight: 1.6, color: 'rgba(255,255,255,.6)', margin: 0 }}>
               {paper.info}
             </p>
           </div>
@@ -396,7 +396,7 @@ function FilePrepCards({ images, content }) {
             <div style={{
               position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center',
               textAlign: 'center', padding: '1rem',
-              fontFamily: "'Archivo', sans-serif", fontSize: '.68rem', color: 'var(--muted)',
+              fontFamily: 'var(--font-body)', fontSize: '.68rem', color: 'var(--muted)',
             }}>
               {`${card.title} — Admin'den yükle`}
             </div>
@@ -404,7 +404,7 @@ function FilePrepCards({ images, content }) {
           <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(180deg, rgba(0,0,0,0) 42%, rgba(0,0,0,.72) 100%)' }} />
           <div style={{ position: 'absolute', left: '1rem', right: '1rem', bottom: '1rem' }}>
             <div style={{
-              fontFamily: "'Archivo', sans-serif", fontWeight: 700, fontSize: '.82rem',
+              fontFamily: 'var(--font-body)', fontWeight: 700, fontSize: '.82rem',
               letterSpacing: '.04em', textTransform: 'uppercase', color: '#fff', lineHeight: 1.3,
             }}>
               {card.title}
@@ -412,7 +412,7 @@ function FilePrepCards({ images, content }) {
             {card.hasDesc ? (
               <a href="#siparis-iletisim" style={{
                 display: 'inline-flex', alignItems: 'center', gap: '.35rem', marginTop: '.6rem',
-                fontFamily: "'Archivo', sans-serif", fontSize: '.7rem', letterSpacing: '.06em',
+                fontFamily: 'var(--font-body)', fontSize: '.7rem', letterSpacing: '.06em',
                 color: '#fff', textDecoration: 'underline', textUnderlineOffset: 3,
               }}>
                 Detayları Gör <span>→</span>
@@ -596,7 +596,7 @@ function Gallery() {
                 <div style={{
                   width: '100%', aspectRatio: '4 / 3', background: '#e4e2db', flexShrink: 0,
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  fontFamily: "'Archivo', sans-serif", fontSize: '.68rem',
+                  fontFamily: 'var(--font-body)', fontSize: '.68rem',
                   letterSpacing: '.08em', textTransform: 'uppercase', color: 'var(--muted)', textAlign: 'center', padding: '1rem',
                 }}>
                   Görsel — Admin'den yükle
@@ -609,12 +609,12 @@ function Gallery() {
                   alt hizada kalıyor, satır sayısı grid satırının yüksekliğini
                   bozmuyor. */}
               <div style={{ background: 'var(--surface)', padding: '1.3rem 1.4rem 1.5rem', flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
-                <p style={{ fontFamily: "'Playfair Display', serif", fontWeight: 600, fontSize: '1.08rem', color: 'var(--ink)', margin: '0 0 .6rem' }}>
+                <p style={{ fontFamily: 'var(--font-heading)', fontWeight: 600, fontSize: '1.08rem', color: 'var(--ink)', margin: '0 0 .6rem' }}>
                   {title}
                 </p>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', gap: '1rem' }}>
                   <p style={{
-                    fontFamily: "'Archivo', sans-serif", fontSize: '.78rem', lineHeight: 1.6,
+                    fontFamily: 'var(--font-body)', fontSize: '.78rem', lineHeight: 1.6,
                     color: 'var(--muted)', margin: 0,
                   }}>
                     {desc}
@@ -634,7 +634,7 @@ function Gallery() {
             Baskı İçin Dosya Hazırlığı
           </h2>
           <p className="section-desc" style={{
-            fontFamily: "'Archivo', sans-serif", fontSize: '.88rem', lineHeight: 1.7,
+            fontFamily: 'var(--font-body)', fontSize: '.88rem', lineHeight: 1.7,
             color: 'var(--muted)', maxWidth: 560, margin: '1.2rem auto 0',
           }}>
             {content['baski-hazirlik-aciklama'] || 'En iyi baskı sonucunu alabilmek için dosyalarınızı aşağıdaki teknik kriterlere göre hazırlayabilirsiniz.'}
@@ -659,7 +659,7 @@ function Gallery() {
             </h2>
             <Link to="/isler" style={{
               display: 'inline-flex', alignItems: 'center', gap: '.5rem', marginTop: '.9rem',
-              fontFamily: "'Archivo', sans-serif", fontSize: '.68rem',
+              fontFamily: 'var(--font-body)', fontSize: '.68rem',
               letterSpacing: '.14em', textTransform: 'uppercase', color: 'var(--ink)',
             }}>
               Tümünü Gör <span>→</span>
@@ -676,7 +676,7 @@ function Gallery() {
           Sertifikalı Fine Art Kağıtları
         </h2>
         <p style={{
-          fontFamily: "'Archivo', sans-serif", fontSize: '.92rem', lineHeight: 1.8,
+          fontFamily: 'var(--font-body)', fontSize: '.92rem', lineHeight: 1.8,
           color: 'var(--muted)', maxWidth: 900, margin: '0 auto',
         }}>
           {content['sertifikali-kagit-aciklama'] || `Hahnemühle'nin arşivsel kalitedeki fine art kağıtlarıyla, eserlerinizde üstün renk
@@ -708,7 +708,7 @@ function Gallery() {
           <div style={{
             width: '100%', aspectRatio: '16 / 7', background: 'var(--surface)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontFamily: "'Archivo', sans-serif", fontSize: '.7rem',
+            fontFamily: 'var(--font-body)', fontSize: '.7rem',
             letterSpacing: '.08em', textTransform: 'uppercase', color: 'var(--muted)',
           }}>
             Görsel — Admin → Görseller'den yükle
@@ -723,7 +723,7 @@ function Gallery() {
             Sipariş &amp; İletişim
           </h2>
           <div style={{
-            fontFamily: "'Archivo', sans-serif", fontSize: '.85rem', lineHeight: 1.9,
+            fontFamily: 'var(--font-body)', fontSize: '.85rem', lineHeight: 1.9,
             color: 'var(--muted)', display: 'flex', flexDirection: 'column', gap: '1rem',
           }}>
             <p style={{ margin: 0 }}>Sipariş, teklif talebi ve tüm sorularınız için bizimle iletişime geçebilirsiniz.</p>
@@ -743,7 +743,7 @@ function Gallery() {
             style={{
               display: 'inline-block', marginTop: '1.5rem', padding: '.7rem 1.6rem',
               border: '1px solid var(--ink)', color: 'var(--ink)',
-              fontFamily: "'Archivo', sans-serif", fontSize: '.7rem',
+              fontFamily: 'var(--font-body)', fontSize: '.7rem',
               letterSpacing: '.14em', textTransform: 'uppercase',
             }}
           >
@@ -755,7 +755,7 @@ function Gallery() {
           <div style={{
             background: 'var(--surface)', border: '1px solid var(--border)',
             padding: '2rem', textAlign: 'center',
-            fontFamily: "'Archivo', sans-serif", fontSize: '.88rem', color: 'var(--muted)',
+            fontFamily: 'var(--font-body)', fontSize: '.88rem', color: 'var(--muted)',
           }}>
             Talebiniz alındı. En kısa sürede sizinle iletişime geçeceğiz.
           </div>
@@ -830,7 +830,7 @@ function Gallery() {
               disabled={contactStatus === 'submitting'}
               style={{
                 marginTop: '.5rem', padding: '.9rem', background: 'var(--ink)',
-                color: '#fff', border: 'none', fontFamily: "'Archivo', sans-serif",
+                color: '#fff', border: 'none', fontFamily: 'var(--font-body)',
                 fontSize: '.72rem', letterSpacing: '.16em', textTransform: 'uppercase',
                 cursor: contactStatus === 'submitting' ? 'not-allowed' : 'pointer',
                 opacity: contactStatus === 'submitting' ? .7 : 1,
@@ -847,7 +847,7 @@ function Gallery() {
         }}>
           <p style={{ ...eyebrow, marginBottom: '.6rem' }}>İstanbul, Taksim Meydanı</p>
           <a href="mailto:info@artipozstudio.com" style={{
-            fontFamily: "'Archivo', sans-serif", fontSize: '.82rem', color: 'var(--muted)',
+            fontFamily: 'var(--font-body)', fontSize: '.82rem', color: 'var(--muted)',
           }}>
             info@artipozstudio.com
           </a>
@@ -881,7 +881,7 @@ function Gallery() {
           <span style={{
             position: 'absolute', bottom: '.9rem', left: '50%', transform: 'translateX(-50%)',
             background: '#fff', border: '1px solid var(--border)', padding: '.5rem 1rem',
-            fontFamily: "'Archivo', sans-serif", fontSize: '.68rem', letterSpacing: '.1em',
+            fontFamily: 'var(--font-body)', fontSize: '.68rem', letterSpacing: '.1em',
             textTransform: 'uppercase', color: 'var(--ink)', whiteSpace: 'nowrap',
           }}>
             Google Maps'te Aç

@@ -29,12 +29,12 @@ function Login() {
     <div style={{
       minHeight: '100vh', display: 'flex',
       alignItems: 'center', justifyContent: 'center',
-      fontFamily: "'DM Sans', sans-serif"
+      fontFamily: 'var(--font-body)'
     }}>
       <div style={{ width: '100%', maxWidth: 360, padding: '0 2rem' }}>
 
         <div style={{
-          fontFamily: "'Archivo Black', sans-serif",
+          fontFamily: 'var(--font-heading)',
           fontSize: '1.8rem', fontWeight: 300,
           textAlign: 'center', marginBottom: '2.5rem',
           letterSpacing: '.1em'

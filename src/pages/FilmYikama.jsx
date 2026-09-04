@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { supabase } from '../lib/supabase'
 import { getSessionId } from '../lib/session'
+import { HERO_OVERLAY_GRADIENT } from '../lib/heroOverlay'
 import heroImgDefault from '../assets/film-yikama/hero.jpg'
 import adim01ImgDefault from '../assets/film-yikama/adim-01-teslim.jpg'
 import adim02ImgDefault from '../assets/film-yikama/adim-02-yikama-tarama.jpg'
@@ -187,11 +188,14 @@ export default function FilmYikama() {
           loading="eager" fetchPriority="high" decoding="async"
           style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }}
         />
-        <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(180deg, rgba(17,17,17,.15), rgba(17,17,17,.55))' }} />
+        <div style={{ position: 'absolute', inset: 0, background: HERO_OVERLAY_GRADIENT }} />
       </section>
 
-      {/* Başlık + açıklama — 2 sütun */}
-      <section style={{ maxWidth: 1200, margin: '0 auto', padding: '4.5rem 2rem 3.5rem' }}>
+      {/* Başlık + açıklama — 2 sütun. maxWidth aşağıdaki adım/CTA/galeri
+          bölümleriyle aynı (1300px) — hepsi aynı sol/sağ kenara hizalı
+          olsun diye (önceden bu bölüm 1200px'di, alttaki 1300px, kenarlar
+          hizasızdı). */}
+      <section style={{ maxWidth: 1300, margin: '0 auto', padding: '2.25rem 2rem 1.75rem' }}>
         <style>{`
           .fy-intro { display: grid; grid-template-columns: 1fr 1fr; gap: 3rem; align-items: start; }
           @media (max-width: 700px) {
@@ -210,7 +214,7 @@ export default function FilmYikama() {
 
       {/* 01 / 02 / 03 — üç eşit sütun, hepsi aynı düzende (referans tasarıma
           göre: zigzag değil, yan yana 3 sütun). */}
-      <section style={{ maxWidth: 1300, margin: '0 auto', padding: '0 2rem 2rem' }}>
+      <section style={{ maxWidth: 1300, margin: '0 auto', padding: '0 2rem 1rem' }}>
         <style>{`
           .fy-steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2.5rem; }
           .fy-step-img { aspect-ratio: 4 / 3; overflow: hidden; margin-bottom: 1.3rem; }
@@ -236,32 +240,38 @@ export default function FilmYikama() {
 
       {/* Dijitalden kâğıda — CTA: başlık + açıklama + buton aynı satırda
           (referans tasarıma göre), buton tam genişlik bir şerit değil. */}
-      <section style={{ maxWidth: 1300, margin: '0 auto', padding: '3rem 2rem 4.5rem' }}>
+      <section style={{ maxWidth: 1300, margin: '0 auto', padding: '1.5rem 2rem 2.25rem' }}>
         <style>{`
           .fy-cta-row { display: flex; align-items: center; justify-content: space-between; gap: 2.5rem; }
+          .fy-cta-right { display: flex; flex-direction: column; align-items: flex-end; gap: 1.2rem; max-width: 460px; }
+          .fy-cta-right p { text-align: right; }
           @media (max-width: 900px) {
             .fy-cta-row { flex-direction: column; align-items: flex-start; gap: 1.2rem; }
-            .fy-cta-row button { width: 100%; justify-content: center; }
+            .fy-cta-right { align-items: flex-start; max-width: none; }
+            .fy-cta-right p { text-align: left; }
+            .fy-cta-right button { width: 100%; justify-content: center; }
           }
         `}</style>
         <div className="fy-cta-row">
           <h2 style={{ ...heading, fontSize: '1.6rem', margin: 0, flexShrink: 0 }}>Dijitalden kâğıda.</h2>
-          <p style={{ ...body, flex: 1 }}>
-            Dilerseniz seçtiğiniz kareleri fotoğraf veya fine art baskıyla tamamlayabilirsiniz.
-            Baskı hizmeti ayrıca ücretlendirilir.
-          </p>
-          <button
-            type="button" onClick={openModal}
-            style={{
-              flexShrink: 0, padding: '1.1rem 1.8rem', background: 'var(--ink)', color: '#fff',
-              border: 'none', fontFamily: 'var(--font-body)', fontSize: '.85rem',
-              letterSpacing: '.05em', display: 'flex', alignItems: 'center', gap: '.6rem',
-              whiteSpace: 'nowrap', cursor: 'pointer',
-            }}
-          >
-            Film Yıkama &amp; Tarama İçin İletişime Geçin
-            <span aria-hidden="true">→</span>
-          </button>
+          <div className="fy-cta-right">
+            <p style={body}>
+              Dilerseniz seçtiğiniz kareleri fotoğraf veya fine art baskıyla tamamlayabilirsiniz.
+              Baskı hizmeti ayrıca ücretlendirilir.
+            </p>
+            <button
+              type="button" onClick={openModal}
+              style={{
+                flexShrink: 0, padding: '1.1rem 1.8rem', background: 'var(--ink)', color: '#fff',
+                border: 'none', fontFamily: 'var(--font-body)', fontSize: '.85rem',
+                letterSpacing: '.05em', display: 'flex', alignItems: 'center', gap: '.6rem',
+                whiteSpace: 'nowrap', cursor: 'pointer',
+              }}
+            >
+              Film Yıkama &amp; Tarama İçin İletişime Geçin
+              <span aria-hidden="true">→</span>
+            </button>
+          </div>
         </div>
       </section>
 

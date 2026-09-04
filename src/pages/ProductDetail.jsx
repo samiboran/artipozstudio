@@ -108,13 +108,13 @@ function ProductDetail() {
   }, [])
 
   if (loading) return (
-    <div style={{ paddingTop: '8rem', textAlign: 'center', fontFamily: "'Archivo Black', sans-serif", fontSize: '1.5rem', color: 'var(--muted)', fontStyle: 'italic' }}>
+    <div style={{ paddingTop: '8rem', textAlign: 'center', fontFamily: 'var(--font-heading)', fontSize: '1.5rem', color: 'var(--muted)', fontStyle: 'italic' }}>
       Yükleniyor…
     </div>
   )
 
   if (!artwork) return (
-    <div style={{ paddingTop: '8rem', textAlign: 'center', fontFamily: "'Archivo Black', sans-serif", fontSize: '1.5rem', color: 'var(--muted)' }}>
+    <div style={{ paddingTop: '8rem', textAlign: 'center', fontFamily: 'var(--font-heading)', fontSize: '1.5rem', color: 'var(--muted)' }}>
       Eser bulunamadı
     </div>
   )
@@ -325,7 +325,7 @@ function ProductDetail() {
               width: 38, height: 38, borderRadius: '50%',
               background: 'var(--surface)', border: '1px solid var(--border)',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontFamily: "'Archivo Black', sans-serif", fontSize: '.95rem', color: 'var(--gold)'
+              fontFamily: 'var(--font-heading)', fontSize: '.95rem', color: 'var(--gold)'
             }}>
               {artwork.artist.split(' ').map(w => w[0]).join('').slice(0, 2)}
             </div>
@@ -338,7 +338,7 @@ function ProductDetail() {
           </div>
 
           <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '1rem' }}>
-            <h1 style={{ fontFamily: "'Playfair Display', serif", fontWeight: 600, fontSize: 'clamp(1.9rem, 2.8vw, 2.8rem)', lineHeight: 1.15, marginBottom: '.3rem' }}>
+            <h1 style={{ fontFamily: 'var(--font-heading)', fontWeight: 600, fontSize: 'clamp(1.9rem, 2.8vw, 2.8rem)', lineHeight: 1.15, marginBottom: '.3rem' }}>
               {artwork.title}
             </h1>
             <button
@@ -371,7 +371,7 @@ function ProductDetail() {
 
           {activePrice && (
             <div style={{ display: 'flex', alignItems: 'baseline', gap: '.8rem', marginBottom: '1.3rem' }}>
-              <div style={{ fontFamily: "'Archivo', sans-serif", fontWeight: 600, fontSize: '1.7rem', color: 'var(--ink)' }}>
+              <div style={{ fontFamily: 'var(--font-body)', fontWeight: 600, fontSize: '1.7rem', color: 'var(--ink)' }}>
                 ₺{activePrice.toLocaleString('tr-TR')}
               </div>
               <div style={{ fontSize: '.6rem', letterSpacing: '.1em', textTransform: 'uppercase', color: 'var(--muted)' }}>
@@ -472,7 +472,7 @@ function ProductDetail() {
       {/* Bu sanatçıdan diğer eserler */}
       {moreFromSeller.length > 0 && (
         <section style={{ maxWidth: 1300, margin: '0 auto', padding: '0 2rem 4rem', borderTop: '1px solid var(--border)' }}>
-          <h2 style={{ fontFamily: "'Playfair Display', serif", fontWeight: 600, fontSize: '1.4rem', margin: '2.5rem 0 1.5rem' }}>
+          <h2 style={{ fontFamily: 'var(--font-heading)', fontWeight: 600, fontSize: '1.4rem', margin: '2.5rem 0 1.5rem' }}>
             {artwork.artist}'dan Diğer Eserler
           </h2>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '1.5rem' }}>

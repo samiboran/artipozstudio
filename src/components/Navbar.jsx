@@ -113,7 +113,7 @@ function Navbar({ cartCount = 0, onCartClick }) {
           {!transparent && (
             <Link to="/" style={{ display: 'flex', flexDirection: 'column', lineHeight: 1 }}>
               <span style={{
-                fontFamily: "'Archivo Black', sans-serif",
+                fontFamily: 'var(--font-heading)',
                 fontSize: '1.2rem', letterSpacing: '-.02em',
                 color: 'var(--blue)', textTransform: 'lowercase'
               }}>
@@ -130,7 +130,7 @@ function Navbar({ cartCount = 0, onCartClick }) {
               to={item.to}
               lang={item.lang}
               style={{
-                fontFamily: "'Archivo', sans-serif",
+                fontFamily: 'var(--font-body)',
                 fontSize: '.68rem', letterSpacing: '.12em',
                 textTransform: 'uppercase', color: linkColor,
                 whiteSpace: 'nowrap',
@@ -303,7 +303,7 @@ function Navbar({ cartCount = 0, onCartClick }) {
             {SOCIAL_LINKS.map(s => (
               s.label === 'Etsy' ? (
                 <a key={s.label} href={s.href} target="_blank" rel="noopener noreferrer" style={{
-                  fontFamily: "'Archivo', sans-serif", fontSize: '.7rem',
+                  fontFamily: 'var(--font-body)', fontSize: '.7rem',
                   letterSpacing: '.08em', textTransform: 'uppercase', color: 'var(--muted)',
                 }}>
                   Etsy

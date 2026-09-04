@@ -1,19 +1,14 @@
 import { useState } from 'react'
 import { getSessionId } from '../lib/session'
 
-// Sami banka bilgilerini iletince buradaki placeholder'lar gerçek IBAN/hesap
-// bilgileriyle değiştirilecek.
-const BANK_INFO = {
-  accountName: '[HESAP SAHİBİ ADI]',
-  bankName: '[BANKA ADI]',
-  iban: '[IBAN NUMARASI GİRİLECEK]',
-}
-
 export default function CheckoutModal({ open, onClose, items, total, onSuccess }) {
   const [form, setForm] = useState({ name: '', email: '', phone: '', address: '' })
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
-  // 'form' → kişi bilgileri, 'bank' → sipariş oluşturuldu, havale bilgileri gösteriliyor
+  // 'form' → kişi bilgileri, 'confirmed' → sipariş oluşturuldu, tarafımıza
+  // ulaştığını ve dönüş yapılacağını bildiren mesaj gösteriliyor. Havale/EFT
+  // bilgisi ARTIK gösterilmiyor — müşteri IBAN'a para göndermeye
+  // yönlendirilmiyor, biz kendisiyle iletişime geçip ödemeyi ayrıca alıyoruz.
   const [step, setStep] = useState('form')
 
   if (!open) return null
@@ -65,7 +60,7 @@ export default function CheckoutModal({ open, onClose, items, total, onSuccess }
     }
 
     setSaving(false)
-    setStep('bank')
+    setStep('confirmed')
   }
 
   function handleClose() {
@@ -97,12 +92,12 @@ export default function CheckoutModal({ open, onClose, items, total, onSuccess }
         transform: 'translate(-50%, -50%)',
         width: 'min(480px, 92vw)',
         background: '#fff', padding: '2.5rem',
-        fontFamily: "'DM Sans', sans-serif"
+        fontFamily: 'var(--font-body)'
       }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.8rem' }}>
           <div>
-            <h2 style={{ fontFamily: "'Archivo Black', sans-serif", fontSize: '1.7rem', fontWeight: 300, margin: 0 }}>
-              {step === 'form' ? 'Sipariş Ver' : 'Ödeme Bilgileri'}
+            <h2 style={{ fontFamily: 'var(--font-heading)', fontSize: '1.7rem', fontWeight: 300, margin: 0 }}>
+              {step === 'form' ? 'Sipariş Ver' : 'Siparişiniz Alındı'}
             </h2>
             <div style={{ fontSize: '.68rem', color: '#aaa', letterSpacing: '.1em', marginTop: '.3rem' }}>
               Toplam: ₺{total.toLocaleString('tr-TR')}
@@ -156,22 +151,20 @@ export default function CheckoutModal({ open, onClose, items, total, onSuccess }
             </div>
           </>
         ) : (
-          // Sipariş kaydedildi — havale/EFT ile ödeme yapılabilmesi için banka
-          // bilgileri gösteriliyor. Ödeme onayı/tamamlanması ayrı bir aşama,
-          // burada akış tamamlanmış sayılıyor.
+          // Sipariş kaydedildi — müşteri artık bir IBAN'a yönlendirilmiyor.
+          // Ödeme bilgilerini ve talebini bize iletmiş oluyor, ödemeyi ve
+          // teslimat detaylarını biz kendisiyle iletişime geçerek alıyoruz.
           <>
-            <div style={{ background: '#fafafa', padding: '1.4rem', marginBottom: '1.4rem', fontSize: '.85rem', lineHeight: 2 }}>
-              <div style={{ fontSize: '.68rem', letterSpacing: '.1em', textTransform: 'uppercase', color: '#999', marginBottom: '.6rem' }}>
-                Havale / EFT ile Ödeme
-              </div>
-              <div><strong>Hesap Sahibi:</strong> {BANK_INFO.accountName}</div>
-              <div><strong>Banka:</strong> {BANK_INFO.bankName}</div>
-              <div><strong>IBAN:</strong> {BANK_INFO.iban}</div>
+            <div style={{
+              width: 56, height: 56, borderRadius: '50%', border: '2px solid #111',
+              display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.4rem',
+              fontSize: '1.4rem',
+            }}>
+              ✓
             </div>
-            <div style={{ fontSize: '.78rem', lineHeight: 1.8, color: '#555', marginBottom: '1.4rem' }}>
-              Siparişiniz alındı. Ödemenizi yukarıdaki hesaba yapıp dekontu{' '}
-              <a href="mailto:info@artipozstudio.com" style={{ color: 'var(--gold)' }}>info@artipozstudio.com</a>{' '}
-              adresine iletebilirsiniz — ödemeniz onaylandığında siparişiniz işleme alınır.
+            <div style={{ fontSize: '.85rem', lineHeight: 1.9, color: '#555', textAlign: 'center', marginBottom: '1.6rem' }}>
+              Sipariş ve iletişim bilgileriniz bize ulaştı. Ödeme detaylarını ve teslimat sürecini
+              görüşmek için en kısa sürede sizinle iletişime geçeceğiz.
             </div>
             <button
               onClick={handleDone}

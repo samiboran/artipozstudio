@@ -22,7 +22,7 @@ function Favorites() {
     <div style={{ paddingTop: '4.2rem', minHeight: '60vh' }}>
       <div style={{ padding: '2.5rem 2rem 1.5rem', borderBottom: '1px solid var(--border)' }}>
         <h1 style={{
-          fontFamily: "'Playfair Display', serif",
+          fontFamily: 'var(--font-heading)',
           fontWeight: 600, fontSize: '2.2rem', margin: 0
         }}>
           Favoriler
@@ -33,12 +33,12 @@ function Favorites() {
       </div>
 
       {loading ? (
-        <div style={{ padding: '5rem 2rem', textAlign: 'center', fontFamily: "'Archivo Black', sans-serif", fontSize: '1.4rem', fontStyle: 'italic', color: 'var(--muted)' }}>
+        <div style={{ padding: '5rem 2rem', textAlign: 'center', fontFamily: 'var(--font-heading)', fontSize: '1.4rem', fontStyle: 'italic', color: 'var(--muted)' }}>
           Yükleniyor…
         </div>
       ) : favs.length === 0 ? (
         <div style={{ padding: '5rem 2rem', textAlign: 'center' }}>
-          <div style={{ fontFamily: "'Archivo Black', sans-serif", fontSize: '1.5rem', color: 'var(--muted)', marginBottom: '1.2rem' }}>
+          <div style={{ fontFamily: 'var(--font-heading)', fontSize: '1.5rem', color: 'var(--muted)', marginBottom: '1.2rem' }}>
             Henüz favori eseriniz yok
           </div>
           <button

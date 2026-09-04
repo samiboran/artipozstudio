@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../lib/supabase'
+import { HERO_OVERLAY_GRADIENT } from '../lib/heroOverlay'
 import heroImgDefault from '../assets/fine-art/hero.webp'
 import tanitimImgDefault from '../assets/fine-art/tanitim-studyo.jpg'
 import ornekBotanikImgDefault from '../assets/fine-art/ornek-botanik.webp'
@@ -95,10 +96,7 @@ export default function FineArtBaski() {
           loading="eager" fetchPriority="high" decoding="async"
           style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }}
         />
-        <div style={{
-          position: 'absolute', inset: 0,
-          background: 'linear-gradient(180deg, rgba(17,17,17,.15), rgba(17,17,17,.55))'
-        }} />
+        <div style={{ position: 'absolute', inset: 0, background: HERO_OVERLAY_GRADIENT }} />
       </section>
 
       {/* Tanıtım bölümü — hero'nun hemen altında, referans tasarıma göre:

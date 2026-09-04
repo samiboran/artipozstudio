@@ -61,7 +61,7 @@ function Legal() {
   const doc = PAGES[page]
 
   if (!doc) return (
-    <div style={{ paddingTop: '8rem', textAlign: 'center', fontFamily: "'Archivo Black', sans-serif", fontSize: '1.5rem', color: 'var(--muted)' }}>
+    <div style={{ paddingTop: '8rem', textAlign: 'center', fontFamily: 'var(--font-heading)', fontSize: '1.5rem', color: 'var(--muted)' }}>
       Sayfa bulunamadı
     </div>
   )
@@ -72,7 +72,7 @@ function Legal() {
         {/* Site genelindeki diğer sayfa başlıklarıyla (About.jsx vb.) aynı
             font ve renk — önceden eski Archivo Black/ince stildeydi. */}
         <h1 style={{
-          fontFamily: "'Playfair Display', serif", color: 'var(--blue)',
+          fontFamily: 'var(--font-heading)', color: 'var(--blue)',
           fontSize: '2.2rem', fontWeight: 600, marginBottom: '2rem'
         }}>
           {doc.title}
