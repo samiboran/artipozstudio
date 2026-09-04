@@ -1,7 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { supabase } from '../lib/supabase'
 import { getSessionId } from '../lib/session'
-import { HERO_OVERLAY_GRADIENT } from '../lib/heroOverlay'
 import heroImgDefault from '../assets/cerceve/hero.jpg'
 
 // Supabase Storage'ta tek dosya için pratik üst sınır.
@@ -211,10 +210,6 @@ export default function Cerceve() {
           loading="eager" fetchPriority="high" decoding="async"
           style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }}
         />
-        <div style={{
-          position: 'absolute', inset: 0,
-          background: 'linear-gradient(180deg, rgba(17,17,17,.1), rgba(17,17,17,.5))'
-        }} />
       </section>
 
       {/* Çerçeve detayları (sol görsel, sağ özellik listesi + renk
