@@ -21,7 +21,6 @@ import FineArtBaski from './pages/FineArtBaski'
 import Cerceve from './pages/Cerceve'
 import FotografBaski from './pages/FotografBaski'
 import FilmYikama from './pages/FilmYikama'
-import WhatsAppButton from './components/WhatsAppButton'
 
 // React Router sayfa değiştirince scroll pozisyonunu KORUYOR, sıfırlamıyor —
 // bu yüzden "İncele"ye veya navbar linkine tıklayınca yeni sayfa ortadan/en alttan
@@ -103,7 +102,6 @@ function App() {
         <Route path="*" element={<NotFound />} />
       </Routes>
       <CartSidebar open={cartOpen} onClose={() => setCartOpen(false)} />
-      <WhatsAppButton />
       <Footer />
     </>
   )
