@@ -28,7 +28,7 @@ const STEPS = [
   },
 ]
 
-const heading = { fontFamily: 'var(--font-heading)', fontWeight: 400, color: 'var(--ink)' }
+const heading = { fontFamily: 'var(--font-heading)', fontWeight: 600, color: 'var(--ink)' }
 const eyebrow = {
   fontFamily: 'var(--font-body)', fontSize: '.72rem', fontWeight: 500,
   letterSpacing: '.18em', textTransform: 'uppercase', color: 'var(--accent)',

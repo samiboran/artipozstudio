@@ -62,7 +62,7 @@ const KODAK_PAPERS = [
   },
 ]
 
-const heading = { fontFamily: 'var(--font-heading)', fontWeight: 400, color: 'var(--ink)' }
+const heading = { fontFamily: 'var(--font-heading)', fontWeight: 600, color: 'var(--ink)' }
 const body = { fontFamily: 'var(--font-body)', fontSize: '.9rem', lineHeight: 1.7, color: 'var(--muted)' }
 const label = { fontFamily: 'var(--font-body)', fontSize: '.72rem', fontWeight: 500, letterSpacing: '.08em', textTransform: 'uppercase', color: 'var(--ink)' }
 

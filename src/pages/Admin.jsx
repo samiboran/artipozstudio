@@ -1044,10 +1044,7 @@ function Admin() {
 
   const inp ={ width: '100%', padding: '.6rem .8rem', border: '1px solid #ddd', fontSize: '.85rem', fontFamily: 'inherit', outline: 'none', boxSizing: 'border-box' }
   const label = { fontSize: '.62rem', letterSpacing: '.12em', textTransform: 'uppercase', color: '#888', marginBottom: '.3rem', display: 'block' }
-  // Archivo Black Google Font'ta tek ağırlık (400) olarak yükleniyor — 300 istemek
-  // font takas anında (FOUT) yedek fontla eşleşmediği için başlıkların kesik/yarım
-  // görünmesine sebep oluyordu.
-  const sectionHeading = { fontFamily: 'var(--font-heading)', fontSize: '1.8rem', fontWeight: 400, margin: 0 }
+  const sectionHeading = { fontFamily: 'var(--font-heading)', fontSize: '1.8rem', fontWeight: 600, margin: 0 }
   const listItem = (active) => ({
     padding: '.8rem 1rem', cursor: 'pointer', borderBottom: '1px solid #f5f5f5',
     background: active ? '#f9f6f1' : 'white',
