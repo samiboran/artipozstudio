@@ -42,49 +42,66 @@ serve(async (req) => {
 
   try {
     const body = await req.json()
-    const { isim, postaKodu, adres, email, telefon, numune, boyut, mesaj, session_id } = body
+    const { isim, postaKodu, adres, email, telefon, numune, boyut, mesaj, session_id, source } = body
 
     // --- Girdi doğrulama ---
     if (!isim?.trim()) return badRequest('İsim gerekli.')
     if (!email?.trim() || !email.includes('@')) return badRequest('Geçerli bir e-posta adresi giriniz.')
     if (!mesaj?.trim()) return badRequest('Mesaj gerekli.')
 
+    // Formu gönderen sayfa — Ana Sayfa'daki ve Fine Art Baskı'daki aynı
+    // bileşenden geldiği için (bkz. SiparisIletisimForm.jsx) hangisinden
+    // geldiği ayrıca işaretlenmezse kayıt/e-posta belirsiz kalırdı.
+    const pageLabel = source === 'fine-art-baski' ? 'Fine Art Baskı' : 'Ana Sayfa'
+
     const supabase = createClient(SUPABASE_URL, SERVICE_ROLE_KEY)
 
     const { error: insertError } = await supabase.from('contact_messages').insert({
       isim, posta_kodu: postaKodu || null, adres: adres || null, email,
       telefon: telefon || null, kagit: numune || null, boyut: boyut || null,
-      mesaj, session_id: session_id || null,
+      mesaj, session_id: session_id || null, source: source || 'ana-sayfa',
     })
 
     if (insertError) return new Response(JSON.stringify({ error: 'Mesaj kaydedilemedi: ' + insertError.message }), { status: 500, headers: JSON_HEADERS })
 
     if (RESEND_API_KEY) {
-      const res = await fetch('https://api.resend.com/emails', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${RESEND_API_KEY}` },
-        body: JSON.stringify({
-          from: 'Artı Poz <onboarding@resend.dev>',
-          to: NOTIFY_EMAIL,
-          reply_to: email,
-          subject: `✉️ Yeni İletişim Mesajı: ${isim}`,
-          html: `
-            <div style="font-family:Georgia,serif;max-width:600px;margin:0 auto;color:#111">
-              <h2 style="font-weight:300">Ana Sayfadan Yeni Mesaj</h2>
-              <p><strong>İsim:</strong> ${esc(isim)}</p>
-              <p><strong>E-posta:</strong> ${esc(email)}</p>
-              <p><strong>Telefon:</strong> ${esc(telefon) || '—'}</p>
-              <p><strong>Posta Kodu:</strong> ${esc(postaKodu) || '—'}</p>
-              <p><strong>Adres:</strong> ${esc(adres) || '—'}</p>
-              <p><strong>Kağıt Seçeneği:</strong> ${esc(numune) || '—'}</p>
-              <p><strong>Boyut:</strong> ${esc(boyut) || '—'}</p>
-              <hr style="border:none;border-top:1px solid #eee;margin:24px 0">
-              <p style="white-space:pre-wrap">${esc(mesaj)}</p>
-            </div>
-          `,
-        }),
-      }).catch((e) => { console.error('Mail gönderilemedi:', e); return null })
-      if (res && !res.ok) console.error('Resend hata:', await res.text())
+      const sendMail = (to: string, subject: string, html: string) =>
+        fetch('https://api.resend.com/emails', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${RESEND_API_KEY}` },
+          body: JSON.stringify({ from: 'Artı Poz <onboarding@resend.dev>', to, subject, html }),
+        }).then(async (r) => { if (!r.ok) console.error('Resend hata:', await r.text()) })
+          .catch((e) => console.error('Mail gönderilemedi:', e))
+
+      // Bize (Sami) — hangi sayfadan geldiği başlıkta ve içerikte belli.
+      await sendMail(NOTIFY_EMAIL, `✉️ Yeni İletişim Mesajı (${pageLabel}): ${isim}`, `
+        <div style="font-family:Georgia,serif;max-width:600px;margin:0 auto;color:#111">
+          <h2 style="font-weight:300">${esc(pageLabel)}'dan Yeni Mesaj</h2>
+          <p><strong>İsim:</strong> ${esc(isim)}</p>
+          <p><strong>E-posta:</strong> ${esc(email)}</p>
+          <p><strong>Telefon:</strong> ${esc(telefon) || 'Belirtilmedi'}</p>
+          <p><strong>Posta Kodu:</strong> ${esc(postaKodu) || 'Belirtilmedi'}</p>
+          <p><strong>Adres:</strong> ${esc(adres) || 'Belirtilmedi'}</p>
+          <p><strong>Kağıt Seçeneği:</strong> ${esc(numune) || 'Belirtilmedi'}</p>
+          <p><strong>Boyut:</strong> ${esc(boyut) || 'Belirtilmedi'}</p>
+          <hr style="border:none;border-top:1px solid #eee;margin:24px 0">
+          <p style="white-space:pre-wrap">${esc(mesaj)}</p>
+        </div>
+      `)
+
+      // Müşteriye onay — önceden bu form yalnızca bize gidiyordu, müşteri
+      // talebinin gerçekten ulaştığına dair hiçbir e-posta almıyordu.
+      await sendMail(email, 'Talebiniz Alındı — Artı Poz', `
+        <div style="font-family:Georgia,serif;max-width:600px;margin:0 auto;color:#111">
+          <h1 style="font-size:24px;font-weight:300;border-bottom:1px solid #eee;padding-bottom:16px">Artı Poz</h1>
+          <p>Merhaba ${esc(isim)},</p>
+          <p>Talebiniz alındı. En kısa sürede sizinle iletişime geçeceğiz.</p>
+          <p><strong>Kağıt Seçeneği:</strong> ${esc(numune) || 'Belirtilmedi'}</p>
+          <p><strong>Boyut:</strong> ${esc(boyut) || 'Belirtilmedi'}</p>
+          <hr style="border:none;border-top:1px solid #eee;margin:24px 0">
+          <p style="color:#999;font-size:12px">Artı Poz · Fine Art Print Studio · İstanbul</p>
+        </div>
+      `)
     }
 
     return new Response(JSON.stringify({ ok: true }), { headers: JSON_HEADERS })

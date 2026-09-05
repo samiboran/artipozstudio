@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../lib/supabase'
 import { HERO_OVERLAY_GRADIENT } from '../lib/heroOverlay'
+import SiparisIletisimForm from '../components/SiparisIletisimForm'
 import heroImgDefault from '../assets/fine-art/hero.webp'
 import tanitimImgDefault from '../assets/fine-art/tanitim-studyo.jpg'
 import ornekBotanikImgDefault from '../assets/fine-art/ornek-botanik.webp'
@@ -234,6 +235,14 @@ export default function FineArtBaski() {
           ))}
         </div>
       </section>
+
+      {/* Sipariş & İletişim — Ana Sayfa'daki formla aynı bileşen (Sami'nin
+          kararı: Fine Art Baskı için ayrı bir yükleme + fiyat matrisi +
+          sepet akışı gerekmiyor, bu form yeterli). "Dijital baskı" (Kodak)
+          kağıt seçenekleri burada anlamsız olduğu için gizleniyor. */}
+      <div style={{ padding: '2rem 2rem 4rem' }}>
+        <SiparisIletisimForm source="fine-art-baski" showDigitalPapers={false} />
+      </div>
 
     </div>
   )

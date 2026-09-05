@@ -13,15 +13,6 @@ const NOTIFY_EMAIL = 'info@artipozstudio.com'
 // TEK yer: siteni buradan yönet. Wildcard (*) KULLANMA.
 const ALLOWED_ORIGIN = 'https://artipozstudio.com'
 
-// Güncel varsayılan fiyat tablosu (Sami/Meltem'in onayladığı rakamlar) —
-// frontend'deki (FotografBaski.jsx, Admin.jsx) DEFAULT_PRICES ile aynı.
-// photo_print_prices tablosunda bir (boy, yüzey) kombinasyonu için hiç
-// satır yoksa (Admin panelinden fiyat tablosu hiç kaydedilmemişse) ya da
-// satır var ama 0 kaydedilmişse bu değer kullanılır — aksi halde sipariş
-// "Geçersiz boy/yüzey kombinasyonu" hatasıyla tamamen reddediliyordu,
-// halbuki A5/A4/A3/A2 her zaman geçerli standart ölçüler.
-const SIZE_DEFAULT_PRICES: Record<string, number> = { 'A5': 250, 'A4': 350, 'A3': 600, 'A2': 1000 }
-
 const CORS_HEADERS = {
   'Access-Control-Allow-Origin': ALLOWED_ORIGIN,
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
@@ -80,7 +71,10 @@ serve(async (req) => {
 
     // "Özel Ölçü"nün sabit fiyatı yok (photo_print_prices'ta karşılığı yok) —
     // bu satır 0 TL ile kaydedilir, toplama dahil edilmez; fiyat kontrol
-    // sonrası ayrıca teklif olarak iletilir.
+    // sonrası ayrıca teklif olarak iletilir. Diğer tüm boylar için fiyat
+    // YALNIZCA photo_print_prices'tan gelir — uydurma bir varsayılan fiyata
+    // ASLA düşülmez; tablo eksikse/boşsa sipariş tamamen reddedilir, bir
+    // müşteri yanlış/onaysız bir fiyatla asla sipariş verememeli.
     for (const item of items) {
       const isCustomSize = item.size === 'Özel Ölçü'
       let unitPrice: number | undefined
@@ -88,7 +82,7 @@ serve(async (req) => {
         unitPrice = 0
       } else {
         const dbPrice = priceMap.get(`${item.size}:${item.finish}`)
-        unitPrice = (typeof dbPrice === 'number' && dbPrice > 0) ? dbPrice : SIZE_DEFAULT_PRICES[item.size]
+        unitPrice = (typeof dbPrice === 'number' && dbPrice > 0) ? dbPrice : undefined
       }
       if (!isCustomSize && unitPrice === undefined) return badRequest(`Geçersiz boy/yüzey kombinasyonu: ${item.size} / ${item.finish}`)
 
