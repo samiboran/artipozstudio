@@ -58,6 +58,13 @@ serve(async (req) => {
 
     const supabase = createClient(SUPABASE_URL, SERVICE_ROLE_KEY)
 
+    // Kullanıcı giriş yapmışsa (bkz. src/lib/authHeader.js) talebi hesabına
+    // bağlıyoruz — "Siparişlerim" sayfası bunu okuyor. Misafir taleplerinde
+    // user_id null kalır, akış aynı şekilde devam eder.
+    const jwt = (req.headers.get('Authorization') || '').replace(/^Bearer\s+/i, '')
+    const { data: { user } } = await supabase.auth.getUser(jwt).catch(() => ({ data: { user: null } }))
+    const user_id = user?.id || null
+
     const { error: insertError } = await supabase.from('film_requests').insert({
       isim: isim.trim(),
       telefon: telefon?.trim() || null,
@@ -66,7 +73,7 @@ serve(async (req) => {
       film_adedi: filmAdediNum,
       film_turu: filmTuru?.trim() ? String(filmTuru).trim().slice(0, 200) : null,
       notunuz: notunuz?.trim() ? String(notunuz).trim().slice(0, 500) : null,
-      session_id: session_id || null,
+      session_id: session_id || null, user_id,
     })
 
     if (insertError) return new Response(JSON.stringify({ error: 'Talep kaydedilemedi: ' + insertError.message }), { status: 500, headers: JSON_HEADERS })

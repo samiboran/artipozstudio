@@ -169,6 +169,12 @@ function Navbar({ cartCount = 0, onCartClick }) {
                 <span style={{ fontSize: '.72rem', color: 'var(--ink)' }}>
                   Merhaba, {customerName.split(' ')[0]}
                 </span>
+                <Link to="/siparislerim" style={{
+                  fontSize: '.68rem', letterSpacing: '.14em',
+                  textTransform: 'uppercase', color: 'var(--muted)'
+                }}>
+                  Siparişlerim
+                </Link>
                 <button onClick={handleLogout} style={{
                   background: 'none', border: 'none', cursor: 'pointer',
                   fontSize: '.68rem', letterSpacing: '.14em',
@@ -275,6 +281,13 @@ function Navbar({ cartCount = 0, onCartClick }) {
               }}>
                 Merhaba, {customerName.split(' ')[0]}
               </div>
+              <Link to="/siparislerim" onClick={() => setMenuOpen(false)} style={{
+                fontSize: '.8rem', letterSpacing: '.16em',
+                textTransform: 'uppercase', color: 'var(--ink)',
+                borderBottom: '1px solid var(--border)', paddingBottom: '.8rem'
+              }}>
+                Siparişlerim
+              </Link>
               <button onClick={() => { handleLogout(); setMenuOpen(false) }} style={{
                 background: 'none', border: 'none', textAlign: 'left', cursor: 'pointer',
                 fontSize: '.8rem', letterSpacing: '.16em',

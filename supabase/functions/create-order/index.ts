@@ -57,6 +57,15 @@ serve(async (req) => {
 
     const supabase = createClient(SUPABASE_URL, SERVICE_ROLE_KEY)
 
+    // Kullanıcı giriş yapmışsa (Authorization header'ında kendi access_token'ını
+    // gönderiyorsa, bkz. src/lib/authHeader.js) siparişi hesabına bağlıyoruz —
+    // "Siparişlerim" sayfası bunu okuyor. Misafir siparişlerinde (anon key
+    // gönderilmişse) user bulunamaz, user_id null kalır — akış aynı şekilde
+    // devam eder, bu zorunlu değil.
+    const jwt = (req.headers.get('Authorization') || '').replace(/^Bearer\s+/i, '')
+    const { data: { user } } = await supabase.auth.getUser(jwt).catch(() => ({ data: { user: null } }))
+    const user_id = user?.id || null
+
     // --- Fiyatları sunucuda, tek doğruluk kaynağından (artworks tablosu) doğrula ---
     const artworkIds = [...new Set(items.map((i: any) => i.artwork_id))]
     const { data: artworks, error: fetchError } = await supabase
@@ -95,7 +104,7 @@ serve(async (req) => {
     // --- Siparişi kaydet (service role ile — RLS'i bypass eder, client bunu yapamaz) ---
     const { data: order, error: insertError } = await supabase
       .from('orders')
-      .insert({ name, email, phone, address, items: validatedItems, total, session_id: session_id || null })
+      .insert({ name, email, phone, address, items: validatedItems, total, session_id: session_id || null, user_id })
       .select()
       .single()
 

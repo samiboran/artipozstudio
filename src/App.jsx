@@ -13,6 +13,8 @@ import ProductDetail from './pages/ProductDetail'
 import Admin from './pages/Admin'
 import Login from './pages/Login'
 import Signup from './pages/Signup'
+import ResetPassword from './pages/ResetPassword'
+import Siparislerim from './pages/Siparislerim'
 import NotFound from './pages/NotFound'
 import Favorites from './pages/Favorites'
 import About from './pages/About'
@@ -92,6 +94,8 @@ function App() {
         <Route path="/admin" element={<Admin />} />
         <Route path="/login" element={<Login />} />
         <Route path="/kayit" element={<Signup />} />
+        <Route path="/sifre-sifirla" element={<ResetPassword />} />
+        <Route path="/siparislerim" element={<Siparislerim />} />
         <Route path="/favoriler" element={<Favorites />} />
         <Route path="/hakkimizda" element={<About />} />
         <Route path="/yasal/:page" element={<Legal />} />

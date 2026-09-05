@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { getSessionId } from '../lib/session'
+import { getAuthHeader } from '../lib/authHeader'
 
 export default function CheckoutModal({ open, onClose, items, total, onSuccess }) {
   const [form, setForm] = useState({ name: '', email: '', phone: '', address: '' })
@@ -48,7 +49,7 @@ export default function CheckoutModal({ open, onClose, items, total, onSuccess }
     try {
       const res = await fetch('https://qrbkzjosorimiwdbwyyl.supabase.co/functions/v1/create-order', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}` },
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${await getAuthHeader()}` },
         body: JSON.stringify(payload)
       })
       const data = await res.json()

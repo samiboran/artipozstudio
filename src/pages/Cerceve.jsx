@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { supabase } from '../lib/supabase'
 import { getSessionId } from '../lib/session'
+import { getAuthHeader } from '../lib/authHeader'
 import heroImgDefault from '../assets/cerceve/hero.jpg'
 
 // Supabase Storage'ta tek dosya için pratik üst sınır.
@@ -181,7 +182,7 @@ export default function Cerceve() {
     try {
       const res = await fetch('https://qrbkzjosorimiwdbwyyl.supabase.co/functions/v1/create-frame-order', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}` },
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${await getAuthHeader()}` },
         body: JSON.stringify(payload),
       })
       const data = await res.json()
