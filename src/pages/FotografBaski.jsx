@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { supabase } from '../lib/supabase'
 import { getSessionId } from '../lib/session'
+import { getAuthHeader } from '../lib/authHeader'
 import { HERO_OVERLAY_GRADIENT } from '../lib/heroOverlay'
 import HeroSlideStack from '../components/HeroSlideStack'
 import heroImg1Default from '../assets/fotograf-baski/hero-1.jpg'
@@ -352,7 +353,7 @@ export default function FotografBaski() {
     try {
       const res = await fetch('https://qrbkzjosorimiwdbwyyl.supabase.co/functions/v1/create-photo-print-order', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}` },
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${await getAuthHeader()}` },
         body: JSON.stringify(payload),
       })
       const data = await res.json()

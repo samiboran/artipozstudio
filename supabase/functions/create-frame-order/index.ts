@@ -54,6 +54,13 @@ serve(async (req) => {
 
     const supabase = createClient(SUPABASE_URL, SERVICE_ROLE_KEY)
 
+    // Kullanıcı giriş yapmışsa (bkz. src/lib/authHeader.js) siparişi hesabına
+    // bağlıyoruz — "Siparişlerim" sayfası bunu okuyor. Misafir siparişlerinde
+    // user_id null kalır, akış aynı şekilde devam eder.
+    const jwt = (req.headers.get('Authorization') || '').replace(/^Bearer\s+/i, '')
+    const { data: { user } } = await supabase.auth.getUser(jwt).catch(() => ({ data: { user: null } }))
+    const user_id = user?.id || null
+
     // --- Fiyatı sunucuda, tek doğruluk kaynağından (frame_options/frame_option_prices) doğrula ---
     const { data: option, error: optionError } = await supabase
       .from('frame_options')
@@ -76,7 +83,7 @@ serve(async (req) => {
         customer_name: name, email, phone, address,
         size, color, quantity: qty, image_url,
         unit_price: unitPrice, total_price: total,
-        session_id: session_id || null,
+        session_id: session_id || null, user_id,
       })
       .select()
       .single()
