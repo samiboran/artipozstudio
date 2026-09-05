@@ -238,15 +238,15 @@ function Admin() {
       if (!session) { navigate('/login'); return }
       // Önceden buradaki tek kontrol "giriş yapılmış mı" idi — herhangi bir
       // müşteri hesabıyla giriş yapan biri de Admin paneline erişebiliyordu.
-      // "profiles.role" ile gerçek admin kontrolü ekleniyor (bkz.
-      // 23_admin_roles_ve_rls_sikilastirma.sql). Sorgu hata verirse (migration
-      // henüz çalıştırılmadıysa, tablo yoksa) ya da satır bulunamazsa BİLEREK
-      // erişime izin veriyoruz (fail-open) — aksi halde migration'ı henüz
-      // çalıştırmamış olan Sami kendi panelinden dışarıda kalabilirdi. Gerçek
-      // güvenlik sınırı zaten veritabanı tarafında (RLS, is_admin()) — bu
-      // sadece ek bir istemci tarafı kolaylık/uyarı katmanı.
+      // "profiles.role" ile gerçek admin kontrolü var (bkz.
+      // 23_admin_roles_ve_rls_sikilastirma.sql — canlıda uygulandı ve
+      // doğrulandı). Sorgu hata verirse ya da admin satırı yoksa erişim
+      // REDDEDİLİYOR (fail-closed) — geçici bir "migration henüz
+      // çalıştırılmadı" toleransı artık gerekmiyor, gerçek güvenlik sınırı
+      // zaten veritabanında (RLS, is_admin()) ama istemci tarafı da aynı
+      // varsayılanı paylaşmalı: şüphede erişim verme.
       const { data: profile, error } = await supabase.from('profiles').select('role').eq('id', session.user.id).single()
-      if (!error && profile && profile.role !== 'admin') navigate('/')
+      if (error || !profile || profile.role !== 'admin') navigate('/')
     })
   }, [])
 
