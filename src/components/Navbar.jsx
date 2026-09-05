@@ -58,9 +58,14 @@ function Navbar({ cartCount = 0, onCartClick }) {
     async function loadCustomer(session) {
       if (!session) { setCustomerName(null); return }
       try {
-        const { data: profile } = await supabase.from('profiles').select('full_name, role').eq('id', session.user.id).single()
+        // Ad soyad, kayıt sırasında zaten auth kullanıcısının kendi
+        // metadata'sına yazılıyor (bkz. Signup.jsx: options.data.full_name) —
+        // ayrı bir "profiles" tablosuna gerek yok, doğrudan session'dan
+        // okunuyor. "profiles" tablosu SADECE admin/müşteri ayrımı
+        // (role) için var — bkz. 23_admin_roles_ve_rls_sikilastirma.sql.
+        const { data: profile } = await supabase.from('profiles').select('role').eq('id', session.user.id).single()
         // Admin hesabı navbar'da müşteri gibi görünmesin — Admin panelinde zaten kendi girişini görüyor.
-        setCustomerName(profile?.role === 'admin' ? null : (profile?.full_name || session.user.email))
+        setCustomerName(profile?.role === 'admin' ? null : (session.user.user_metadata?.full_name || session.user.email))
       } catch (err) {
         console.error('Kullanıcı bilgisi yüklenemedi:', err)
       }

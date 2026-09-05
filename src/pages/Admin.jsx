@@ -234,8 +234,19 @@ function Admin() {
   const [filmRequests, setFilmRequests] = useState([])
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (!session) navigate('/login')
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
+      if (!session) { navigate('/login'); return }
+      // Önceden buradaki tek kontrol "giriş yapılmış mı" idi — herhangi bir
+      // müşteri hesabıyla giriş yapan biri de Admin paneline erişebiliyordu.
+      // "profiles.role" ile gerçek admin kontrolü ekleniyor (bkz.
+      // 23_admin_roles_ve_rls_sikilastirma.sql). Sorgu hata verirse (migration
+      // henüz çalıştırılmadıysa, tablo yoksa) ya da satır bulunamazsa BİLEREK
+      // erişime izin veriyoruz (fail-open) — aksi halde migration'ı henüz
+      // çalıştırmamış olan Sami kendi panelinden dışarıda kalabilirdi. Gerçek
+      // güvenlik sınırı zaten veritabanı tarafında (RLS, is_admin()) — bu
+      // sadece ek bir istemci tarafı kolaylık/uyarı katmanı.
+      const { data: profile, error } = await supabase.from('profiles').select('role').eq('id', session.user.id).single()
+      if (!error && profile && profile.role !== 'admin') navigate('/')
     })
   }, [])
 
