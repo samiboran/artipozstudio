@@ -1,0 +1,52 @@
+<!-- Supabase: Authentication → Emails → Change Email Address
+     Subject heading (ayrı alana yazılacak): Artı Poz — E-posta Değişikliğini Onayla -->
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Artı Poz — E-posta Değişikliğini Onayla</title>
+</head>
+<body style="margin:0;padding:0;background:#f5f4f2;">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f5f4f2;">
+    <tr>
+      <td align="center" style="padding:32px 16px;">
+        <table role="presentation" width="480" cellpadding="0" cellspacing="0" style="max-width:480px;width:100%;background:#ffffff;">
+          <tr>
+            <td style="padding:36px 40px 24px;border-bottom:1px solid #eeeeee;">
+              <div style="font-family:Helvetica Neue,Helvetica,Arial,sans-serif;font-size:20px;letter-spacing:.02em;color:#111111;">artı poz</div>
+              <div style="font-family:Helvetica Neue,Helvetica,Arial,sans-serif;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:#888888;margin-top:6px;">Fine Art Print Lab &middot; İstanbul</div>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:32px 40px;font-family:Helvetica Neue,Helvetica,Arial,sans-serif;color:#111111;font-size:14px;line-height:1.7;">
+              <p style="margin:0 0 20px;">Merhaba,</p>
+              <p style="margin:0 0 28px;">Artı Poz hesabının e-posta adresini değiştirmek için bir istek aldık. Değişikliği onaylamak için aşağıdaki butona tıkla.</p>
+              <table role="presentation" cellpadding="0" cellspacing="0">
+                <tr>
+                  <td style="background:#111111;">
+                    <a href="{{ .ConfirmationURL }}" style="display:inline-block;padding:14px 28px;font-family:Helvetica Neue,Helvetica,Arial,sans-serif;font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:#ffffff;text-decoration:none;">Değişikliği Onayla</a>
+                  </td>
+                </tr>
+              </table>
+              <p style="margin:28px 0 0;font-size:12px;line-height:1.7;color:#888888;">
+                Buton çalışmazsa şu bağlantıyı tarayıcına yapıştır:<br>
+                <a href="{{ .ConfirmationURL }}" style="color:#122A96;word-break:break-all;">{{ .ConfirmationURL }}</a>
+              </p>
+              <p style="margin:24px 0 0;font-size:12px;line-height:1.7;color:#888888;">
+                Bu isteği sen yapmadıysan bu e-postayı yok sayabilirsin — e-posta adresin değişmeyecektir. Emin değilsen bizimle info@artipozstudio.com adresinden iletişime geçebilirsin.
+              </p>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:20px 40px 32px;border-top:1px solid #eeeeee;font-family:Helvetica Neue,Helvetica,Arial,sans-serif;font-size:11px;line-height:1.8;color:#aaaaaa;">
+              Artı Poz &middot; Fine Art Print Lab &middot; İstanbul<br>
+              <a href="https://artipozstudio.com" style="color:#aaaaaa;">artipozstudio.com</a>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
