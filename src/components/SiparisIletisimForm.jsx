@@ -91,7 +91,10 @@ export default function SiparisIletisimForm({ source, showDigitalPapers = true }
             Aynı gün değerlendirme için son dosya iletim saati: 15.00. Ödemesi{' '}
             <b>17.00'ye kadar tamamlanan siparişler</b>, üretim planına bağlı olarak aynı gün işleme alınabilir.
           </p>
-          <p style={{ margin: 0 }}>Dosya teslimi için lütfen WeTransfer üzerinden paylaşım yapınız.</p>
+          <p style={{ margin: 0 }}>
+            Dosya teslimi için lütfen WeTransfer üzerinden paylaşım yapıp aldığınız linki aşağıdaki
+            mesaj kutusuna ekleyebilirsiniz.
+          </p>
         </div>
 
         <a
@@ -174,7 +177,7 @@ export default function SiparisIletisimForm({ source, showDigitalPapers = true }
             <textarea
               name="mesaj" required maxLength={500} value={contact.mesaj} onChange={updateContact}
               style={{ ...contactInput, minHeight: 110, resize: 'vertical' }}
-              placeholder="Mesajınızı buraya yazın"
+              placeholder="Mesajınızı buraya yazın, WeTransfer linkinizi ekleyebilirsiniz"
             />
             <div style={{ textAlign: 'right', fontSize: '.68rem', color: 'var(--muted)', marginTop: '.2rem' }}>
               {contact.mesaj.length}/500
