@@ -90,8 +90,11 @@ npm run deploy
 - **Escaping.** E-posta HTML'ine gömülen her kullanıcı verisi `esc()`
   helper'ından geçmeli (XSS/injection önlemi) — her edge function'da var.
 - **Dual-recipient e-posta.** Sipariş/talep e-postaları hem müşteriye hem
-  `info@artipozstudio.com`'a gider — tek taraflı bir e-posta bulursan
-  muhtemelen bir bug'dır (bkz. `send-contact-email` geçmişi).
+  admin'e gider — tek taraflı bir e-posta bulursan muhtemelen bir bug'dır
+  (bkz. `send-contact-email` geçmişi). Admin bildirimi `NOTIFY_EMAILS`
+  dizisine gider: `['info@artipozstudio.com', 's.borankocoglu@gmail.com']`
+  (Sami'nin isteğiyle iki adrese birden — biri diğerinin yerine değil).
+  `sendMail`'in `to` parametresi bu yüzden her yerde `string | string[]`.
 
 ## Son Eklenen Özellikler (2026-09, bu segment)
 - **Şifremi Unuttum akışı** — `Login.jsx` (3 mod: login/forgot/forgot-sent) →
@@ -133,6 +136,20 @@ npm run deploy
 5. **Supabase-js hataları throw etmez.** `{data, error}` normal şekilde
    resolve olur — her çağrıda `.error`'ı açıkça kontrol et, sadece
    try/catch'e güvenme.
+6. **`supabase/functions/` altına yapılan HER değişiklik için ayrı, ELLE
+   bir deploy adımı gerekir — `git push`/PR merge bunu YAPMAZ.** Bu repoda
+   edge function'ları otomatik canlıya alan bir CI yok. `create-film-request`
+   GitHub'da aylarca güncellenmiş görünüp Supabase'de eski hâliyle
+   çalışmaya devam etti — kimse fark etmedi, çünkü kod incelemesi "doğru
+   görünüyor" diye canlıda da öyle olduğu anlamına gelmiyor. Bir edge
+   function dosyasını her değiştirdiğinde: (a) kullanıcıya AÇIKÇA ve
+   ATLANAMAZ şekilde "bunu Supabase'de deploy etmen lazım" de (CLI:
+   `supabase functions deploy <isim>`, veya Dashboard → Edge Functions →
+   ilgili fonksiyon → kodu güncelle → Deploy), (b) PR/commit mesajına da
+   bunu yaz. Bu sandbox'ta `npx supabase` CLI'ı çalışıyor (network'ten
+   çekilebiliyor) ama gerçek bir deploy için Supabase erişim token'ı ve
+   proje ref'i gerekiyor — kullanıcı bunları vermeden kendi başına deploy
+   YAPILAMAZ, sadece hazırlanabilir.
 
 ## Önemli Notlar
 - `vite.config.js`'de `base: '/'` — GitHub Pages custom domain

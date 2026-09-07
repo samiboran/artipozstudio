@@ -9,7 +9,8 @@ const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY')
 // Ana Sayfa "Sipariş & İletişim" formunun bildirimleri hep buraya gider —
 // ADMIN_EMAIL env var'ına bağımlı değil (o secret hiç ayarlanmamışsa mail
 // sessizce boş adrese gidip kayboluyordu, bkz. create-order/create-frame-order).
-const NOTIFY_EMAIL = 'info@artipozstudio.com'
+// Sami'nin isteğiyle hem site hesabına hem kişisel adresine gidiyor.
+const NOTIFY_EMAILS = ['info@artipozstudio.com', 's.borankocoglu@gmail.com']
 
 // TEK yer: siteni buradan yönet. Wildcard (*) KULLANMA.
 const ALLOWED_ORIGIN = 'https://artipozstudio.com'
@@ -65,7 +66,7 @@ serve(async (req) => {
     if (insertError) return new Response(JSON.stringify({ error: 'Mesaj kaydedilemedi: ' + insertError.message }), { status: 500, headers: JSON_HEADERS })
 
     if (RESEND_API_KEY) {
-      const sendMail = (to: string, subject: string, html: string) =>
+      const sendMail = (to: string | string[], subject: string, html: string) =>
         fetch('https://api.resend.com/emails', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${RESEND_API_KEY}` },
@@ -74,7 +75,7 @@ serve(async (req) => {
           .catch((e) => console.error('Mail gönderilemedi:', e))
 
       // Bize (Sami) — hangi sayfadan geldiği başlıkta ve içerikte belli.
-      await sendMail(NOTIFY_EMAIL, `✉️ Yeni İletişim Mesajı (${pageLabel}): ${isim}`, `
+      await sendMail(NOTIFY_EMAILS, `✉️ Yeni İletişim Mesajı (${pageLabel}): ${isim}`, `
         <div style="font-family:Georgia,serif;max-width:600px;margin:0 auto;color:#111">
           <h2 style="font-weight:300">${esc(pageLabel)}'dan Yeni Mesaj</h2>
           <p><strong>İsim:</strong> ${esc(isim)}</p>

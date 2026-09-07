@@ -8,7 +8,8 @@ const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY')
 
 // Film Yıkama & Tarama talep bildirimleri hep buraya gider — site
 // genelindeki desenle aynı (bkz. send-contact-email, create-photo-print-order).
-const NOTIFY_EMAIL = 'info@artipozstudio.com'
+// Sami'nin isteğiyle hem site hesabına hem kişisel adresine gidiyor.
+const NOTIFY_EMAILS = ['info@artipozstudio.com', 's.borankocoglu@gmail.com']
 
 // TEK yer: siteni buradan yönet. Wildcard (*) KULLANMA.
 const ALLOWED_ORIGIN = 'https://artipozstudio.com'
@@ -79,7 +80,7 @@ serve(async (req) => {
     if (insertError) return new Response(JSON.stringify({ error: 'Talep kaydedilemedi: ' + insertError.message }), { status: 500, headers: JSON_HEADERS })
 
     if (RESEND_API_KEY) {
-      const sendMail = (to: string, subject: string, html: string, extra: Record<string, string> = {}) =>
+      const sendMail = (to: string | string[], subject: string, html: string, extra: Record<string, string> = {}) =>
         fetch('https://api.resend.com/emails', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${RESEND_API_KEY}` },
@@ -101,7 +102,7 @@ serve(async (req) => {
         `)
       }
 
-      const res = await sendMail(NOTIFY_EMAIL, `🎞️ Yeni Film Yıkama & Tarama Talebi: ${isim}`, `
+      const res = await sendMail(NOTIFY_EMAILS, `🎞️ Yeni Film Yıkama & Tarama Talebi: ${isim}`, `
         <div style="font-family:Georgia,serif;max-width:600px;margin:0 auto;color:#111">
           <h2 style="font-weight:300">Yeni Film Yıkama &amp; Tarama Talebi</h2>
           <p><strong>Ad Soyad:</strong> ${esc(isim)}</p>
