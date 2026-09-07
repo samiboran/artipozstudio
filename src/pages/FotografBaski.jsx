@@ -4,12 +4,24 @@ import { getSessionId } from '../lib/session'
 import { getAuthHeader } from '../lib/authHeader'
 import { HERO_OVERLAY_GRADIENT } from '../lib/heroOverlay'
 import HeroSlideStack from '../components/HeroSlideStack'
+import Seo, { SITE_URL } from '../components/Seo'
 import heroImg1Default from '../assets/fotograf-baski/hero-1.jpg'
 import heroImg2Default from '../assets/fotograf-baski/hero-2.jpg'
 import heroImg3Default from '../assets/fotograf-baski/hero-3.jpg'
 import wizardMockupDefault from '../assets/fotograf-baski/wizard-mockup.jpg'
 
 const HERO_DEFAULT_IMGS = [heroImg1Default, heroImg2Default, heroImg3Default]
+
+const PHOTO_PRINT_JSON_LD = {
+  '@context': 'https://schema.org',
+  '@type': 'Service',
+  serviceType: 'Fotoğraf Baskı',
+  name: 'Fotoğraf Baskı — Artı Poz',
+  description: 'Kodak Glossy, Satin, Matte ve Metalik yüzey seçenekleriyle A6\'dan A2\'ye fotoğraf baskı. Tek bir fotoğraf bile bastırılabilir.',
+  provider: { '@type': 'LocalBusiness', name: 'Artı Poz', url: SITE_URL },
+  areaServed: 'TR',
+  url: `${SITE_URL}/fotograf-baski`,
+}
 
 // Supabase Storage'ta tek dosya için pratik üst sınır — ihtiyaç olursa
 // buradan değiştir, kod içinde başka yerde hardcode edilmedi.
@@ -369,7 +381,13 @@ export default function FotografBaski() {
   }
 
   return (
-    <div style={{ paddingTop: '4.2rem' }}>
+    <div style={{ paddingTop: '4.2rem' }} data-prerender-ready={pricesLoaded || priceError}>
+      <Seo
+        title="Fotoğraf Baskı — Kodak Kağıda A6'dan A2'ye, Tekli Baskı | Artı Poz"
+        description="Kodak Glossy, Satin, Matte ve Metalik yüzeylerde A6'dan A2'ye fotoğraf baskı. Minimum sipariş yok — tek bir fotoğraf bile bastırabilirsiniz."
+        path="/fotograf-baski"
+        jsonLd={PHOTO_PRINT_JSON_LD}
+      />
       {/* Hero — Ana Sayfa'daki gibi sırayla dönen çoklu görsel slaytı (Sami'nin
           mailde gönderdiği 3 görsel), site genelindeki diğer hero'larla
           (Fine Art Baskı referans) aynı boy: 58vh. */}

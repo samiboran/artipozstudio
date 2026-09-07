@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { fetchArtworks } from '../lib/artworks'
 import ArtCard from '../components/ArtCard'
+import Seo from '../components/Seo'
 
 function Isler() {
   const [artworks, setArtworks] = useState([])
@@ -20,7 +21,12 @@ function Isler() {
   }, [search, category])
 
   return (
-    <div style={{ paddingTop: '4.2rem' }}>
+    <div style={{ paddingTop: '4.2rem' }} data-prerender-ready={!loading}>
+      <Seo
+        title="Fine Art Seçkisi — Sanatçı İmzalı Özgün Eserler | Artı Poz"
+        description="Fine art baskı ve özgün eserlerden oluşan Artı Poz koleksiyonu. Hahnemühle sertifikalı kağıtlara, sanatçı imzalı orijinallik sertifikasıyla baskı."
+        path="/isler"
+      />
 
       <div style={{ maxWidth: 1300, margin: '0 auto', padding: '3rem 2rem 1.5rem' }}>
         <h1 style={{

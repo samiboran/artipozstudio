@@ -5,6 +5,22 @@ import { fetchArtworks } from '../lib/artworks'
 import Hero from '../components/Hero'
 import ArtCard from '../components/ArtCard'
 import SiparisIletisimForm from '../components/SiparisIletisimForm'
+import Seo, { SITE_URL } from '../components/Seo'
+
+const HOME_JSON_LD = {
+  '@context': 'https://schema.org',
+  '@type': 'LocalBusiness',
+  name: 'Artı Poz',
+  image: `${SITE_URL}/og-cover-artipoz.jpg`,
+  url: SITE_URL,
+  address: { '@type': 'PostalAddress', addressLocality: 'İstanbul', addressCountry: 'TR' },
+  areaServed: 'TR',
+  priceRange: '₺₺',
+  sameAs: [
+    'https://www.instagram.com/artipozstudio/',
+    'https://www.etsy.com/shop/ArtiPozStudioShop',
+  ],
+}
 import fotografDefault from '../assets/fine-art/ornek-botanik.webp'
 import fineArtDefault from '../assets/process/baski-sureci.webp'
 import cerceveDefault from '../assets/cerceve/ornek-ahsap-cerceve.jpg'
@@ -419,6 +435,13 @@ function Gallery() {
   const [images, setImages] = useState({})
   const [content, setContent] = useState({})
   const [seckiArtworks, setSeckiArtworks] = useState([])
+  // Prerender script'i (bkz. scripts/prerender.mjs) canlı veri gelmeden
+  // snapshot almasın diye — üç bağımsız fetch'in hepsi bitince (başarılı
+  // ya da başarısız fark etmez) true olur.
+  const [seckiReady, setSeckiReady] = useState(false)
+  const [imagesReady, setImagesReady] = useState(false)
+  const [contentReady, setContentReady] = useState(false)
+  const dataReady = seckiReady && imagesReady && contentReady
 
   useEffect(() => {
     // En çok görüntülenen eserler otomatik öne çıksın diye — Admin'de elle
@@ -429,6 +452,7 @@ function Gallery() {
       // vitrine hiç girmesin — kartta boş/kayık görünmelerine yol açıyordu.
       .then(data => setSeckiArtworks((data || []).filter(a => a.title?.trim() && a.image_url).slice(0, 10)))
       .catch(err => console.error('Fine Art Seçkisi yüklenemedi:', err))
+      .finally(() => setSeckiReady(true))
   }, [])
 
   useEffect(() => {
@@ -445,6 +469,7 @@ function Gallery() {
         setImages(map)
       })
       .catch(err => console.error('Ana sayfa görselleri yüklenemedi:', err))
+      .finally(() => setImagesReady(true))
 
     supabase
       .from('page_content')
@@ -457,10 +482,17 @@ function Gallery() {
         setContent(map)
       })
       .catch(err => console.error('Ana sayfa metinleri yüklenemedi:', err))
+      .finally(() => setContentReady(true))
   }, [])
 
   return (
-    <div>
+    <div data-prerender-ready={dataReady}>
+      <Seo
+        title="Artı Poz — Fine Art Print Lab | İstanbul"
+        description="Artı Poz — İstanbul merkezli fine art print lab. Hahnemühle sertifikalı baskılar, sanatçı imzalı orijinallik sertifikası ile."
+        path="/"
+        jsonLd={HOME_JSON_LD}
+      />
       <Hero />
 
       {/* Bölümler arası dikey boşluk — tek bir tutarlı ölçeğe bağlandı: her

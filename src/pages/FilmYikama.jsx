@@ -3,6 +3,7 @@ import { supabase } from '../lib/supabase'
 import { getSessionId } from '../lib/session'
 import { getAuthHeader } from '../lib/authHeader'
 import { HERO_OVERLAY_GRADIENT } from '../lib/heroOverlay'
+import Seo, { SITE_URL } from '../components/Seo'
 import heroImgDefault from '../assets/film-yikama/hero.jpg'
 import adim01ImgDefault from '../assets/film-yikama/adim-01-teslim.jpg'
 import adim02ImgDefault from '../assets/film-yikama/adim-02-yikama-tarama.jpg'
@@ -13,6 +14,17 @@ import galeri3ImgDefault from '../assets/film-yikama/galeri-3.jpg'
 import galeri4ImgDefault from '../assets/film-yikama/galeri-4.jpg'
 
 const HIZMET_OPTIONS = ['Yıkama + Tarama', 'Yalnızca Yıkama', 'Yalnızca Tarama']
+
+const FILM_JSON_LD = {
+  '@context': 'https://schema.org',
+  '@type': 'Service',
+  serviceType: 'Film Yıkama ve Tarama',
+  name: 'Film Yıkama & Tarama — Artı Poz',
+  description: 'Analog film yıkama ve yüksek çözünürlüklü tarama hizmeti — yıkama, tarama veya ikisi bir arada.',
+  provider: { '@type': 'LocalBusiness', name: 'Artı Poz', url: SITE_URL },
+  areaServed: 'TR',
+  url: `${SITE_URL}/film-yikama-tarama`,
+}
 
 const STEPS = [
   {
@@ -82,6 +94,9 @@ export default function FilmYikama() {
   const [status, setStatus] = useState('idle') // idle | submitting
   const [error, setError] = useState('')
   const firstFieldRef = useRef()
+  // Prerender script'i (bkz. scripts/prerender.mjs) canlı veri gelmeden
+  // snapshot almasın diye.
+  const [dataReady, setDataReady] = useState(false)
 
   useEffect(() => { loadData() }, [])
 
@@ -112,6 +127,8 @@ export default function FilmYikama() {
       }
     } catch (err) {
       console.error('Film Yıkama & Tarama sayfası verisi yüklenemedi:', err)
+    } finally {
+      setDataReady(true)
     }
   }
 
@@ -175,7 +192,13 @@ export default function FilmYikama() {
   }
 
   return (
-    <div style={{ paddingTop: '4.2rem' }}>
+    <div style={{ paddingTop: '4.2rem' }} data-prerender-ready={dataReady}>
+      <Seo
+        title="Film Yıkama & Tarama — Analog Film İşleme | Artı Poz"
+        description="Analog film yıkama ve yüksek çözünürlüklü tarama hizmeti. Yalnızca yıkama, yalnızca tarama veya ikisi bir arada — İstanbul'dan Türkiye geneline."
+        path="/film-yikama-tarama"
+        jsonLd={FILM_JSON_LD}
+      />
 
       {/* Hero — site genelindeki diğer hero'larla aynı boy: 58vh, sadece görsel. */}
       <section style={{

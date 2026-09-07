@@ -1,3 +1,5 @@
+import Seo from '../components/Seo'
+
 function About() {
   const wrap = { maxWidth: 720, margin: '0 auto', padding: '3.5rem 2rem 6rem' }
   const h2 = {
@@ -7,7 +9,12 @@ function About() {
   const p = { fontSize: '.88rem', lineHeight: 1.9, color: '#333', marginBottom: '1rem' }
 
   return (
-    <div style={{ paddingTop: '4.2rem' }}>
+    <div style={{ paddingTop: '4.2rem' }} data-prerender-ready="true">
+      <Seo
+        title="Hakkımızda — Artı Poz Fine Art Print Studio"
+        description="Artı Poz, İstanbul merkezli bağımsız bir fine art baskı stüdyosudur. Müze kalitesinde Hahnemühle ve Awagami kağıtlarla, arşivsel pigment mürekkeplerle baskı üretiyoruz."
+        path="/hakkimizda"
+      />
       <div style={wrap}>
         <h1 style={{
           fontFamily: 'var(--font-heading)', color: 'var(--blue)',
