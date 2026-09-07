@@ -15,6 +15,12 @@ const CORS_HEADERS = {
 }
 const JSON_HEADERS = { ...CORS_HEADERS, 'Content-Type': 'application/json' }
 
+// ÖNEMLİ: bu adresten göndermeden önce Resend Dashboard → Domains'te
+// artipozstudio.com'un "Verified" olduğunu doğrula — doğrulanmamış bir
+// domain'den gönderim Resend tarafından tamamen reddedilir.
+const SENDER = 'Artı Poz <no-reply@artipozstudio.com>'
+const STUDIO_EMAIL = 'info@artipozstudio.com'
+
 function esc(str: unknown): string {
   return String(str ?? '')
     .replace(/&/g, '&amp;')
@@ -55,8 +61,9 @@ serve(async (req) => {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${RESEND_API_KEY}` },
       body: JSON.stringify({
-        from: 'Artı Poz <onboarding@resend.dev>',
+        from: SENDER,
         to: order.email,
+        reply_to: STUDIO_EMAIL,
         subject: 'Siparişiniz Kargoya Verildi — Artı Poz',
         html: `
           <div style="font-family:Georgia,serif;max-width:600px;margin:0 auto;color:#111">

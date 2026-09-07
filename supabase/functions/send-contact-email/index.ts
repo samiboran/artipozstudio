@@ -11,6 +11,16 @@ const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY')
 // sessizce boş adrese gidip kayboluyordu, bkz. create-order/create-frame-order).
 // Sami'nin isteğiyle hem site hesabına hem kişisel adresine gidiyor.
 const NOTIFY_EMAILS = ['info@artipozstudio.com', 's.borankocoglu@gmail.com']
+const STUDIO_EMAIL = 'info@artipozstudio.com'
+
+// ÖNEMLİ: bu adresten göndermeden önce Resend Dashboard → Domains'te
+// artipozstudio.com'un "Verified" olduğundan emin ol — doğrulanmamış bir
+// domain'den gönderim Resend tarafından tamamen reddedilir (onboarding@
+// resend.dev sandbox adresine göre daha kötü bir durum, o en azından
+// gönderiyordu — sadece yanlış kutuya). Önceki hâl (onboarding@resend.dev)
+// info@artipozstudio.com'a hiç mail düşmemesinin kök nedeniydi: Resend'in
+// sandbox göndericisi sadece hesabı açan e-postaya teslim ediyor.
+const SENDER = 'Artı Poz <no-reply@artipozstudio.com>'
 
 // TEK yer: siteni buradan yönet. Wildcard (*) KULLANMA.
 const ALLOWED_ORIGIN = 'https://artipozstudio.com'
@@ -66,15 +76,16 @@ serve(async (req) => {
     if (insertError) return new Response(JSON.stringify({ error: 'Mesaj kaydedilemedi: ' + insertError.message }), { status: 500, headers: JSON_HEADERS })
 
     if (RESEND_API_KEY) {
-      const sendMail = (to: string | string[], subject: string, html: string) =>
+      const sendMail = (to: string | string[], subject: string, html: string, extra: Record<string, string> = {}) =>
         fetch('https://api.resend.com/emails', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${RESEND_API_KEY}` },
-          body: JSON.stringify({ from: 'Artı Poz <onboarding@resend.dev>', to, subject, html }),
+          body: JSON.stringify({ from: SENDER, to, subject, html, ...extra }),
         }).then(async (r) => { if (!r.ok) console.error('Resend hata:', await r.text()) })
           .catch((e) => console.error('Mail gönderilemedi:', e))
 
       // Bize (Sami) — hangi sayfadan geldiği başlıkta ve içerikte belli.
+      // reply_to müşterinin e-postası: doğrudan ona cevap yazılabilsin.
       await sendMail(NOTIFY_EMAILS, `✉️ Yeni İletişim Mesajı (${pageLabel}): ${isim}`, `
         <div style="font-family:Georgia,serif;max-width:600px;margin:0 auto;color:#111">
           <h2 style="font-weight:300">${esc(pageLabel)}'dan Yeni Mesaj</h2>
@@ -88,10 +99,11 @@ serve(async (req) => {
           <hr style="border:none;border-top:1px solid #eee;margin:24px 0">
           <p style="white-space:pre-wrap">${esc(mesaj)}</p>
         </div>
-      `)
+      `, { reply_to: email })
 
       // Müşteriye onay — önceden bu form yalnızca bize gidiyordu, müşteri
       // talebinin gerçekten ulaştığına dair hiçbir e-posta almıyordu.
+      // reply_to stüdyo adresi: müşteri direkt "reply" yaparsa bize ulaşsın.
       await sendMail(email, 'Talebiniz Alındı — Artı Poz', `
         <div style="font-family:Georgia,serif;max-width:600px;margin:0 auto;color:#111">
           <h1 style="font-size:24px;font-weight:300;border-bottom:1px solid #eee;padding-bottom:16px">Artı Poz</h1>
@@ -102,7 +114,7 @@ serve(async (req) => {
           <hr style="border:none;border-top:1px solid #eee;margin:24px 0">
           <p style="color:#999;font-size:12px">Artı Poz · Fine Art Print Studio · İstanbul</p>
         </div>
-      `)
+      `, { reply_to: STUDIO_EMAIL })
     }
 
     return new Response(JSON.stringify({ ok: true }), { headers: JSON_HEADERS })
