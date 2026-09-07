@@ -168,7 +168,8 @@ gerektiriyor" notu) — çalıştırdığın makinenin Supabase'e ve
 - **SEO canlı denetim düzeltmeleri (bu segment)**: kullanıcının deploy
   sonrası canlı sayfa denetiminde bulduğu 3 hata düzeltildi:
   1. Yinelenen title/meta/OG etiketleri — kök nedenler ve çözüm için
-     aşağıdaki "Kritik Dersler" madde 7-8'e bak.
+     aşağıdaki "Kritik Dersler" madde 7-9'a bak (madde 9 en sonunda bulunan
+     ve asıl kalıcı çözümü açıklayan madde).
   2. 4 sayfada (`Gallery.jsx`, `FineArtBaski.jsx`, `FotografBaski.jsx`,
      `Cerceve.jsx`) hiç `<h1>` yoktu — Gallery ve Cerceve'ye görsel olarak
      gizli (sr-only) bir `<h1>` eklendi (hero'ları saf görsel, başlık metni
@@ -234,8 +235,8 @@ gerektiriyor" notu) — çalıştırdığın makinenin Supabase'e ve
    etiketi ya `index.html`'de statik olarak dursun YA DA `<Seo>` (Helmet)
    ile yönetilsin — ASLA ikisi birden. Bu repoda `index.html`'de artık
    hiç statik title/description/OG yok; tek kaynak `App.jsx`'teki
-   varsayılan `<Seo>` + her sayfanın kendi `<Seo>`'su (tree'de daha geç
-   render olan kazanır).
+   varsayılan `<Seo>` + her sayfanın kendi `<Seo>`'su. **DİKKAT: "tree'de
+   daha geç render olan kazanır" varsayımı YANLIŞ çıktı — bkz. madde 9.**
 8. **Kendi yazdığın statik dosya sunucusu bile aynı bug'ı ikinci kez
    üretebilir.** `scripts/prerender.mjs`'nin sunucusu, route'a özel bir
    `dist/<route>/index.html` yoksa "boş SPA kabuğu" olarak `dist/index.html`'i
@@ -247,6 +248,25 @@ gerektiriyor" notu) — çalıştırdığın makinenin Supabase'e ve
    maddesiyle birleşince canlıda 2-3 kopya etikete yol açtı. Düzeltme:
    kabuğu döngü başlamadan ÖNCE bir kere belleğe al, sunucudan hep o
    bellek kopyasını dön — dosyayı bir daha ASLA diskten okuma.
+9. **`react-helmet-async`, App seviyesindeki varsayılan `<Seo>` ile bir
+   sayfanın KENDİ `<Seo>`'su AYNI ANDA (aynı ilk render/commit içinde)
+   mount olduğunda beklenen "sonuncusu kazanır" birleştirmesini
+   YAPMADI** — canlı gh-pages çıktısında doğrulandı: FineArtBaski
+   sayfasında hem Ana Sayfa'nın varsayılan başlığı/açıklaması/OG'si HEM
+   DE sayfanın kendi Seo'su birlikte, ikisi de tam olarak yazılmış
+   şekilde HTML'e girmişti (React 19 + react-helmet-async 3.0.0
+   kombinasyonunda, iki `<Helmet>` aynı commit'te mount olunca bir
+   sıralama/senkronizasyon sorunu gibi görünüyor — kütüphanenin iç
+   mekanizmasına daha fazla girmeye gerek kalmadan kökten önlendi).
+   **Kalıcı çözüm — madde 7'deki varsayımın yerini alır**: App.jsx artık
+   `useLocation()` ile geçerli path'in kendi `<Seo>`'su olup olmadığını
+   kontrol ediyor (`ROUTES_WITH_OWN_SEO` listesi + `/product/`, `/yasal/`
+   prefix'leri + `/`) ve varsayılan `<Seo>`'yu SADECE kendi Seo'su
+   OLMAYAN route'larda render ediyor — yani herhangi bir anda en fazla
+   BİR `<Seo>` hiç mount olmuyor, kütüphanenin çoklu-instance birleştirme
+   mekanizmasına güvenmeye hiç gerek kalmıyor. Yeni bir sayfaya `<Seo>`
+   eklerken bu listeye de route'u eklemeyi UNUTMA — unutulursa o sayfada
+   yine iki Seo birden mount olur ve bug geri gelir.
 
 ## Önemli Notlar
 - `vite.config.js`'de `base: '/'` — GitHub Pages custom domain
