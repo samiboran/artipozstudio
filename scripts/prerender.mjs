@@ -139,7 +139,25 @@ async function main() {
   ]
 
   const server = await startServer()
-  const browser = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium', headless: true })
+  // PLAYWRIGHT_CHROMIUM_PATH sadece belirli sandbox/CI ortamlarında (önceden
+  // indirilmiş bir Chromium'a işaret etmek için) ayarlanır — normalde
+  // (kullanıcının kendi makinesinde) tanımlı değildir ve Playwright kendi
+  // yönettiği (`npx playwright install chromium` ile kurulan) tarayıcıyı
+  // otomatik bulur.
+  let browser
+  try {
+    browser = await chromium.launch({
+      headless: true,
+      ...(process.env.PLAYWRIGHT_CHROMIUM_PATH ? { executablePath: process.env.PLAYWRIGHT_CHROMIUM_PATH } : {}),
+    })
+  } catch (err) {
+    server.close()
+    throw new Error(
+      'Chromium başlatılamadı. Muhtemelen Playwright\'ın tarayıcısı henüz kurulmamış.\n' +
+      'Şunu bir kere çalıştır: npx playwright install chromium\n\n' +
+      'Orijinal hata: ' + err.message
+    )
+  }
   try {
     const page = await browser.newPage()
     for (const route of routes) {
