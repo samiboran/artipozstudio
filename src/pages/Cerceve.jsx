@@ -6,6 +6,9 @@ import heroImgDefault from '../assets/cerceve/hero.jpg'
 
 // Supabase Storage'ta tek dosya için pratik üst sınır.
 const MAX_FILE_SIZE_MB = 10
+// Formda birden fazla açıdan/örnekten fotoğraf yüklenebilsin diye — ama
+// sınırsız değil, sipariş başına makul bir üst sınır.
+const MAX_PHOTOS = 5
 import renkSecenekleriImgDefault from '../assets/cerceve/renk-secenekleri.webp'
 import ornekSiyahImgDefault from '../assets/cerceve/ornek-siyah-cerceve.jpg'
 import ornekAhsapImgDefault from '../assets/cerceve/ornek-ahsap-cerceve.jpg'
@@ -70,7 +73,7 @@ export default function Cerceve() {
   const [status, setStatus] = useState('idle') // idle | submitting | sent
   const [formError, setFormError] = useState('')
 
-  const [uploadedUrl, setUploadedUrl] = useState('')
+  const [uploadedUrls, setUploadedUrls] = useState([])
   const [uploading, setUploading] = useState(false)
   const [uploadError, setUploadError] = useState('')
   const fileRef = useRef()
@@ -139,36 +142,53 @@ export default function Cerceve() {
     setForm(f => ({ ...f, [name]: value }))
   }
 
-  async function handleFileSelect(file) {
-    if (!file) return
+  async function handleFilesSelect(fileList) {
+    const files = Array.from(fileList || [])
+    if (!files.length) return
     setUploadError('')
-    if (!file.type.startsWith('image/')) {
-      setUploadError('Lütfen bir görsel dosyası seçin.')
+
+    const remaining = MAX_PHOTOS - uploadedUrls.length
+    if (remaining <= 0) {
+      setUploadError(`En fazla ${MAX_PHOTOS} fotoğraf yükleyebilirsiniz.`)
       return
     }
-    if (file.size > MAX_FILE_SIZE_MB * 1024 * 1024) {
-      setUploadError(`Dosya çok büyük — maksimum ${MAX_FILE_SIZE_MB} MB.`)
-      return
+    const toUpload = files.slice(0, remaining)
+    if (files.length > remaining) {
+      setUploadError(`En fazla ${MAX_PHOTOS} fotoğraf yükleyebilirsiniz — ${toUpload.length} tanesi eklendi.`)
     }
-    setUploading(true)
-    const ext = file.name.split('.').pop()
-    const path = `frame-order/${Date.now()}-${Math.random().toString(36).slice(2, 7)}.${ext}`
-    const { error } = await supabase.storage.from('site-images').upload(path, file)
-    if (error) {
-      setUploadError('Yüklenemedi: ' + error.message)
-      setUploading(false)
-      return
+
+    for (const file of toUpload) {
+      if (!file.type.startsWith('image/')) {
+        setUploadError('Lütfen sadece görsel dosyası seçin.')
+        continue
+      }
+      if (file.size > MAX_FILE_SIZE_MB * 1024 * 1024) {
+        setUploadError(`"${file.name}" çok büyük — maksimum ${MAX_FILE_SIZE_MB} MB.`)
+        continue
+      }
+      setUploading(true)
+      const ext = file.name.split('.').pop()
+      const path = `frame-order/${Date.now()}-${Math.random().toString(36).slice(2, 7)}.${ext}`
+      const { error } = await supabase.storage.from('site-images').upload(path, file)
+      if (error) {
+        setUploadError('Yüklenemedi: ' + error.message)
+        continue
+      }
+      const { data } = supabase.storage.from('site-images').getPublicUrl(path)
+      setUploadedUrls(prev => [...prev, data.publicUrl])
     }
-    const { data } = supabase.storage.from('site-images').getPublicUrl(path)
-    setUploadedUrl(data.publicUrl)
     setUploading(false)
+  }
+
+  function removePhoto(url) {
+    setUploadedUrls(prev => prev.filter(u => u !== url))
   }
 
   async function handleSubmit(e) {
     e.preventDefault()
     setFormError('')
 
-    if (!uploadedUrl) { setFormError('Lütfen önce bir fotoğraf yükleyin.'); return }
+    if (uploadedUrls.length === 0) { setFormError('Lütfen önce en az bir fotoğraf yükleyin.'); return }
     if (!form.address?.trim() || form.address.trim().length < 10) { setFormError('Geçerli bir teslimat adresi giriniz.'); return }
 
     setStatus('submitting')
@@ -176,7 +196,7 @@ export default function Cerceve() {
     const payload = {
       name: form.name, email: form.email, phone: form.phone, address: form.address,
       size: form.size, color: form.color, quantity: form.qty,
-      image_url: uploadedUrl, session_id: getSessionId(),
+      image_urls: uploadedUrls, session_id: getSessionId(),
     }
 
     try {
@@ -349,27 +369,55 @@ export default function Cerceve() {
                 </div>
               </div>
               <div>
-                <label style={{ ...label, display: 'block', marginBottom: '.4rem' }}>Fotoğraf Yükle * (maks. {MAX_FILE_SIZE_MB} MB)</label>
-                <div
-                  onClick={() => fileRef.current?.click()}
-                  onDragOver={e => e.preventDefault()}
-                  onDrop={e => { e.preventDefault(); handleFileSelect(e.dataTransfer.files[0]) }}
-                  style={{
-                    border: '1px dashed var(--border)', padding: uploadedUrl ? '1rem' : '2.5rem 1rem',
-                    textAlign: 'center', ...body, fontSize: '.8rem', cursor: 'pointer',
-                    minHeight: 100, display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  }}
-                >
-                  {uploading ? (
-                    <span>Yükleniyor…</span>
-                  ) : uploadedUrl ? (
-                    <img src={uploadedUrl} alt="Yüklenen fotoğraf önizlemesi" style={{ maxWidth: '100%', maxHeight: 160, objectFit: 'contain', display: 'block' }} />
-                  ) : (
-                    <span>Fotoğrafınızı buraya sürükleyin<br />veya tıklayarak dosya seçin</span>
-                  )}
-                </div>
-                <input ref={fileRef} type="file" accept="image/*" style={{ display: 'none' }}
-                  onChange={e => handleFileSelect(e.target.files[0])} />
+                <label style={{ ...label, display: 'block', marginBottom: '.4rem' }}>
+                  Fotoğraf Yükle * ({uploadedUrls.length}/{MAX_PHOTOS} — her biri en fazla {MAX_FILE_SIZE_MB} MB)
+                </label>
+
+                {uploadedUrls.length > 0 && (
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(80px, 1fr))', gap: '.6rem', marginBottom: '.6rem' }}>
+                    {uploadedUrls.map(url => (
+                      <div key={url} style={{ position: 'relative', aspectRatio: '1 / 1', border: '1px solid var(--border)' }}>
+                        <img src={url} alt="Yüklenen fotoğraf önizlemesi" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+                        <button
+                          type="button"
+                          onClick={() => removePhoto(url)}
+                          aria-label="Fotoğrafı kaldır"
+                          style={{
+                            position: 'absolute', top: 4, right: 4, width: 22, height: 22,
+                            background: 'rgba(17,17,17,.75)', color: '#fff', border: 'none',
+                            borderRadius: '50%', cursor: 'pointer', fontSize: '.8rem', lineHeight: 1,
+                          }}
+                        >
+                          ×
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {uploadedUrls.length < MAX_PHOTOS && (
+                  <div
+                    onClick={() => fileRef.current?.click()}
+                    onDragOver={e => e.preventDefault()}
+                    onDrop={e => { e.preventDefault(); handleFilesSelect(e.dataTransfer.files) }}
+                    style={{
+                      border: '1px dashed var(--border)', padding: '2rem 1rem',
+                      textAlign: 'center', ...body, fontSize: '.8rem', cursor: 'pointer',
+                      minHeight: 100, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    }}
+                  >
+                    {uploading ? (
+                      <span>Yükleniyor…</span>
+                    ) : (
+                      <span>
+                        {uploadedUrls.length > 0 ? 'Başka bir fotoğraf ekleyin' : 'Fotoğraflarınızı buraya sürükleyin'}<br />
+                        veya tıklayarak dosya seçin
+                      </span>
+                    )}
+                  </div>
+                )}
+                <input ref={fileRef} type="file" accept="image/*" multiple style={{ display: 'none' }}
+                  onChange={e => { handleFilesSelect(e.target.files); e.target.value = '' }} />
                 {uploadError && <p style={{ color: '#c33', fontSize: '.78rem', marginTop: '.5rem' }}>{uploadError}</p>}
               </div>
 

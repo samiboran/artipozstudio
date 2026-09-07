@@ -1585,7 +1585,13 @@ function Admin() {
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                     {frameOrders.map(o => (
                       <div key={o.id} style={{ border: '1px solid #eee', padding: '1rem', display: 'flex', gap: '1rem', alignItems: 'center', flexWrap: 'wrap' }}>
-                        <img src={o.image_url} alt="" style={{ width: 70, height: 70, objectFit: 'cover', flexShrink: 0 }} />
+                        <div style={{ display: 'flex', gap: '.3rem', flexShrink: 0 }}>
+                          {(o.image_urls?.length ? o.image_urls : [o.image_url]).filter(Boolean).map((url, i) => (
+                            <a key={i} href={url} target="_blank" rel="noopener noreferrer">
+                              <img src={url} alt="" style={{ width: 70, height: 70, objectFit: 'cover' }} />
+                            </a>
+                          ))}
+                        </div>
                         <div style={{ flex: 1, minWidth: 200 }}>
                           <div style={{ fontSize: '.85rem', fontWeight: 600 }}>{o.customer_name}</div>
                           <div style={{ fontSize: '.72rem', color: '#888' }}>{o.email} · {o.phone}</div>
