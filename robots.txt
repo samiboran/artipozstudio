@@ -1,0 +1,30 @@
+# Genel kural: her şeye izin, admin panel ve oturum sayfaları hariç.
+User-agent: *
+Allow: /
+Disallow: /admin
+Disallow: /login
+Disallow: /kayit
+Disallow: /sifre-sifirla
+Disallow: /siparislerim
+Disallow: /favoriler
+
+# AI arama / sohbet asistanı botları — açıkça izinli.
+User-agent: GPTBot
+Allow: /
+
+User-agent: OAI-SearchBot
+Allow: /
+
+User-agent: ChatGPT-User
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: Google-Extended
+Allow: /
+
+User-agent: ClaudeBot
+Allow: /
+
+Sitemap: https://artipozstudio.com/sitemap.xml
