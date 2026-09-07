@@ -242,6 +242,16 @@ export default function Cerceve() {
         jsonLd={FRAME_JSON_LD}
       />
 
+      {/* Hero saf görsel, kendi başlık metni yok — arama motorları ve ekran
+          okuyucular için sayfanın tek h1'i burada, görsel olarak gizli
+          (sr-only) ama DOM'da ve erişilebilirlik ağacında mevcut. */}
+      <h1 style={{
+        position: 'absolute', width: 1, height: 1, padding: 0, margin: -1,
+        overflow: 'hidden', clip: 'rect(0,0,0,0)', whiteSpace: 'nowrap', border: 0,
+      }}>
+        Çerçeve — Fotoğraf ve Baskılarınız için Özel Çerçeveleme
+      </h1>
+
       {/* Hero — site genelindeki diğer hero'larla (Fine Art Baskı referans) aynı boy: 58vh. */}
       <section style={{
         position: 'relative', height: '58vh', minHeight: 380,

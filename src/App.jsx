@@ -23,6 +23,7 @@ import FineArtBaski from './pages/FineArtBaski'
 import Cerceve from './pages/Cerceve'
 import FotografBaski from './pages/FotografBaski'
 import FilmYikama from './pages/FilmYikama'
+import Seo from './components/Seo'
 
 // React Router sayfa değiştirince scroll pozisyonunu KORUYOR, sıfırlamıyor —
 // bu yüzden "İncele"ye veya navbar linkine tıklayınca yeni sayfa ortadan/en alttan
@@ -83,6 +84,19 @@ function App() {
 
   return (
     <>
+      {/* Varsayılan/genel title-description-OG — kendi <Seo>'su olan sayfalar
+          (aşağıda Routes içinde, tree'de daha "geç" render oldukları için)
+          react-helmet-async'in kendi çakışma-çözme kuralına göre bunun
+          üzerine yazar. Kendi Seo'su OLMAYAN sayfalar (admin, login, kayıt,
+          favoriler, siparişlerim vb. — zaten prerender/SEO'ya konu değiller)
+          bu genel varsayılanı kullanır. index.html'de artık STATİK bir
+          title/description/OG YOK — tek kaynak burası, aksi halde Helmet
+          statik etiketi silmediği için ikisi birden görünüyordu (bkz. bug). */}
+      <Seo
+        title="Artı Poz — Fine Art Print Lab | İstanbul"
+        description="Artı Poz — İstanbul merkezli fine art print lab. Hahnemühle sertifikalı baskılar, sanatçı imzalı orijinallik sertifikası ile."
+        path="/"
+      />
       <ScrollToTop />
       <ImageProtection />
       <PageViewTracker />

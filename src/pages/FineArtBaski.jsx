@@ -4,16 +4,6 @@ import { HERO_OVERLAY_GRADIENT } from '../lib/heroOverlay'
 import SiparisIletisimForm from '../components/SiparisIletisimForm'
 import Seo, { SITE_URL } from '../components/Seo'
 
-const FINE_ART_JSON_LD = {
-  '@context': 'https://schema.org',
-  '@type': 'Service',
-  serviceType: 'Fine Art Giclée Baskı',
-  name: 'Fine Art Baskı — Artı Poz',
-  description: 'Hahnemühle sertifikalı 9 kağıt seçeneğinde, minimum sipariş şartı olmadan tekli fine art giclée baskı hizmeti.',
-  provider: { '@type': 'LocalBusiness', name: 'Artı Poz', url: SITE_URL },
-  areaServed: 'TR',
-  url: `${SITE_URL}/fine-art-baski`,
-}
 import heroImgDefault from '../assets/fine-art/hero.webp'
 import tanitimImgDefault from '../assets/fine-art/tanitim-studyo.jpg'
 import ornekBotanikImgDefault from '../assets/fine-art/ornek-botanik.webp'
@@ -27,11 +17,11 @@ const FALLBACK_PAPERS = [
   { no: '02', name: 'Bamboo Gloss Baryta', surface: 'Parlak', gsm: '305gsm', texture: 'Pürüzsüz', color: 'Natural White', composition: '90% Bamboo fibre, 10% Cotton', description: 'Yüksek parlak baryta yüzeyi, fotoğraflara derin siyahlar ve olağanüstü ton zenginliği katar.' },
   { no: '03', name: 'Rice Paper', surface: 'Mat', gsm: '100gsm', texture: 'Pürüzsüz', color: 'White', composition: '100% α-Cellulose', description: 'İnce ve şeffaf yapısıyla benzersiz bir hafiflik sunan pirinç kağıdı.' },
   { no: '04', name: 'Photo Rag Ultra Smooth', surface: 'Mat', gsm: '305gsm', texture: 'Pürüzsüz', color: 'White', composition: '100% Cotton', description: 'Ultra pürüzsüz yüzeyi, en ince detayları mükemmel netlikte aktarır.' },
-  { no: '05', name: 'Photo Rag', surface: 'Mat', gsm: '308gsm', texture: 'Yumuşak', color: 'White', composition: '100% Cotton' },
-  { no: '06', name: 'William Turner', surface: 'Mat', gsm: '190gsm', texture: 'Kabartılı', color: 'White', composition: '100% Cotton' },
-  { no: '07', name: 'Albrecht Dürer', surface: 'Mat', gsm: '210gsm', texture: 'Kabartılı', color: 'White', composition: '50% Cotton, 50% α-Cellulose' },
-  { no: '08', name: 'Torchon', surface: 'Mat', gsm: '285gsm', texture: 'Kabartılı', color: 'Bright White', composition: '100% α-Cellulose' },
-  { no: '09', name: 'German Etching', surface: 'Mat', gsm: '310gsm', texture: 'Kabartılı', color: 'White', composition: '100% α-Cellulose' },
+  { no: '05', name: 'Photo Rag', surface: 'Mat', gsm: '308gsm', texture: 'Yumuşak', color: 'White', composition: '100% Cotton', description: 'Hahnemühle\'nin klasik pamuklu kağıdı; yumuşak dokusu ve nötr beyazlığıyla hem renkli hem siyah-beyaz baskılarda doğal, sıcak bir görünüm sunar. Sanat baskısında en çok tercih edilen kağıtlardan biridir.' },
+  { no: '06', name: 'William Turner', surface: 'Mat', gsm: '190gsm', texture: 'Kabartılı', color: 'White', composition: '100% Cotton', description: 'Belirgin kabartılı dokusuyla tuval hissi veren, gerçek su baskı (mould-made) yöntemiyle üretilmiş pamuklu bir kağıt. Suluboya ve resim eserlerinin baskısında dokuyu ön plana çıkarır.' },
+  { no: '07', name: 'Albrecht Dürer', surface: 'Mat', gsm: '210gsm', texture: 'Kabartılı', color: 'White', composition: '50% Cotton, 50% α-Cellulose', description: 'Hafif kabartılı yüzeyi ve dengeli pamuk-selüloz karışımıyla hem detay netliğini hem de doğal bir kağıt dokusunu bir arada sunar; illüstrasyon ve çizim çalışmalarının baskısı için uygundur.' },
+  { no: '08', name: 'Torchon', surface: 'Mat', gsm: '285gsm', texture: 'Kabartılı', color: 'Bright White', composition: '100% α-Cellulose', description: 'Belirgin, kaba dokulu yüzeyiyle güçlü bir sanatsal karakter taşır; parlak beyazlığı canlı renklerin öne çıkmasını sağlar, özellikle güçlü kontrastlı eserlerde etkileyicidir.' },
+  { no: '09', name: 'German Etching', surface: 'Mat', gsm: '310gsm', texture: 'Kabartılı', color: 'White', composition: '100% α-Cellulose', description: 'Hafif dokulu, gravür kağıdını andıran yüzeyiyle klasik ve zamansız bir görünüm sunar; hem fotoğraf hem sanat eseri baskılarında sık tercih edilir.' },
 ]
 
 const heading = { fontFamily: 'var(--font-heading)', fontWeight: 600, color: 'var(--ink)' }
@@ -100,13 +90,30 @@ export default function FineArtBaski() {
     }
   }
 
+  // Sayı sabit yazılmıyor — canlı `papers` verisine göre hesaplanıyor.
+  // Aksi halde kağıt sayısı/markası değiştikçe (Admin'den kağıt eklenip
+  // çıkarıldıkça) burada yanlış bir iddia kalır (örn. "9 Hahnemühle kağıt"
+  // derken sayfada 11 kağıt, bir kısmı Hahnemühle dışı bir marka olabilir).
+  const paperCount = papers.length
+  const seoDescription = `${paperCount} sertifikalı fine art kağıt seçeneğinde (Hahnemühle ve seçili özel kağıtlar) giclée baskı. Minimum sipariş yok — tek bir baskı bile yaptırabilirsiniz. İstanbul'dan Türkiye geneline kargo.`
+  const fineArtJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'Service',
+    serviceType: 'Fine Art Giclée Baskı',
+    name: 'Fine Art Baskı — Artı Poz',
+    description: `${paperCount} sertifikalı fine art kağıt seçeneğinde (Hahnemühle ve seçili özel kağıtlar), minimum sipariş şartı olmadan tekli fine art giclée baskı hizmeti.`,
+    provider: { '@type': 'LocalBusiness', name: 'Artı Poz', url: SITE_URL },
+    areaServed: 'TR',
+    url: `${SITE_URL}/fine-art-baski`,
+  }
+
   return (
     <div style={{ paddingTop: '4.2rem' }} data-prerender-ready={dataReady}>
       <Seo
         title="Fine Art Giclée Baskı — Hahnemühle Kağıda, İstanbul'dan Kargo | Artı Poz"
-        description="9 Hahnemühle sertifikalı kağıt seçeneğinde fine art giclée baskı. Minimum sipariş yok — tek bir baskı bile yaptırabilirsiniz. İstanbul'dan Türkiye geneline kargo."
+        description={seoDescription}
         path="/fine-art-baski"
-        jsonLd={FINE_ART_JSON_LD}
+        jsonLd={fineArtJsonLd}
       />
 
       {/* Hero */}
@@ -147,9 +154,9 @@ export default function FineArtBaski() {
               </span>
               <span style={{ width: 9, height: 9, borderRadius: '50%', background: '#e0492e', display: 'inline-block', flexShrink: 0 }} />
             </div>
-            <h2 className="fab-intro-title" style={{ ...heading, fontSize: 'clamp(3.4rem, 4vw, 4.2rem)', lineHeight: 1.05, color: '#111', margin: '0 0 1.2rem' }}>
-              Eseriniz için<br />arşiv kalitesinde<br />baskı.
-            </h2>
+            <h1 className="fab-intro-title" style={{ ...heading, fontSize: 'clamp(3.4rem, 4vw, 4.2rem)', lineHeight: 1.05, color: '#111', margin: '0 0 1.2rem' }}>
+              Fine Art Baskı:<br />eseriniz için<br />arşiv kalitesinde.
+            </h1>
             <p style={{ ...body, fontSize: '1.05rem', lineHeight: 1.75, maxWidth: 470, color: '#333' }}>
               Renk, ton ve dokuyu en ince ayrıntısına kadar koruyan; sergileme, koleksiyon ve
               sınırlı edisyonlar için üretilen Fine Art baskılar.
