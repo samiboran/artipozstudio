@@ -79,28 +79,40 @@ serve(async (req) => {
     if (insertError) return new Response(JSON.stringify({ error: 'Talep kaydedilemedi: ' + insertError.message }), { status: 500, headers: JSON_HEADERS })
 
     if (RESEND_API_KEY) {
-      const res = await fetch('https://api.resend.com/emails', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${RESEND_API_KEY}` },
-        body: JSON.stringify({
-          from: 'Artı Poz <onboarding@resend.dev>',
-          to: NOTIFY_EMAIL,
-          ...(email?.trim() ? { reply_to: email.trim() } : {}),
-          subject: `🎞️ Yeni Film Yıkama & Tarama Talebi: ${isim}`,
-          html: `
-            <div style="font-family:Georgia,serif;max-width:600px;margin:0 auto;color:#111">
-              <h2 style="font-weight:300">Yeni Film Yıkama &amp; Tarama Talebi</h2>
-              <p><strong>Ad Soyad:</strong> ${esc(isim)}</p>
-              <p><strong>Telefon:</strong> ${esc(telefon) || '—'}</p>
-              <p><strong>E-posta:</strong> ${esc(email) || '—'}</p>
-              <p><strong>Hizmet:</strong> ${esc(hizmet)}</p>
-              <p><strong>Film Adedi:</strong> ${filmAdediNum}</p>
-              <p><strong>Film Türü/Formatı:</strong> ${esc(filmTuru) || '—'}</p>
-              ${notunuz ? `<hr style="border:none;border-top:1px solid #eee;margin:24px 0"><p style="white-space:pre-wrap">${esc(notunuz)}</p>` : ''}
-            </div>
-          `,
-        }),
-      }).catch((e) => { console.error('Mail gönderilemedi:', e); return null })
+      const sendMail = (to: string, subject: string, html: string, extra: Record<string, string> = {}) =>
+        fetch('https://api.resend.com/emails', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${RESEND_API_KEY}` },
+          body: JSON.stringify({ from: 'Artı Poz <onboarding@resend.dev>', to, subject, html, ...extra }),
+        }).catch((e) => { console.error('Mail gönderilemedi:', e); return null })
+
+      // Müşteriye onay maili — SADECE e-posta girilmişse (telefon-only
+      // başvurularda mail atılamaz, o durumda müşteri zaten telefonla aranır).
+      if (email?.trim()) {
+        await sendMail(email.trim(), 'Film Yıkama & Tarama Talebiniz Alındı — Artı Poz', `
+          <div style="font-family:Georgia,serif;max-width:600px;margin:0 auto;color:#111">
+            <h1 style="font-size:24px;font-weight:300;border-bottom:1px solid #eee;padding-bottom:16px">Artı Poz</h1>
+            <p>Merhaba ${esc(isim)},</p>
+            <p>Film yıkama &amp; tarama talebiniz alındı. Fiyat, işlem detayları ve filmlerinizi teslim etmeniz için en kısa sürede sizinle iletişime geçeceğiz.</p>
+            <p style="font-size:16px;font-weight:bold;margin:24px 0">${esc(hizmet)} — ${filmAdediNum} adet${filmTuru ? ' · ' + esc(filmTuru) : ''}</p>
+            <hr style="border:none;border-top:1px solid #eee;margin:24px 0">
+            <p style="color:#999;font-size:12px">Artı Poz · Fine Art Print Studio · İstanbul</p>
+          </div>
+        `)
+      }
+
+      const res = await sendMail(NOTIFY_EMAIL, `🎞️ Yeni Film Yıkama & Tarama Talebi: ${isim}`, `
+        <div style="font-family:Georgia,serif;max-width:600px;margin:0 auto;color:#111">
+          <h2 style="font-weight:300">Yeni Film Yıkama &amp; Tarama Talebi</h2>
+          <p><strong>Ad Soyad:</strong> ${esc(isim)}</p>
+          <p><strong>Telefon:</strong> ${esc(telefon) || '—'}</p>
+          <p><strong>E-posta:</strong> ${esc(email) || '—'}</p>
+          <p><strong>Hizmet:</strong> ${esc(hizmet)}</p>
+          <p><strong>Film Adedi:</strong> ${filmAdediNum}</p>
+          <p><strong>Film Türü/Formatı:</strong> ${esc(filmTuru) || '—'}</p>
+          ${notunuz ? `<hr style="border:none;border-top:1px solid #eee;margin:24px 0"><p style="white-space:pre-wrap">${esc(notunuz)}</p>` : ''}
+        </div>
+      `, email?.trim() ? { reply_to: email.trim() } : {})
       if (res && !res.ok) console.error('Resend hata:', await res.text())
     }
 
