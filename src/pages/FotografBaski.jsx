@@ -402,7 +402,7 @@ export default function FotografBaski() {
 
       {/* Hero'nun hemen altında, ortalı tanıtım metni. */}
       <section style={{ maxWidth: 720, margin: '0 auto', padding: '3.5rem 2rem 1rem', textAlign: 'center' }}>
-        <h2 style={{ ...heading, fontSize: '2rem', margin: '0 0 1.2rem' }}>Fotoğraf Baskı</h2>
+        <h1 style={{ ...heading, fontSize: '2rem', margin: '0 0 1.2rem' }}>Fotoğraf Baskı — Kodak Kağıda A6'dan A2'ye</h1>
         <p style={{ ...body, fontSize: '.92rem', margin: 0 }}>
           Fotoğraflarınızı profesyonel pigment mürekkepler ve özenle seçilmiş fotoğraf kâğıtlarıyla
           basıyoruz. Parlak ve saten yüzey seçenekleri; güçlü siyahlar, temiz ayrıntılar ve canlı

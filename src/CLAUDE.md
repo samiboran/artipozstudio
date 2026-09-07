@@ -165,6 +165,27 @@ gerektiriyor" notu) — çalıştırdığın makinenin Supabase'e ve
   Supabase'de bunu henüz çalıştırmadıysa "Siparişlerim" sayfası boş/hatalı
   dönebilir, önce bu migration'ın canlıda çalıştığını doğrula**).
 
+- **SEO canlı denetim düzeltmeleri (bu segment)**: kullanıcının deploy
+  sonrası canlı sayfa denetiminde bulduğu 3 hata düzeltildi:
+  1. Yinelenen title/meta/OG etiketleri — kök nedenler ve çözüm için
+     aşağıdaki "Kritik Dersler" madde 7-8'e bak.
+  2. 4 sayfada (`Gallery.jsx`, `FineArtBaski.jsx`, `FotografBaski.jsx`,
+     `Cerceve.jsx`) hiç `<h1>` yoktu — Gallery ve Cerceve'ye görsel olarak
+     gizli (sr-only) bir `<h1>` eklendi (hero'ları saf görsel, başlık metni
+     yok), FineArtBaski/FotografBaski'de zaten var olan en büyük `<h2>`
+     `<h1>`'e yükseltildi (arama niyetini yansıtacak şekilde metni de
+     güncellendi).
+  3. `FineArtBaski.jsx`'in SEO açıklaması sabit "9 Hahnemühle kağıt"
+     diyordu ama canlıda kağıt sayısı/markası değişebiliyor (Admin'den
+     kağıt eklenip çıkarılabiliyor) — artık `papers.length`'e göre dinamik
+     hesaplanıyor ve marka adı yerine "Hahnemühle ve seçili özel kağıtlar"
+     gibi genel bir ifade kullanılıyor. Ayrıca `FALLBACK_PAPERS`'taki 5
+     kağıdın (Photo Rag, William Turner, Albrecht Dürer, Torchon, German
+     Etching) eksik açıklamaları dolduruldu; aynı 5 kağıt canlı `papers`
+     tablosunda da açıklamasızsa `27_papers_missing_descriptions.sql`
+     (sadece BOŞ olan açıklamaları doldurur, elle girilmiş bir şeyin
+     üzerine yazmaz) çalıştırılmalı.
+
 ## Kritik Dersler (tekrar yapma)
 1. **Env var olmadan `npm run deploy` = canlı site çöker.** `createClient(undefined, undefined)`
    "supabaseUrl is required" fırlatır, tüm site beyaz ekran olur. Artık
@@ -203,6 +224,29 @@ gerektiriyor" notu) — çalıştırdığın makinenin Supabase'e ve
    eder — kullanıcının kendi makinesinde (Supabase CLI kurulu + login +
    link yapılmış) çalıştırması gerekir, tek tek hangisini unuttuğunu
    hatırlamaya gerek bırakmaz.
+7. **`<Helmet>` (react-helmet-async), `index.html`'de zaten var olan
+   STATİK bir `<title>`/`<meta>`/`og:*` etiketini SİLMEZ, sadece kendi
+   yönettiği (önceden kendisinin eklediği) etiketleri diff'ler.** Statik
+   bir etiket varsa Helmet'inki bunun YANINA eklenir → canlıda 2-3 tane
+   `<title>` / `<meta name="description">` / `og:*` birden görülür (Google
+   hangisini kullanacağını tahmin etmek zorunda kalır — genelde YANLIŞ
+   olanı, çünkü statik/eski etiket DOM'da daha önce gelir). Kural: SEO
+   etiketi ya `index.html`'de statik olarak dursun YA DA `<Seo>` (Helmet)
+   ile yönetilsin — ASLA ikisi birden. Bu repoda `index.html`'de artık
+   hiç statik title/description/OG yok; tek kaynak `App.jsx`'teki
+   varsayılan `<Seo>` + her sayfanın kendi `<Seo>`'su (tree'de daha geç
+   render olan kazanır).
+8. **Kendi yazdığın statik dosya sunucusu bile aynı bug'ı ikinci kez
+   üretebilir.** `scripts/prerender.mjs`'nin sunucusu, route'a özel bir
+   `dist/<route>/index.html` yoksa "boş SPA kabuğu" olarak `dist/index.html`'i
+   DİSKTEN okuyordu — ama `/` (listede ilk route) işlenince tam da bu dosya
+   Ana Sayfa'nın render edilmiş çıktısıyla ÜZERİNE YAZILIYORDU. Sonuç:
+   `/`'dan SONRAKİ her route, "boş kabuk" sandığı ama aslında Ana Sayfa'nın
+   title/meta/OG/içeriğini taşıyan KİRLENMİŞ bir dosyayı temel alıyor,
+   Helmet kendi etiketlerini bunun YANINA ekliyordu — yukarıdaki (7)
+   maddesiyle birleşince canlıda 2-3 kopya etikete yol açtı. Düzeltme:
+   kabuğu döngü başlamadan ÖNCE bir kere belleğe al, sunucudan hep o
+   bellek kopyasını dön — dosyayı bir daha ASLA diskten okuma.
 
 ## Önemli Notlar
 - `vite.config.js`'de `base: '/'` — GitHub Pages custom domain

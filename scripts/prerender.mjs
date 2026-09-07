@@ -58,25 +58,44 @@ async function fileExists(p) {
 }
 
 // dist/'i statik olarak servis eden basit bir sunucu — bilinen bir dosya
-// varsa onu, yoksa (SPA navigasyonu varsayımıyla) dist/index.html'i döner.
-// Bu, GitHub Pages'teki gerçek 404.html→index.html yönlendirmesinin yerel
-// eşdeğeri; sadece Playwright'ın doğru sayfayı render edebilmesi için var.
-function startServer() {
+// varsa onu, yoksa (SPA navigasyonu varsayımıyla) ORİJİNAL (bozulmamış) SPA
+// kabuğunu döner. Bu, GitHub Pages'teki gerçek 404.html→index.html
+// yönlendirmesinin yerel eşdeğeri; sadece Playwright'ın doğru sayfayı
+// render edebilmesi için var.
+//
+// KRİTİK: pristineShell, döngü başlamadan ÖNCE bir kere diskten okunup
+// belleğe alınıyor ve buradan sonra HİÇ diskten tekrar okunmuyor. Çünkü
+// "/" route'u (listede ilk sırada) işlendiğinde dist/index.html'in kendisi
+// tam render edilmiş Ana Sayfa çıktısıyla ÜZERİNE YAZILIYOR — eğer kabuk
+// her istekte diskten okunsaydı, "/"den SONRAKİ her route bu artık kirlenmiş
+// (Ana Sayfa'nın title/meta/OG/içeriğini taşıyan) dosyayı "boş kabuk" sanıp
+// kullanır, Helmet kendi etiketlerini bunun YANINA eklerdi — tekilleştirme
+// bug'ının ikinci (ve asıl telafi edici) nedeni buydu.
+function startServer(pristineShell) {
   return new Promise((resolve) => {
     const server = createServer(async (req, res) => {
       const urlPath = decodeURIComponent(req.url.split('?')[0])
-      let filePath = path.join(DIST, urlPath)
       const hasExt = path.extname(urlPath) !== ''
 
       if (!hasExt) {
         // Navigasyon isteği: bu path için önceden yazılmış bir
-        // <route>/index.html varsa onu, yoksa SPA kabuğunu (dist/index.html) döner.
+        // <route>/index.html varsa onu, yoksa bellekteki orijinal SPA
+        // kabuğunu (diskten değil) döner.
         const asIndex = path.join(DIST, urlPath, 'index.html')
-        filePath = (await fileExists(asIndex)) ? asIndex : path.join(DIST, 'index.html')
-      } else if (!(await fileExists(filePath))) {
-        res.writeHead(404); res.end('Not found'); return
+        if (await fileExists(asIndex)) {
+          res.writeHead(200, { 'Content-Type': MIME['.html'] })
+          createReadStream(asIndex).pipe(res)
+        } else {
+          res.writeHead(200, { 'Content-Type': MIME['.html'] })
+          res.end(pristineShell)
+        }
+        return
       }
 
+      const filePath = path.join(DIST, urlPath)
+      if (!(await fileExists(filePath))) {
+        res.writeHead(404); res.end('Not found'); return
+      }
       const ext = path.extname(filePath)
       res.writeHead(200, { 'Content-Type': MIME[ext] || 'application/octet-stream' })
       createReadStream(filePath).pipe(res)
@@ -138,7 +157,10 @@ async function main() {
     ...productSlugs.map(s => `/product/${s}`),
   ]
 
-  const server = await startServer()
+  // "/" işlenince dist/index.html üzerine yazılacağı için orijinal kabuğu
+  // döngü başlamadan ÖNCE belleğe alıyoruz (bkz. startServer üstündeki not).
+  const pristineShell = await readFile(path.join(DIST, 'index.html'), 'utf-8')
+  const server = await startServer(pristineShell)
   // PLAYWRIGHT_CHROMIUM_PATH sadece belirli sandbox/CI ortamlarında (önceden
   // indirilmiş bir Chromium'a işaret etmek için) ayarlanır — normalde
   // (kullanıcının kendi makinesinde) tanımlı değildir ve Playwright kendi

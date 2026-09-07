@@ -4,14 +4,14 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Artı Poz — Fine Art Print Lab</title>
-    <meta name="description" content="Artı Poz — İstanbul merkezli fine art print lab. Hahnemühle sertifikalı baskılar, sanatçı imzalı orijinallik sertifikası ile." />
-    <meta property="og:type" content="website" />
-    <meta property="og:title" content="Artı Poz — Fine Art Print Lab" />
-    <meta property="og:description" content="İstanbul merkezli fine art print lab. Hahnemühle sertifikalı baskılar, sanatçı imzalı sertifika ile." />
-    <meta property="og:url" content="https://artipozstudio.com/" />
-    <meta property="og:image" content="https://artipozstudio.com/og-cover-artipoz.jpg" />
-    <meta name="twitter:card" content="summary_large_image" />
+    <!-- title/description/OG/canonical BURADA YOK — Seo.jsx (react-helmet-async)
+         tek kaynak. Bunlar burada da olursa Helmet'in kendisi tarafından
+         eklenen etiketlerin YANINA (üstüne değil) eklenmiş oluyor, çünkü
+         Helmet burada zaten var olan (kendisinin yönetmediği) statik
+         etiketleri silmiyor — sonuç: aynı sayfada 2-3 tane <title>/<meta
+         name="description">/og:* birden. App.jsx'teki varsayılan <Seo>
+         bileşeni, kendi <Seo>'su olmayan sayfalar (admin, login vb.) için
+         tek ve GERÇEK fallback. -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600&family=Archivo+Black&display=swap" rel="stylesheet">
