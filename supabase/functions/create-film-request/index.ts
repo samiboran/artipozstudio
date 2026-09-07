@@ -10,6 +10,15 @@ const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY')
 // genelindeki desenle aynı (bkz. send-contact-email, create-photo-print-order).
 // Sami'nin isteğiyle hem site hesabına hem kişisel adresine gidiyor.
 const NOTIFY_EMAILS = ['info@artipozstudio.com', 's.borankocoglu@gmail.com']
+const STUDIO_EMAIL = 'info@artipozstudio.com'
+
+// ÖNEMLİ: bu adresten göndermeden önce Resend Dashboard → Domains'te
+// artipozstudio.com'un "Verified" olduğunu doğrula — doğrulanmamış bir
+// domain'den gönderim Resend tarafından tamamen reddedilir. Önceki hâl
+// (onboarding@resend.dev) info@artipozstudio.com'a hiç mail düşmemesinin
+// kök nedeniydi: Resend'in sandbox göndericisi sadece hesabı açan
+// e-postaya teslim ediyor.
+const SENDER = 'Artı Poz <no-reply@artipozstudio.com>'
 
 // TEK yer: siteni buradan yönet. Wildcard (*) KULLANMA.
 const ALLOWED_ORIGIN = 'https://artipozstudio.com'
@@ -84,7 +93,7 @@ serve(async (req) => {
         fetch('https://api.resend.com/emails', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${RESEND_API_KEY}` },
-          body: JSON.stringify({ from: 'Artı Poz <onboarding@resend.dev>', to, subject, html, ...extra }),
+          body: JSON.stringify({ from: SENDER, to, subject, html, ...extra }),
         }).catch((e) => { console.error('Mail gönderilemedi:', e); return null })
 
       // Müşteriye onay maili — SADECE e-posta girilmişse (telefon-only
@@ -99,7 +108,7 @@ serve(async (req) => {
             <hr style="border:none;border-top:1px solid #eee;margin:24px 0">
             <p style="color:#999;font-size:12px">Artı Poz · Fine Art Print Studio · İstanbul</p>
           </div>
-        `)
+        `, { reply_to: STUDIO_EMAIL })
       }
 
       const res = await sendMail(NOTIFY_EMAILS, `🎞️ Yeni Film Yıkama & Tarama Talebi: ${isim}`, `
