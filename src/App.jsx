@@ -74,29 +74,42 @@ function PageViewTracker() {
   return null
 }
 
+// Kendi <Seo>'su olan route'lar — bkz. App() içindeki varsayılan Seo notu.
+const ROUTES_WITH_OWN_SEO = ['/isler', '/hakkimizda', '/fine-art-baski', '/film-yikama-tarama', '/cerceve', '/fotograf-baski']
+
 function App() {
   const { count } = useCart()
   const [cartOpen, setCartOpen] = useState(false)
+  const { pathname } = useLocation()
 
   useEffect(() => {
     applySiteFont(supabase)
   }, [])
 
+  // react-helmet-async, App seviyesindeki varsayılan <Seo> ile sayfanın
+  // KENDİ <Seo>'sunu AYNI ANDA (aynı ilk render'da, App→Routes→Sayfa aynı
+  // commit içinde) mount edildiklerinde beklendiği gibi TEK bir sonuca
+  // birleştirmiyor — canlıda ikisi de HTML'e yazılıyor (2 <title>, 2 kopya
+  // meta/OG/canonical). Kütüphanenin kendi çakışma-çözme mekanizmasına
+  // güvenmek yerine, kökten önlüyoruz: herhangi bir anda EN FAZLA BİR
+  // <Seo> mount olsun. Kendi <Seo>'su olan bir route'tayken varsayılanı
+  // HİÇ render etmiyoruz; sadece kendi Seo'su olmayan sayfalarda (admin,
+  // login, kayıt, sifre-sifirla, siparislerim, favoriler, product/*,
+  // yasal/*, 404 vb.) varsayılan devreye giriyor.
+  const hasOwnSeo = pathname === '/' ||
+    ROUTES_WITH_OWN_SEO.includes(pathname) ||
+    pathname.startsWith('/product/') ||
+    pathname.startsWith('/yasal/')
+
   return (
     <>
-      {/* Varsayılan/genel title-description-OG — kendi <Seo>'su olan sayfalar
-          (aşağıda Routes içinde, tree'de daha "geç" render oldukları için)
-          react-helmet-async'in kendi çakışma-çözme kuralına göre bunun
-          üzerine yazar. Kendi Seo'su OLMAYAN sayfalar (admin, login, kayıt,
-          favoriler, siparişlerim vb. — zaten prerender/SEO'ya konu değiller)
-          bu genel varsayılanı kullanır. index.html'de artık STATİK bir
-          title/description/OG YOK — tek kaynak burası, aksi halde Helmet
-          statik etiketi silmediği için ikisi birden görünüyordu (bkz. bug). */}
-      <Seo
-        title="Artı Poz — Fine Art Print Lab | İstanbul"
-        description="Artı Poz — İstanbul merkezli fine art print lab. Hahnemühle sertifikalı baskılar, sanatçı imzalı orijinallik sertifikası ile."
-        path="/"
-      />
+      {!hasOwnSeo && (
+        <Seo
+          title="Artı Poz — Fine Art Print Lab | İstanbul"
+          description="Artı Poz — İstanbul merkezli fine art print lab. Hahnemühle sertifikalı baskılar, sanatçı imzalı orijinallik sertifikası ile."
+          path={pathname}
+        />
+      )}
       <ScrollToTop />
       <ImageProtection />
       <PageViewTracker />
