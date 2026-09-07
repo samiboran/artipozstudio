@@ -149,7 +149,11 @@ npm run deploy
    bunu yaz. Bu sandbox'ta `npx supabase` CLI'ı çalışıyor (network'ten
    çekilebiliyor) ama gerçek bir deploy için Supabase erişim token'ı ve
    proje ref'i gerekiyor — kullanıcı bunları vermeden kendi başına deploy
-   YAPILAMAZ, sadece hazırlanabilir.
+   YAPILAMAZ, sadece hazırlanabilir. `scripts/deploy-edge-functions.sh`
+   (veya `npm run deploy:functions`) TÜM fonksiyonları tek seferde deploy
+   eder — kullanıcının kendi makinesinde (Supabase CLI kurulu + login +
+   link yapılmış) çalıştırması gerekir, tek tek hangisini unuttuğunu
+   hatırlamaya gerek bırakmaz.
 
 ## Önemli Notlar
 - `vite.config.js`'de `base: '/'` — GitHub Pages custom domain
