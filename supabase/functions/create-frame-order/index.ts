@@ -40,7 +40,7 @@ serve(async (req) => {
 
   try {
     const body = await req.json()
-    const { name, email, phone, address, size, color, quantity, image_url, session_id } = body
+    const { name, email, phone, address, size, color, quantity, image_urls, session_id } = body
 
     // --- Girdi doğrulama ---
     if (!name?.trim()) return badRequest('Ad soyad gerekli.')
@@ -48,7 +48,10 @@ serve(async (req) => {
     if (!phone?.trim() || phone.trim().length < 10) return badRequest('Geçerli bir telefon numarası giriniz.')
     if (!address?.trim() || address.trim().length < 10) return badRequest('Geçerli bir adres giriniz.')
     if (!size || !color) return badRequest('Boyut ve renk seçimi gerekli.')
-    if (!image_url) return badRequest('Fotoğraf yüklenmedi.')
+    // Formda en fazla 5 fotoğraf yüklenebiliyor (bkz. Cerceve.jsx) — burada da aynı üst sınırı uyguluyoruz.
+    if (!Array.isArray(image_urls) || image_urls.length === 0) return badRequest('En az bir fotoğraf yüklenmedi.')
+    if (image_urls.length > 5) return badRequest('En fazla 5 fotoğraf yükleyebilirsiniz.')
+    if (image_urls.some((u: unknown) => typeof u !== 'string' || !u)) return badRequest('Geçersiz fotoğraf verisi.')
 
     const qty = Math.max(1, Math.min(100, Math.floor(Number(quantity)) || 1))
 
@@ -81,7 +84,9 @@ serve(async (req) => {
       .from('frame_orders')
       .insert({
         customer_name: name, email, phone, address,
-        size, color, quantity: qty, image_url,
+        size, color, quantity: qty,
+        // image_url: geriye dönük uyumluluk için ilk fotoğraf (eski e-posta/Admin kodu bunu okur).
+        image_url: image_urls[0], image_urls,
         unit_price: unitPrice, total_price: total,
         session_id: session_id || null, user_id,
       })
@@ -93,6 +98,9 @@ serve(async (req) => {
     // --- Mail (her kullanıcı alanı esc() ile sanitize edilmiş hâlde) ---
     if (RESEND_API_KEY) {
       const summary = `${esc(size)} — ${esc(color)} × ${qty} = ₺${total.toLocaleString('tr-TR')}`
+      const photosHtml = image_urls
+        .map((u: string, i: number) => `<a href="${esc(u)}" style="margin-right:10px">Fotoğraf ${i + 1}</a>`)
+        .join('')
 
       const sendMail = (to: string, subject: string, html: string) =>
         fetch('https://api.resend.com/emails', {
@@ -124,7 +132,7 @@ serve(async (req) => {
           <p><strong>Telefon:</strong> ${esc(phone)}</p>
           <p><strong>Adres:</strong> ${esc(address)}</p>
           <p style="font-size:16px;font-weight:bold;margin:24px 0">${summary}</p>
-          <p><a href="${esc(image_url)}">Yüklenen fotoğrafı görüntüle</a></p>
+          <p>${photosHtml}</p>
         </div>
       `)
     }
