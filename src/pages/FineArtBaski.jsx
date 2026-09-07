@@ -2,6 +2,18 @@ import { useState, useEffect } from 'react'
 import { supabase } from '../lib/supabase'
 import { HERO_OVERLAY_GRADIENT } from '../lib/heroOverlay'
 import SiparisIletisimForm from '../components/SiparisIletisimForm'
+import Seo, { SITE_URL } from '../components/Seo'
+
+const FINE_ART_JSON_LD = {
+  '@context': 'https://schema.org',
+  '@type': 'Service',
+  serviceType: 'Fine Art Giclée Baskı',
+  name: 'Fine Art Baskı — Artı Poz',
+  description: 'Hahnemühle sertifikalı 9 kağıt seçeneğinde, minimum sipariş şartı olmadan tekli fine art giclée baskı hizmeti.',
+  provider: { '@type': 'LocalBusiness', name: 'Artı Poz', url: SITE_URL },
+  areaServed: 'TR',
+  url: `${SITE_URL}/fine-art-baski`,
+}
 import heroImgDefault from '../assets/fine-art/hero.webp'
 import tanitimImgDefault from '../assets/fine-art/tanitim-studyo.jpg'
 import ornekBotanikImgDefault from '../assets/fine-art/ornek-botanik.webp'
@@ -29,6 +41,10 @@ const body = { fontFamily: 'var(--font-body)', fontSize: '.92rem', lineHeight: 1
 export default function FineArtBaski() {
   const [papers, setPapers] = useState(FALLBACK_PAPERS)
   const [content, setContent] = useState({})
+  // Prerender script'i (bkz. scripts/prerender.mjs) canlı veri gelmeden
+  // (fallback state'iyle) snapshot almasın diye — veri çekimi bitince
+  // (başarılı ya da başarısız fark etmez) true olur.
+  const [dataReady, setDataReady] = useState(false)
   const [images, setImages] = useState({
     hero: heroImgDefault,
     'tanitim-gorsel': tanitimImgDefault,
@@ -79,11 +95,19 @@ export default function FineArtBaski() {
       }
     } catch (err) {
       console.error('Fine Art Baskı sayfası verisi yüklenemedi:', err)
+    } finally {
+      setDataReady(true)
     }
   }
 
   return (
-    <div style={{ paddingTop: '4.2rem' }}>
+    <div style={{ paddingTop: '4.2rem' }} data-prerender-ready={dataReady}>
+      <Seo
+        title="Fine Art Giclée Baskı — Hahnemühle Kağıda, İstanbul'dan Kargo | Artı Poz"
+        description="9 Hahnemühle sertifikalı kağıt seçeneğinde fine art giclée baskı. Minimum sipariş yok — tek bir baskı bile yaptırabilirsiniz. İstanbul'dan Türkiye geneline kargo."
+        path="/fine-art-baski"
+        jsonLd={FINE_ART_JSON_LD}
+      />
 
       {/* Hero */}
       <section style={{

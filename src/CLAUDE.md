@@ -18,6 +18,51 @@ https://github.com/samiboran/artipozstudio — geliştirme branch'i
 - Resend (e-posta)
 - gh-pages (deploy)
 
+## ⚠️ Build artık Supabase'e AĞ ERİŞİMİ gerektiriyor (prerender)
+`npm run build` → `vite build`'in hemen ardından npm otomatik olarak
+`postbuild` (`node scripts/prerender.mjs`) çalıştırır. Bu script build
+MAKİNESİNDEN Supabase'e gerçek bir bağlantı kurar (ürün slug'larını çekmek
+için) VE headless bir Chromium (`/opt/pw-browsers/chromium`) açıp her
+public route'u ziyaret edip GERÇEK render sonucunu `dist/<route>/index.html`
+olarak yazar — böylece Google/ChatGPT/Perplexity gibi JS çalıştırmayan
+botlar sitenin gerçek içeriğini (kağıt isimleri, fiyatlar, ürün detayları)
+görebilir. Önceden build tamamen offline çalışabiliyordu (veri sadece
+tarayıcıda runtime'da çekiliyordu) — **artık build makinesi Supabase'e
+erişemiyorsa `npm run build`/`npm run deploy` BAŞARISIZ olur** (bilinçli:
+sessizce eksik/boş bir prerender deploy edilmesin diye). Bu Claude Code
+sandbox'ı Supabase'e ağ erişimine İZİN VERMİYOR (egress allowlist) — yani
+bu repodaki prerender değişiklikleri BURADAN uçtan uca test edilemedi,
+sadece mekanizması (statik sayfalarla) doğrulandı. Gerçek doğrulama
+kullanıcının kendi makinesinde veya gerçek ağ erişimi olan bir CI'da
+yapılmalı.
+
+Her prerender edilen sayfa, canlı veri çekimi bitince kök elemanına
+`data-prerender-ready="true"` yazar (bkz. ilgili sayfa bileşenleri) —
+script bunu görmeden ASLA snapshot almaz, 15 saniyede görünmezse build'i
+hata ile durdurur. Yeni bir SEO'ya konu sayfa eklerken bu işaretleyiciyi
+eklemeyi unutma, yoksa o sayfa hiç prerender edilmez (script "ready
+görünmedi" hatasıyla durur).
+
+Prerender EDİLMEYEN route'lar (bilinçli): `/admin`, `/login`, `/kayit`,
+`/sifre-sifirla`, `/siparislerim`, `/favoriler` — bunlar `scripts/prerender.mjs`
+içindeki route listesine hiç eklenmiyor, GitHub Pages'te normal SPA
+(404.html→client-side routing) olarak kalmaya devam ediyor.
+
+Sayfa başı title/description/OG/canonical/JSON-LD `src/components/Seo.jsx`
+(react-helmet-async) üzerinden yazılıyor — yeni bir sayfa eklerken oraya
+bakıp aynı deseni kullan.
+
+**Önemli davranış değişikliği**: Admin panelinden yapılan içerik
+değişiklikleri (fiyat, kağıt açıklaması, sayfa metni/görseli, yeni ürün)
+artık botların gördüğü statik HTML'e ANINDA yansımıyor — bir sonraki
+`npm run deploy` çalıştırılana kadar prerender edilmiş HTML eski kalır.
+Gerçek kullanıcılar için sorun yok (sayfa JS ile hydrate olunca React
+Supabase'den güncel veriyi tekrar çekiyor, tarayıcıda hep canlı veri
+görünür) — sadece "botların gördüğü ilk HTML" eski kalabilir. Sami'ye
+göre bu kabul edilebilir bir davranış (fiyat değişince zaten deploy
+gerektiği zaten biliniyordu) ama kapsamı sadece fiyatla sınırlı değil,
+TÜM prerender edilen sayfa içeriğini kapsıyor — bunu netleştir.
+
 ## ⚠️ Build/Deploy — HER SEFERİNDE ENV VAR GEREKİR
 Bu repoda `.env` dosyası YOK. `VITE_SUPABASE_URL` ve `VITE_SUPABASE_ANON_KEY`
 her `build`/`deploy` komutunda inline geçilmeli, aksi halde `vite.config.js`
@@ -61,6 +106,10 @@ supabase/functions/  Edge functions (create-order, create-photo-print-order,
 ```bash
 npm run deploy
 ```
+Bu komut artık build sırasında Supabase'e gerçek ağ erişimi + headless
+Chromium gerektiriyor (bkz. yukarıdaki "Build artık Supabase'e AĞ ERİŞİMİ
+gerektiriyor" notu) — çalıştırdığın makinenin Supabase'e ve
+`https://qrbkzjosorimiwdbwyyl.supabase.co`'ya erişebildiğinden emin ol.
 
 ## Mimari Kararlar / Standart Desenler
 - **Fiyatlar sunucuda doğrulanır.** Hiçbir edge function client'tan gelen

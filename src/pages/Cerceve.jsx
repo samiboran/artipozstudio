@@ -2,7 +2,19 @@ import { useState, useEffect, useRef } from 'react'
 import { supabase } from '../lib/supabase'
 import { getSessionId } from '../lib/session'
 import { getAuthHeader } from '../lib/authHeader'
+import Seo, { SITE_URL } from '../components/Seo'
 import heroImgDefault from '../assets/cerceve/hero.jpg'
+
+const FRAME_JSON_LD = {
+  '@context': 'https://schema.org',
+  '@type': 'Service',
+  serviceType: 'Çerçeveleme',
+  name: 'Çerçeve — Artı Poz',
+  description: 'Fotoğraf ve fine art baskılarınız için UV korumalı camlı, doğal ahşap/siyah/beyaz seçenekli özel çerçeveleme hizmeti.',
+  provider: { '@type': 'LocalBusiness', name: 'Artı Poz', url: SITE_URL },
+  areaServed: 'TR',
+  url: `${SITE_URL}/cerceve`,
+}
 
 // Supabase Storage'ta tek dosya için pratik üst sınır.
 const MAX_FILE_SIZE_MB = 10
@@ -81,6 +93,9 @@ export default function Cerceve() {
   const [sizes, setSizes] = useState(FALLBACK_SIZES)
   const [colorSwatch, setColorSwatch] = useState(FALLBACK_SWATCH)
   const [content, setContent] = useState({})
+  // Prerender script'i (bkz. scripts/prerender.mjs) canlı veri gelmeden
+  // (fallback state'iyle) snapshot almasın diye.
+  const [dataReady, setDataReady] = useState(false)
   const [images, setImages] = useState({
     hero: heroImgDefault,
     'renk-secenekleri': renkSecenekleriImgDefault,
@@ -134,6 +149,8 @@ export default function Cerceve() {
       }
     } catch (err) {
       console.error('Çerçeve sayfası verisi yüklenemedi:', err)
+    } finally {
+      setDataReady(true)
     }
   }
 
@@ -217,7 +234,13 @@ export default function Cerceve() {
   }
 
   return (
-    <div style={{ paddingTop: '4.2rem' }}>
+    <div style={{ paddingTop: '4.2rem' }} data-prerender-ready={dataReady}>
+      <Seo
+        title="Çerçeve — Fotoğraf ve Baskılarınız için Özel Çerçeveleme | Artı Poz"
+        description="Fotoğraf ve fine art baskılarınız için UV korumalı camlı, doğal ahşap, siyah ve beyaz çerçeve seçenekleri. Hazır asma aparatlı, İstanbul'dan kargo."
+        path="/cerceve"
+        jsonLd={FRAME_JSON_LD}
+      />
 
       {/* Hero — site genelindeki diğer hero'larla (Fine Art Baskı referans) aynı boy: 58vh. */}
       <section style={{

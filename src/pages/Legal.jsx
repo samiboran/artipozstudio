@@ -1,4 +1,5 @@
 import { useParams, Link } from 'react-router-dom'
+import Seo from '../components/Seo'
 
 // ==============================================================
 // ÖNEMLİ: Köşeli parantezli [ALANLARI] kendi bilgilerinle doldur.
@@ -61,13 +62,18 @@ function Legal() {
   const doc = PAGES[page]
 
   if (!doc) return (
-    <div style={{ paddingTop: '8rem', textAlign: 'center', fontFamily: 'var(--font-heading)', fontSize: '1.5rem', color: 'var(--muted)' }}>
+    <div style={{ paddingTop: '8rem', textAlign: 'center', fontFamily: 'var(--font-heading)', fontSize: '1.5rem', color: 'var(--muted)' }} data-prerender-ready="true">
       Sayfa bulunamadı
     </div>
   )
 
   return (
-    <div style={{ paddingTop: '4.2rem' }}>
+    <div style={{ paddingTop: '4.2rem' }} data-prerender-ready="true">
+      <Seo
+        title={`${doc.title} — Artı Poz`}
+        description={`Artı Poz ${doc.title.toLocaleLowerCase('tr-TR')} — sipariş, teslimat, iade ve kişisel veri politikalarımız.`}
+        path={`/yasal/${page}`}
+      />
       <div style={{ maxWidth: 720, margin: '0 auto', padding: '3.5rem 2rem 6rem' }}>
         {/* Site genelindeki diğer sayfa başlıklarıyla (About.jsx vb.) aynı
             font ve renk — önceden eski Archivo Black/ince stildeydi. */}

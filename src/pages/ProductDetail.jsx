@@ -6,6 +6,7 @@ import { useCart } from '../hooks/useCart'
 import { useFavorites } from '../hooks/useFavorites'
 import { supabase } from '../lib/supabase'
 import ArtCard from '../components/ArtCard'
+import Seo, { SITE_URL } from '../components/Seo'
 
 // Mobilde tek görsel yerine, kapak + galeri + mockup görsellerinin hepsini
 // tek bir kaydırmalı (scroll-snap) şeritte, alt nokta göstergesiyle sunan
@@ -82,7 +83,6 @@ function ProductDetail() {
       .then(data => {
         setArtwork(data)
         if (data?.sizes?.length) setActiveSize(data.sizes[0].label)
-        if (data?.title) document.title = `${data.title} — Artı Poz`
         setActiveImage(data?.image_url || null)
         if (data?.artist) {
           fetchArtworks({})
@@ -98,7 +98,6 @@ function ProductDetail() {
       })
       .catch(err => console.error('Eser yüklenemedi:', err))
       .finally(() => setLoading(false))
-    return () => { document.title = 'Artı Poz — Fine Art Baskı & Özgün Eserler' }
   }, [slug])
 
   useEffect(() => {
@@ -114,7 +113,7 @@ function ProductDetail() {
   )
 
   if (!artwork) return (
-    <div style={{ paddingTop: '8rem', textAlign: 'center', fontFamily: 'var(--font-heading)', fontSize: '1.5rem', color: 'var(--muted)' }}>
+    <div style={{ paddingTop: '8rem', textAlign: 'center', fontFamily: 'var(--font-heading)', fontSize: '1.5rem', color: 'var(--muted)' }} data-prerender-ready="true">
       Eser bulunamadı
     </div>
   )
@@ -133,8 +132,32 @@ function ProductDetail() {
     { key: 'cert', label: 'Baskı Kalitesi', content: 'Fine art baskılarımız için Hahnemühle ve Awagami kağıtları, arşivsel pigment mürekkeplerle kullanılır.' },
   ]
 
+  // SEO: sayfa başlığı/açıklaması ve Product+Offer yapılandırılmış verisi —
+  // her eserin gerçek malzeme/boy/fiyat bilgisiyle, jenerik değil.
+  const sizeLabels = (artwork.sizes || []).map(s => s.label).join('/')
+  const priceValues = (artwork.sizes || []).map(s => s.price).filter(p => typeof p === 'number' && p > 0)
+  const seoTitle = `${artwork.title}${artwork.material ? ' — ' + artwork.material : ''} Fine Art Baskı${sizeLabels ? ', ' + sizeLabels : ''} | Artı Poz`
+  const seoDescription = `${artwork.title}, ${artwork.material || 'fine art baskı'} üzerine${sizeLabels ? ' ' + sizeLabels + ' boy seçenekleriyle' : ''} sanatçı imzalı orijinallik sertifikasıyla satışa sunulur.`
+  let offers
+  if (priceValues.length > 1) {
+    offers = { '@type': 'AggregateOffer', priceCurrency: 'TRY', lowPrice: Math.min(...priceValues), highPrice: Math.max(...priceValues), offerCount: priceValues.length, availability: 'https://schema.org/InStock' }
+  } else if (priceValues.length === 1) {
+    offers = { '@type': 'Offer', priceCurrency: 'TRY', price: priceValues[0], availability: 'https://schema.org/InStock', url: `${SITE_URL}/product/${slug}` }
+  }
+  const productJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'Product',
+    name: artwork.title,
+    image: artwork.image_url,
+    ...(artwork.description ? { description: artwork.description } : {}),
+    ...(artwork.material ? { material: artwork.material } : {}),
+    brand: { '@type': 'Brand', name: 'Artı Poz' },
+    ...(offers ? { offers } : {}),
+  }
+
   return (
-    <div style={{ paddingTop: '4.2rem' }}>
+    <div style={{ paddingTop: '4.2rem' }} data-prerender-ready="true">
+      <Seo title={seoTitle} description={seoDescription} path={`/product/${slug}`} image={artwork.image_url} jsonLd={productJsonLd} />
 
       {/* Breadcrumb */}
       <div style={{
