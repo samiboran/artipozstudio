@@ -2,7 +2,13 @@
 <html lang="tr">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <!-- Google arama sonuçlarında/tarayıcı sekmesinde görünen site ikonu:
+         marka logosundaki mavi "a" işareti. .ico burada Google'ın site
+         ikonunu göstermek için beklediği /favicon.ico kök yoluna da denk
+         geliyor (ayrıca kök dizine kopyalanıyor, bkz. vite.config.js
+         public/ davranışı). -->
+    <link rel="icon" type="image/png" href="/favicon.png" />
+    <link rel="icon" href="/favicon.ico" sizes="any" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <!-- title/description/OG/canonical BURADA YOK — Seo.jsx (react-helmet-async)
          tek kaynak. Bunlar burada da olursa Helmet'in kendisi tarafından
