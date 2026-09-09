@@ -65,10 +65,18 @@ function Isler() {
         </div>
       ) : (
         <div style={{ maxWidth: 1300, margin: '0 auto', padding: '0 2rem 5rem' }}>
+          {/* Not: bu bir "masonry" (column-count) düzeniydi — CSS çoklu sütun
+              her sütunu BAĞIMSIZ doldurur, satırları hizalamaz. Kart
+              görselleri sabit oranlı (4/5) olsa da alttaki metin bloğu
+              (başlık tek/iki satır olabiliyor) yükseklikleri hafif
+              farklılaştırıyor, bu da sütunlar arasında birikerek kaymaya
+              yol açıyordu (mobilde daha belirgin, 2 sütun). Grid'e geçince
+              her satırın yüksekliği o satırdaki en uzun karta göre
+              belirleniyor — sütunlar artık HER ZAMAN hizalı. */}
           <style>{`
-            .isler-masonry { column-count: 2; column-gap: 1rem; }
+            .isler-masonry { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem 1rem; }
             @media (min-width: 700px) {
-              .isler-masonry { column-count: 3; column-gap: 1.8rem; }
+              .isler-masonry { grid-template-columns: repeat(3, 1fr); gap: 1.8rem 1.8rem; }
             }
           `}</style>
           <div className="isler-masonry">
