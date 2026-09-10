@@ -13,15 +13,17 @@ import ornekDoku2ImgDefault from '../assets/fine-art/ornek-doku-2.jpg'
 
 // Supabase'e hiç bağlanamazsa veya papers tablosu boşsa gösterilecek yedek veri.
 const FALLBACK_PAPERS = [
-  { no: '01', name: 'Bamboo', surface: 'Mat', gsm: '290gsm', texture: 'Pürüzsüz', color: 'Natural White', composition: '90% Bamboo fibre, 10% Cotton', description: 'Bambu liflerinden üretilen bu kağıt, doğal beyaz tonu ve mat yüzeyiyle organik bir sıcaklık sunar. Çevre dostu yapısı ve yumuşak dokusuyla doğa temalı eserler için mükemmel bir seçimdir.' },
-  { no: '02', name: 'Bamboo Gloss Baryta', surface: 'Parlak', gsm: '305gsm', texture: 'Pürüzsüz', color: 'Natural White', composition: '90% Bamboo fibre, 10% Cotton', description: 'Yüksek parlak baryta yüzeyi, fotoğraflara derin siyahlar ve olağanüstü ton zenginliği katar.' },
-  { no: '03', name: 'Rice Paper', surface: 'Mat', gsm: '100gsm', texture: 'Pürüzsüz', color: 'White', composition: '100% α-Cellulose', description: 'İnce ve şeffaf yapısıyla benzersiz bir hafiflik sunan pirinç kağıdı.' },
-  { no: '04', name: 'Photo Rag Ultra Smooth', surface: 'Mat', gsm: '305gsm', texture: 'Pürüzsüz', color: 'White', composition: '100% Cotton', description: 'Ultra pürüzsüz yüzeyi, en ince detayları mükemmel netlikte aktarır.' },
-  { no: '05', name: 'Photo Rag', surface: 'Mat', gsm: '308gsm', texture: 'Yumuşak', color: 'White', composition: '100% Cotton', description: 'Hahnemühle\'nin klasik pamuklu kağıdı; yumuşak dokusu ve nötr beyazlığıyla hem renkli hem siyah-beyaz baskılarda doğal, sıcak bir görünüm sunar. Sanat baskısında en çok tercih edilen kağıtlardan biridir.' },
-  { no: '06', name: 'William Turner', surface: 'Mat', gsm: '190gsm', texture: 'Kabartılı', color: 'White', composition: '100% Cotton', description: 'Belirgin kabartılı dokusuyla tuval hissi veren, gerçek su baskı (mould-made) yöntemiyle üretilmiş pamuklu bir kağıt. Suluboya ve resim eserlerinin baskısında dokuyu ön plana çıkarır.' },
-  { no: '07', name: 'Albrecht Dürer', surface: 'Mat', gsm: '210gsm', texture: 'Kabartılı', color: 'White', composition: '50% Cotton, 50% α-Cellulose', description: 'Hafif kabartılı yüzeyi ve dengeli pamuk-selüloz karışımıyla hem detay netliğini hem de doğal bir kağıt dokusunu bir arada sunar; illüstrasyon ve çizim çalışmalarının baskısı için uygundur.' },
-  { no: '08', name: 'Torchon', surface: 'Mat', gsm: '285gsm', texture: 'Kabartılı', color: 'Bright White', composition: '100% α-Cellulose', description: 'Belirgin, kaba dokulu yüzeyiyle güçlü bir sanatsal karakter taşır; parlak beyazlığı canlı renklerin öne çıkmasını sağlar, özellikle güçlü kontrastlı eserlerde etkileyicidir.' },
-  { no: '09', name: 'German Etching', surface: 'Mat', gsm: '310gsm', texture: 'Kabartılı', color: 'White', composition: '100% α-Cellulose', description: 'Hafif dokulu, gravür kağıdını andıran yüzeyiyle klasik ve zamansız bir görünüm sunar; hem fotoğraf hem sanat eseri baskılarında sık tercih edilir.' },
+  { no: '01', name: 'Bamboo', surface: 'Mat', gsm: '290gsm', texture: 'Pürüzsüz', color: 'Natural White', composition: '90% Bamboo fibre, 10% Cotton', description: 'Doğal beyaz tonlu, çevre dostu mat kâğıt.' },
+  { no: '02', name: 'Bamboo Gloss Baryta', surface: 'Parlak', gsm: '305gsm', texture: 'Pürüzsüz', color: 'Natural White', composition: '90% Bamboo fibre, 10% Cotton', description: 'Parlak yüzey, derin siyahlar ve zengin tonlar.' },
+  { no: '03', name: 'Rice Paper', surface: 'Mat', gsm: '100gsm', texture: 'Pürüzsüz', color: 'White', composition: '100% α-Cellulose', description: 'İnce, yarı şeffaf ve zarif dokulu kâğıt.' },
+  { no: '04', name: 'Photo Rag Ultra Smooth', surface: 'Mat', gsm: '305gsm', texture: 'Pürüzsüz', color: 'White', composition: '100% Cotton', description: 'Pürüzsüz yüzey, yüksek detay ve yumuşak tonlar.' },
+  { no: '05', name: 'Photo Rag', surface: 'Mat', gsm: '308gsm', texture: 'Yumuşak', color: 'White', composition: '100% Cotton', description: 'Doğal dokulu, klasik pamuklu fine art kâğıdı.' },
+  { no: '06', name: 'William Turner', surface: 'Mat', gsm: '190gsm', texture: 'Kabartılı', color: 'White', composition: '100% Cotton', description: 'Belirgin dokulu, tuval hissi veren sanat kâğıdı.' },
+  { no: '07', name: 'Albrecht Dürer', surface: 'Mat', gsm: '210gsm', texture: 'Kabartılı', color: 'White', composition: '50% Cotton, 50% α-Cellulose', description: 'Hafif dokulu, detayları güçlü pamuklu kâğıt.' },
+  { no: '08', name: 'Torchon', surface: 'Mat', gsm: '285gsm', texture: 'Kabartılı', color: 'Bright White', composition: '100% α-Cellulose', description: 'Kaba dokulu, güçlü karaktere sahip sanat kâğıdı.' },
+  { no: '09', name: 'German Etching', surface: 'Mat', gsm: '310gsm', texture: 'Kabartılı', color: 'White', composition: '100% α-Cellulose', description: 'Gravür dokulu, klasik ve zamansız kâğıt.' },
+  { no: '10', name: 'Pearl', description: 'İnci parlaklığında, canlı ve zarif fotoğraf kâğıdı.' },
+  { no: '11', name: 'Awagami', description: 'Geleneksel Japon dokusuyla zarif ve özgün baskılar sunar.' },
 ]
 
 const heading = { fontFamily: 'var(--font-heading)', fontWeight: 600, color: 'var(--ink)' }
