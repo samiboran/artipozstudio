@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { supabase } from '../lib/supabase'
+import { optRows } from '../lib/optimizedImages'
 import { getSessionId } from '../lib/session'
 import { getAuthHeader } from '../lib/authHeader'
 import { HERO_OVERLAY_GRADIENT } from '../lib/heroOverlay'
@@ -154,11 +155,12 @@ export default function FotografBaski() {
 
   async function loadData() {
     try {
-      const [{ data: imgs }, { data: priceRows, error: priceErr }, { data: contentRows }] = await Promise.all([
+      const [{ data: imgsRaw }, { data: priceRows, error: priceErr }, { data: contentRows }] = await Promise.all([
         supabase.from('page_images').select('*').eq('page', 'fotograf-baski').order('sort_order').order('id'),
         supabase.from('photo_print_prices').select('*'),
         supabase.from('page_content').select('section, content').eq('page', 'fotograf-baski'),
       ])
+      const imgs = optRows(imgsRaw)
 
       if (contentRows && contentRows.length) {
         const map = {}

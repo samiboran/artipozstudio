@@ -37,7 +37,9 @@ if (s) query = query.or(`title.ilike.%${s}%,artist.ilike.%${s}%`)
 
   const { data, error } = await query
   if (error) { console.error('Fetch hatası:', error.message); return [] }
-  return data
+  // Başlığı veya görseli olmayan yarım/test kayıtlarını listelerde gösterme
+  // (İşler'de görselsiz, isimsiz boş bir kart çıkıyordu).
+  return (data || []).filter(a => a.title?.trim() && a.image_url)
 }
 
 export async function fetchArtworkBySlug(slug) {
