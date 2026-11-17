@@ -101,7 +101,6 @@ const HIZMETLER = [
   {
     key: 'hizmet-fotograf', to: '/fotograf-baski', title: 'Fotoğraf Baskı', defaultImg: fotografDefault,
     desc: 'Kodak ve profesyonel fotoğraf kağıtları ile mat, parlak veya saten yüzey seçenekleri.',
-    imgScale: .8,
   },
   {
     key: 'hizmet-fine-art', to: '/fine-art-baski', title: 'Fine Art / Giclée Baskı', defaultImg: fineArtDefault,
@@ -114,7 +113,6 @@ const HIZMETLER = [
   {
     key: 'hizmet-poster', to: '/fotograf-baski', title: 'Poster & Kartpostal Baskı',
     desc: 'Poster, kartpostal ve küçük format baskılarınız için yüksek kaliteli çözümler.',
-    imgScale: .8,
   },
   {
     key: 'hizmet-sergi', to: '/fine-art-baski', title: 'Sergi & Portfolyo Baskıları',
