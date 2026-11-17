@@ -201,9 +201,11 @@ export default function FilmYikama() {
         jsonLd={FILM_JSON_LD}
       />
 
-      {/* Hero — site genelindeki diğer hero'larla aynı boy: 58vh, sadece görsel. */}
+      {/* Hero görseli 16:9 — eskiden 58vh'lik yatay bir şeride sığdırılıyordu,
+          üstünden/altından yarısı kesiliyordu. Artık kutu görselin kendi
+          oranında (56.25vw), ama ekrandan taşmasın diye en fazla 80vh. */}
       <section style={{
-        position: 'relative', height: '58vh', minHeight: 380,
+        position: 'relative', height: 'min(56.25vw, 80vh)', minHeight: 260,
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         textAlign: 'center', overflow: 'hidden'
       }}>
