@@ -32,6 +32,9 @@ console.log(`${rows.length} page_images satırı`)
 let done = 0, skipped = 0, before = 0, after = 0
 for (const { page, section, image_url } of rows) {
   if (!image_url || !image_url.includes('/storage/v1/object/public/')) { skipped++; continue }
+  // Zaten WebP olanlar (Admin'in sıkıştırdıkları, hero'lar) tekrar sıkıştırılmaz —
+  // ikinci kez kayıplı sıkıştırma görünür kalite kaybı yapıyordu (Fitz Roy hero'su).
+  if (/\.webp($|\?)/i.test(image_url)) { skipped++; continue }
   const name = path.basename(new globalThis.URL(image_url).pathname).replace(/\.[^.]+$/, '') + '.webp'
   const outPath = path.join(OUT_DIR, name)
   const publicPath = `/images/site/${name}`
@@ -41,7 +44,7 @@ for (const { page, section, image_url } of rows) {
   if (!r.ok) { console.warn(`  ! indirilemedi (${r.status}): ${image_url}`); continue }
   const buf = Buffer.from(await r.arrayBuffer())
   const maxW = MAX_WIDTH[section] || DEFAULT_MAX
-  const out = await sharp(buf).rotate().resize({ width: maxW, withoutEnlargement: true }).webp({ quality: 80 }).toBuffer()
+  const out = await sharp(buf).rotate().resize({ width: maxW, withoutEnlargement: true }).webp({ quality: 86 }).toBuffer()
 
   // Küçültme kazanç sağlamıyorsa (zaten küçük bir webp) orijinali kullan.
   if (out.length >= buf.length) { skipped++; continue }
