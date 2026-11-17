@@ -24,7 +24,7 @@ const FILM_JSON_LD = {
   '@type': 'Service',
   serviceType: 'Film Yıkama ve Tarama',
   name: 'Film Yıkama & Tarama — Artı Poz',
-  description: 'Analog film tarama hizmeti — 35mm, orta format ve geniş format, yüksek çözünürlük. Film yıkama çok yakında.',
+  description: 'Analog film tarama hizmeti — 35mm ve orta format (120), yüksek çözünürlük. Film yıkama çok yakında.',
   provider: { '@type': 'LocalBusiness', name: 'Artı Poz', url: SITE_URL },
   areaServed: 'TR',
   url: `${SITE_URL}/film-yikama-tarama`,
@@ -196,7 +196,7 @@ export default function FilmYikama() {
     <div style={{ paddingTop: '4.2rem' }} data-prerender-ready={dataReady}>
       <Seo
         title="Film Yıkama & Tarama — Analog Film İşleme | Artı Poz"
-        description="Analog film tarama: 35mm, orta format ve geniş format negatif ve dia filmleriniz yüksek çözünürlükte dijitale aktarılır. Film yıkama hizmetimiz çok yakında — İstanbul, Artı Poz."
+        description="Analog film tarama: 35mm ve orta format (120) negatif ve dia filmleriniz yüksek çözünürlükte dijitale aktarılır. Film yıkama hizmetimiz çok yakında — İstanbul, Artı Poz."
         path="/film-yikama-tarama"
         jsonLd={FILM_JSON_LD}
       />
@@ -236,8 +236,8 @@ export default function FilmYikama() {
           <p style={body}>
             {/* Sabit metin — Admin/page_content'teki eski "yıkıyoruz" metni
                 artık bunu ezmesin (film yıkama henüz başlamadı). */}
-            Film yıkama hizmetimiz çok yakında sizlerle. 35mm, orta format ve
-            geniş format negatif ve dia filmlerinizi yüksek çözünürlükte tarıyor,
+            Film yıkama hizmetimiz çok yakında sizlerle. 35mm ve orta format (120)
+            negatif ve dia filmlerinizi yüksek çözünürlükte tarıyor,
             filmin kendine özgü dokusunu koruyarak dijitale aktarıyoruz.
           </p>
         </div>
