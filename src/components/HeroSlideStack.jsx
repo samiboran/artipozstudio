@@ -18,8 +18,13 @@ export default function HeroSlideStack({ urls }) {
       key={url}
       src={url}
       alt="Artı Poz"
-      loading="eager"
-      fetchPriority={i === 0 ? 'high' : 'auto'}
+      // lazy: Hero masaüstü ve mobil için iki ayrı slayt seti render ediyor,
+      // biri display:none ile gizli. eager olunca gizli set de iniyordu
+      // (masaüstünde ~6.6 MB boşa). lazy görseller display:none iken inmez;
+      // görünen ilk kare yine hemen yüklenir.
+      loading="lazy"
+      decoding="async"
+      fetchPriority={i === 0 ? 'high' : 'low'}
       style={{
         position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover',
         opacity: i === index ? 1 : 0, transition: 'opacity 1s ease',

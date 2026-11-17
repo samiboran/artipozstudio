@@ -1,0 +1,65 @@
+# Otomatik deploy: main'e her merge'de (veya Actions sekmesinden elle
+# "Run workflow") GitHub'ın sunucusunda build alıp gh-pages'e yayınlar.
+# Böylece `npm run deploy`'u kendi bilgisayarında çalıştırmak gerekmez.
+#  1) Supabase'deki ham site görsellerini WebP'ye çevirip repoya işler
+#  2) Prerender için Chromium kurar (build Supabase'e bağlanır)
+#  3) Build alır ve gh-pages branch'ine yayınlar
+name: Deploy
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: deploy
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    env:
+      # Publishable (anon) key — zaten sitenin JS paketinde herkese açık.
+      VITE_SUPABASE_URL: https://qrbkzjosorimiwdbwyyl.supabase.co
+      VITE_SUPABASE_ANON_KEY: sb_publishable_l1UHa6JT_zZGr5KaU6MXFQ_I1GJxajT
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - run: npm ci
+
+      - name: Site görsellerini optimize et
+        run: |
+          npm i --no-save sharp
+          node scripts/optimize-site-images.mjs
+
+      - name: Optimize edilen görselleri repoya işle
+        run: |
+          if [ -n "$(git status --porcelain public/images src/lib/optimized-images.json)" ]; then
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add public/images src/lib/optimized-images.json
+            git commit -m "Site görselleri WebP'ye çevrildi (otomatik) [skip ci]"
+            git push
+          fi
+
+      - name: Prerender için Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Build (vite + prerender)
+        run: npm run build
+
+      - name: gh-pages'e yayınla
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          npx gh-pages -d dist --dotfiles \
+            -u "github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>" \
+            -r "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git"

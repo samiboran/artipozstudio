@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { supabase } from '../lib/supabase'
+import { optRows } from '../lib/optimizedImages'
 import { getSessionId } from '../lib/session'
 import { getAuthHeader } from '../lib/authHeader'
 import { HERO_OVERLAY_GRADIENT } from '../lib/heroOverlay'
@@ -13,14 +14,17 @@ import galeri2ImgDefault from '../assets/film-yikama/galeri-2.jpg'
 import galeri3ImgDefault from '../assets/film-yikama/galeri-3.jpg'
 import galeri4ImgDefault from '../assets/film-yikama/galeri-4.jpg'
 
-const HIZMET_OPTIONS = ['Yıkama + Tarama', 'Yalnızca Yıkama', 'Yalnızca Tarama']
+// Değerler edge function (create-film-request) ile BİREBİR aynı kalmalı —
+// orada da doğrulanıyor. Film yıkama henüz başlamadığı için varsayılan
+// seçim "Yalnızca Tarama".
+const HIZMET_OPTIONS = ['Yalnızca Tarama', 'Yıkama + Tarama', 'Yalnızca Yıkama']
 
 const FILM_JSON_LD = {
   '@context': 'https://schema.org',
   '@type': 'Service',
   serviceType: 'Film Yıkama ve Tarama',
   name: 'Film Yıkama & Tarama — Artı Poz',
-  description: 'Analog film yıkama ve yüksek çözünürlüklü tarama hizmeti — yıkama, tarama veya ikisi bir arada.',
+  description: 'Analog film tarama hizmeti — 35mm ve 120 orta format, yüksek çözünürlük. Film yıkama çok yakında.',
   provider: { '@type': 'LocalBusiness', name: 'Artı Poz', url: SITE_URL },
   areaServed: 'TR',
   url: `${SITE_URL}/film-yikama-tarama`,
@@ -29,11 +33,11 @@ const FILM_JSON_LD = {
 const STEPS = [
   {
     no: '01', title: 'Filminizi teslim edin', imgKey: 'adim-01',
-    text: 'Çekimi tamamlanmış filmlerinizi atölyemize getirebilirsiniz. Yıkama yapılmamış filmleri kasetinden çıkarmadan, ışık almayacak şekilde teslim edin. Film türünüze uygun işlem, fiyat ve teslim süresi için öncesinde bizimle iletişime geçin.',
+    text: 'Yıkanmış negatiflerinizi atölyemize getirin. Film türünüz, fiyat ve teslim süresi için önceden bizimle iletişime geçebilirsiniz.',
   },
   {
-    no: '02', title: 'Yıkayalım, tarayalım', imgKey: 'adim-02',
-    text: 'Filmlerinizin yıkama ve tarama işlemlerini gerçekleştiriyoruz. Daha önce yıkanmış negatifleriniz için yalnızca tarama hizmetimizden de yararlanabilirsiniz.',
+    no: '02', title: 'Tarayalım', imgKey: 'adim-02',
+    text: 'Negatiflerinizi yüksek çözünürlükte tarıyor, renk ve tonlarını özenle dengeliyoruz.',
   },
   {
     no: '03', title: 'Karelerinize ulaşın', imgKey: 'adim-03',
@@ -42,10 +46,6 @@ const STEPS = [
 ]
 
 const heading = { fontFamily: 'var(--font-heading)', fontWeight: 600, color: 'var(--ink)' }
-const eyebrow = {
-  fontFamily: 'var(--font-body)', fontSize: '.72rem', fontWeight: 500,
-  letterSpacing: '.18em', textTransform: 'uppercase', color: 'var(--accent)',
-}
 const body = { fontFamily: 'var(--font-body)', fontSize: '.92rem', lineHeight: 1.7, color: 'var(--muted)' }
 const label = { fontFamily: 'var(--font-body)', fontSize: '.72rem', fontWeight: 500, letterSpacing: '.08em', textTransform: 'uppercase', color: 'var(--ink)' }
 
@@ -83,7 +83,7 @@ export default function FilmYikama() {
       { image_url: galeri4ImgDefault, alt: 'Dağınık negatif şeritleri, renkli kareler' },
     ],
   })
-  const [content, setContent] = useState({})
+  const [, setContent] = useState({})
 
   const [modalOpen, setModalOpen] = useState(false)
   const [formStep, setFormStep] = useState('form') // form | sent
@@ -102,10 +102,11 @@ export default function FilmYikama() {
 
   async function loadData() {
     try {
-      const [{ data: imgs }, { data: contentRows }] = await Promise.all([
+      const [{ data: imgsRaw }, { data: contentRows }] = await Promise.all([
         supabase.from('page_images').select('*').eq('page', 'film-yikama').order('sort_order').order('id'),
         supabase.from('page_content').select('section, content').eq('page', 'film-yikama'),
       ])
+      const imgs = optRows(imgsRaw)
 
       if (contentRows && contentRows.length) {
         const map = {}
@@ -195,7 +196,7 @@ export default function FilmYikama() {
     <div style={{ paddingTop: '4.2rem' }} data-prerender-ready={dataReady}>
       <Seo
         title="Film Yıkama & Tarama — Analog Film İşleme | Artı Poz"
-        description="Analog film yıkama ve yüksek çözünürlüklü tarama hizmeti. Yalnızca yıkama, yalnızca tarama veya ikisi bir arada — İstanbul'dan Türkiye geneline."
+        description="Analog film tarama: 35mm ve 120 orta format negatif ve dia filmleriniz yüksek çözünürlükte dijitale aktarılır. Film yıkama hizmetimiz çok yakında — İstanbul, Artı Poz."
         path="/film-yikama-tarama"
         jsonLd={FILM_JSON_LD}
       />
@@ -231,7 +232,12 @@ export default function FilmYikama() {
             Film Yıkama<br />&amp; Tarama
           </h1>
           <p style={body}>
-            {content['intro-aciklama'] || 'Analog filmlerinizi özenle yıkıyor, karelerinizi yüksek çözünürlüklü taramalarla dijitale aktarıyoruz. Filmin kendine özgü dokusunu ve tonlarını gözeterek fotoğraflarınızı arşivlemeye, paylaşmaya ve baskıya hazırlıyoruz.'}
+            {/* Sabit metin — Admin/page_content'teki eski "yıkıyoruz" metni
+                artık bunu ezmesin (film yıkama henüz başlamadı). */}
+            Film yıkama hizmetimiz çok yakında sizlerle. Şimdilik yıkanmış negatif
+            ve dia filmlerinizi tarıyoruz: 35mm ve 120 orta format filmlerinizi
+            Almanya'dan getirttiğimiz Ausgeknipst tarama sistemiyle, yüksek
+            çözünürlükte ve filmin kendine özgü dokusunu koruyarak dijitale aktarıyoruz.
           </p>
         </div>
       </section>
@@ -254,7 +260,6 @@ export default function FilmYikama() {
                   ? <img src={images[s.imgKey]} alt={s.title} loading="lazy" decoding="async" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
                   : placeholderBox(`${s.title} — Admin'den yükle`)}
               </div>
-              <p style={{ ...eyebrow, marginBottom: '.6rem' }}>{s.no} —</p>
               <h2 style={{ ...heading, fontSize: '1.3rem', margin: '0 0 .7rem' }}>{s.title}</h2>
               <p style={body}>{s.text}</p>
             </div>
@@ -264,7 +269,7 @@ export default function FilmYikama() {
 
       {/* Dijitalden kâğıda — CTA: başlık + açıklama + buton aynı satırda
           (referans tasarıma göre), buton tam genişlik bir şerit değil. */}
-      <section style={{ maxWidth: 1300, margin: '0 auto', padding: '1.5rem 2rem 2.25rem' }}>
+      <section style={{ maxWidth: 1300, margin: '0 auto', padding: '1.5rem 2rem 4rem' }}>
         <style>{`
           .fy-cta-row { display: flex; align-items: center; justify-content: space-between; gap: 2.5rem; }
           .fy-cta-right { display: flex; flex-direction: column; align-items: flex-end; gap: 1.2rem; max-width: 460px; }
@@ -302,7 +307,9 @@ export default function FilmYikama() {
       {/* Galeri — auto-fill: sabit 4 sütun yerine, kaç görsel varsa ona göre
           dizilir (Fine Art Baskı "Örnek Baskılarımız" ile aynı desen) —
           eksik satır kalırsa boş görünmez sütunlarla dolduruluyor. */}
-      <section style={{ maxWidth: 1400, margin: '0 auto', padding: '0 2rem 4.5rem' }}>
+      {/* maxWidth üstteki bölümlerle aynı (1300) — önceden 1400'dü, galeri
+          iki yandan ~50px taşıyıp kenarlar hizasız görünüyordu. */}
+      <section style={{ maxWidth: 1300, margin: '0 auto', padding: '0 2rem 4.5rem', position: 'relative', zIndex: 0 }}>
         <style>{`
           .fy-gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 1rem; }
           @media (max-width: 700px) {

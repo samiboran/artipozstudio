@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../lib/supabase'
+import { optImg } from '../lib/optimizedImages'
 import heroImgDefault from '../assets/fine-art/hero.webp'
 import HeroSlideStack from './HeroSlideStack'
 import { HERO_OVERLAY_GRADIENT } from '../lib/heroOverlay'
@@ -21,8 +22,8 @@ export default function Hero() {
       .order('sort_order')
       .order('id')
       .then(({ data }) => {
-        const desktop = (data || []).filter(r => r.section === 'hero').map(r => r.image_url)
-        const mobile = (data || []).filter(r => r.section === 'hero-mobile').map(r => r.image_url)
+        const desktop = (data || []).filter(r => r.section === 'hero').map(r => optImg(r.image_url))
+        const mobile = (data || []).filter(r => r.section === 'hero-mobile').map(r => optImg(r.image_url))
         setDesktopUrls(desktop.length ? desktop : [heroImgDefault])
         setMobileUrls(mobile)
       })

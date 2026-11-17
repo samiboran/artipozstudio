@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
+import { optImg } from '../lib/optimizedImages'
 import { fetchArtworks } from '../lib/artworks'
 import Hero from '../components/Hero'
 import ArtCard from '../components/ArtCard'
@@ -465,7 +466,7 @@ function Gallery() {
       .then(({ data }) => {
         if (!data) return
         const map = {}
-        data.forEach(row => { if (!map[row.section]) map[row.section] = row.image_url })
+        data.forEach(row => { if (!map[row.section]) map[row.section] = optImg(row.image_url) })
         setImages(map)
       })
       .catch(err => console.error('Ana sayfa görselleri yüklenemedi:', err))

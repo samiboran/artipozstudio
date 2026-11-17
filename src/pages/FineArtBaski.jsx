@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../lib/supabase'
+import { optRows } from '../lib/optimizedImages'
 import { HERO_OVERLAY_GRADIENT } from '../lib/heroOverlay'
 import SiparisIletisimForm from '../components/SiparisIletisimForm'
 import Seo, { SITE_URL } from '../components/Seo'
@@ -52,11 +53,12 @@ export default function FineArtBaski() {
 
   async function loadData() {
     try {
-      const [{ data: paperRows }, { data: imgs }, { data: contentRows }] = await Promise.all([
+      const [{ data: paperRows }, { data: imgsRaw }, { data: contentRows }] = await Promise.all([
         supabase.from('papers').select('*').order('sort_order'),
         supabase.from('page_images').select('*').eq('page', 'fine-art-baski').order('sort_order').order('id'),
         supabase.from('page_content').select('section, content').eq('page', 'fine-art-baski'),
       ])
+      const imgs = optRows(imgsRaw)
 
       if (contentRows && contentRows.length) {
         const map = {}

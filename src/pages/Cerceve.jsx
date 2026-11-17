@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { supabase } from '../lib/supabase'
+import { optRows } from '../lib/optimizedImages'
 import { getSessionId } from '../lib/session'
 import { getAuthHeader } from '../lib/authHeader'
 import Seo, { SITE_URL } from '../components/Seo'
@@ -110,11 +111,12 @@ export default function Cerceve() {
 
   async function loadData() {
     try {
-      const [{ data: options }, { data: imgs }, { data: contentRows }] = await Promise.all([
+      const [{ data: options }, { data: imgsRaw }, { data: contentRows }] = await Promise.all([
         supabase.from('frame_options').select('id, size, note, sort_order, frame_option_prices(color, price, swatch_hex, sort_order)').order('sort_order'),
         supabase.from('page_images').select('*').eq('page', 'cerceve').order('sort_order').order('id'),
         supabase.from('page_content').select('section, content').eq('page', 'cerceve'),
       ])
+      const imgs = optRows(imgsRaw)
 
       if (contentRows && contentRows.length) {
         const map = {}
