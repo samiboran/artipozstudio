@@ -62,7 +62,10 @@ export default function Hero() {
           o görseller zaten dikey ekran için kesildiği için mobilde de
           39vh kullanılabiliyor. */}
       <style>{`
-        .hero-section { height: 58vh; min-height: 380px; }
+        /* Masaüstü hero görselleri 2200x825 (8:3). Kutu bu orana göre
+           (37.5vw), ekrandan taşmasın diye en fazla 80vh — eskiden 58vh'lik
+           şeritte üstten/alttan kırpılıyordu. Mobil kurallar aşağıda aynı. */
+        .hero-section { height: min(37.5vw, 80vh); min-height: 380px; }
         @media (max-width: 640px) {
           .hero-section:not(.hero-section--mobile-set) { height: 42vh; min-height: 300px; }
         }
