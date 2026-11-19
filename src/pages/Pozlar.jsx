@@ -49,7 +49,7 @@ function PreviewBanner() {
 function Brand({ small }) {
   return (
     <Link to="/pozlar" style={{ fontFamily: MONO, fontWeight: 700, color: FILM_ORANGE, letterSpacing: '.28em', fontSize: small ? '1rem' : 'clamp(2rem, 5vw, 3.2rem)', textDecoration: 'none' }}>
-      POZLAR<span style={{ fontSize: '.45em', letterSpacing: '.1em', marginLeft: '.6em', verticalAlign: 'middle' }}>▸ 35 · 120</span>
+      POZLAR
     </Link>
   )
 }
