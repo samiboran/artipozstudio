@@ -15,6 +15,10 @@ import film2 from '../assets/film-yikama/galeri-2.jpg'
 import film3 from '../assets/film-yikama/galeri-3.jpg'
 import film4 from '../assets/film-yikama/galeri-4.jpg'
 import film5 from '../assets/film-yikama/adim-03-karelerinize.jpg'
+import dij1 from '../assets/cerceve/hero.jpg'
+import dij2 from '../assets/fine-art/hero.webp'
+import dij3 from '../assets/fine-art/tanitim-studyo.jpg'
+import dij4 from '../assets/film-yikama/hero.jpg'
 
 const SB = 'https://qrbkzjosorimiwdbwyyl.supabase.co/storage/v1/object/public/artwork-images/'
 
@@ -38,7 +42,8 @@ export const PHOTOGRAPHERS = [
   { u: 'selin.a', ad: 'Selin A.', unvan: '', aciklama: 'Canon AE-1 ile her yere.', instagram: 'selin.analog', kurucu: true },
 ]
 
-export const POZLAR = [
+// tur: 'film' | 'dijital' — dijitalde film alanı boş, format = sensör
+const FILM_POZLAR = [
   { id: 'p1', src: SB + 'compressed-1788711721878-juiwx.webp', w: 1800, h: 1197, baslik: 'Lisianthus, sabah ışığı', not: 'Pencere ışığı, 1/30 elde. HP5 1600\'e itildi, gren tam istediğim gibi.', u: 'deniz.k', makine: 'Mamiya RZ67 Pro II', lens: 'Sekor Z 110mm f/2.8', film: 'Ilford HP5 Plus 400', format: '120', konular: ['doga', 'naturmort'], tarandi: true, begeni: 48, tarih: '2026-11-12' },
   { id: 'p2', src: SB + 'compressed-1788711723490-4n44r.webp', w: 1800, h: 1197, baslik: 'Şebboy', not: '', u: 'deniz.k', makine: 'Mamiya RZ67 Pro II', lens: 'Sekor Z 110mm f/2.8', film: 'Kodak Tri-X 400', format: '120', konular: ['doga'], tarandi: true, begeni: 31, tarih: '2026-11-10' },
   { id: 'p3', src: manzara1, w: 2172, h: 724, baslik: 'Bozkır', not: 'Panoramik kırpım. Ektar\'ın renkleri bu ışıkta çok doygun çıktı.', u: 'selin.a', makine: 'Pentax 67', lens: 'SMC Takumar 105mm f/2.4', film: 'Kodak Ektar 100', format: '120', konular: ['manzara'], tarandi: false, begeni: 62, tarih: '2026-11-08' },
@@ -55,7 +60,17 @@ export const POZLAR = [
   { id: 'p14', src: film5, w: 1536, h: 1024, baslik: 'Kontakt', not: '', u: 'lena.m', makine: 'Leica M6', lens: 'Summicron 35mm f/2', film: 'Ilford HP5 Plus 400', format: '35mm', konular: ['sokak'], tarandi: true, begeni: 38, tarih: '2026-11-13' },
   { id: 'p15', src: botanik2, w: 1024, h: 1024, baslik: '', not: '', u: 'deniz.k', makine: 'Mamiya 645 Pro', lens: 'Sekor C 80mm f/2.8', film: 'Kodak Portra 400', format: '120', konular: ['doga'], tarandi: false, begeni: 17, tarih: '2026-11-02' },
   { id: 'p16', src: film4, w: 1136, h: 1360, baslik: 'Akşam', not: '', u: 'selin.a', makine: 'Nikon FM2', lens: 'Nikkor 50mm f/1.4', film: 'Kodak Portra 800', format: '35mm', konular: ['gece'], tarandi: true, begeni: 21, tarih: '2026-11-05' },
-]
+].map(p => ({ tur: 'film', ...p }))
+
+const DIJITAL_POZLAR = [
+  { id: 'd1', src: dij1, w: 1600, h: 667, baslik: 'Duvar', not: 'Sergi kurulumundan sonra, boş salon.', u: 'selin.a', makine: 'Sony A7 IV', lens: 'FE 24-70mm f/2.8 GM II', film: '', format: 'Tam kare', konular: ['mimari'], begeni: 29, tarih: '2026-11-17' },
+  { id: 'd2', src: dij2, w: 1254, h: 1254, baslik: 'Seçki günü', not: '', u: 'deniz.k', makine: 'Fujifilm X-T5', lens: 'XF 33mm f/1.4', film: '', format: 'APS-C', konular: ['naturmort'], begeni: 35, tarih: '2026-11-15' },
+  { id: 'd3', src: dij3, w: 751, h: 810, baslik: 'Atölye', not: 'Baskı makineden çıkarken.', u: 'lena.m', makine: 'Ricoh GR III', lens: 'GR 18.3mm f/2.8', film: '', format: 'APS-C', konular: ['portre'], begeni: 24, tarih: '2026-11-12' },
+  { id: 'd4', src: dij4, w: 1600, h: 900, baslik: 'Tarama masası', not: '', u: 'arda.t', makine: 'Fujifilm X100VI', lens: '23mm f/2', film: '', format: 'APS-C', konular: ['naturmort'], begeni: 18, tarih: '2026-11-10' },
+].map(p => ({ tur: 'dijital', tarandi: false, ...p }))
+
+export const POZLAR = [...FILM_POZLAR, ...DIJITAL_POZLAR]
+export const TURLER = [['', 'Tümü'], ['film', 'Film'], ['dijital', 'Dijital']]
 
 export const POPULAR_CHIPS = ['Portra 400', 'HP5', 'Mamiya', 'Canon AE-1', 'Manzara', 'Deneysel', 'Cinestill']
 
@@ -68,7 +83,7 @@ export function searchPozlar(q) {
   if (!words.length) return POZLAR
   return POZLAR.filter(p => {
     const ph = PHOTOGRAPHERS.find(x => x.u === p.u)
-    const hay = norm([p.makine, p.lens, p.film, p.format, p.baslik, p.not, ph?.ad].join(' '))
+    const hay = norm([p.makine, p.lens, p.film, p.format, p.baslik, p.not, ph?.ad, p.tur === 'dijital' ? 'dijital digital' : 'film analog'].join(' '))
     const topicWords = p.konular.flatMap(k => TOPICS.find(t => t.slug === k)?.es || []).map(norm)
     return words.every(w => hay.includes(w) || topicWords.some(t => t.includes(w) || (w.length >= 4 && w.includes(t))))
   })
@@ -81,7 +96,7 @@ export function suggestions(q) {
   const out = []
   const add = (tip, ad) => { const n = searchPozlar(ad).length; if (!out.find(o => o.ad === ad)) out.push({ tip, ad, n }) }
   POZLAR.forEach(p => { if (norm(p.makine).includes(w)) add('Makine', p.makine) })
-  POZLAR.forEach(p => { if (norm(p.film).includes(w)) add('Film', p.film) })
+  POZLAR.forEach(p => { if (p.film && norm(p.film).includes(w)) add('Film', p.film) })
   POZLAR.forEach(p => { if (norm(p.lens).includes(w)) add('Lens', p.lens) })
   TOPICS.forEach(t => { if (t.es.some(e => norm(e).includes(w))) add('Konu', t.ad) })
   return out.slice(0, 8)
