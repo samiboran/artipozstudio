@@ -5,7 +5,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { Helmet } from 'react-helmet-async'
-import { POZLAR, POPULAR_CHIPS, searchPozlar, suggestions, photographer, topicName } from '../lib/pozlarDemo'
+import { POZLAR, RENKLER, POPULAR_CHIPS, searchPozlar, suggestions, photographer, topicName } from '../lib/pozlarDemo'
 import { AJANDA, ETIKETLER } from '../lib/pozlarAjanda'
 import { TEKNIKLER, ALANLAR, GUVENLIK } from '../lib/pozlarOgren'
 
@@ -178,12 +178,20 @@ function Explore() {
   const [params] = useSearchParams()
   const q = params.get('q') || ''
   const sort = params.get('s') || 'yeni'
+  const renk = params.get('r') || ''
+  const karisik = params.get('k') || ''
   const items = useMemo(() => {
-    const r = [...searchPozlar(q)]
+    const r = searchPozlar(q).filter(p => !renk || p.renkler.includes(renk))
+    if (karisik) {
+      // tohumlu karıştırma: aynı link aynı sırayı verir
+      let t = [...karisik].reduce((a, c) => (a * 31 + c.charCodeAt(0)) >>> 0, 7)
+      const rnd = () => ((t = (t * 1664525 + 1013904223) >>> 0) / 4294967296)
+      return r.map(p => [rnd(), p]).sort((a, b) => a[0] - b[0]).map(x => x[1])
+    }
     return sort === 'populer' ? r.sort((a, b) => b.begeni - a.begeni) : r.sort((a, b) => b.tarih.localeCompare(a.tarih))
-  }, [q, sort])
+  }, [q, sort, renk, karisik])
   const qs = (over = {}) => {
-    const o = { q, s: sort === 'yeni' ? '' : sort, ...over }
+    const o = { q, r: renk, s: sort === 'yeni' ? '' : sort, k: karisik, ...over }
     const u = new URLSearchParams(Object.entries(o).filter(([, v]) => v))
     return `/pozlar${u.toString() ? '?' + u : ''}`
   }
@@ -201,16 +209,28 @@ function Explore() {
         <div style={{ display: 'flex', gap: '.5rem', justifyContent: 'center', flexWrap: 'wrap', marginTop: '1.2rem' }}>
           {POPULAR_CHIPS.map(c => <Chip key={c} to={`/pozlar?q=${encodeURIComponent(c)}`} active={q.toLowerCase() === c.toLowerCase()}>{c}</Chip>)}
         </div>
+        <div style={{ display: 'flex', gap: '.55rem', justifyContent: 'center', alignItems: 'center', flexWrap: 'wrap', marginTop: '1.1rem' }}>
+          {RENKLER.map(c => {
+            const n = POZLAR.filter(p => p.renkler.includes(c.k)).length
+            const on = renk === c.k
+            return (
+              <Link key={c.k} to={qs({ r: on ? '' : c.k })} title={`${c.ad} · ${n} kare`} aria-label={c.ad} aria-pressed={on}
+                style={{ width: 22, height: 22, borderRadius: '50%', background: c.hex, opacity: n ? 1 : .25, pointerEvents: n ? 'auto' : 'none', boxShadow: on ? `0 0 0 2px var(--bg), 0 0 0 4px ${FILM_ORANGE}` : '0 0 0 1px rgba(0,0,0,.12)', transition: 'box-shadow .15s' }} />
+            )
+          })}
+          <span style={{ width: 1, height: 18, background: 'var(--border)', margin: '0 .3rem' }} />
+          <Link to={qs({ k: Math.random().toString(36).slice(2, 7) })} style={{ ...label, color: karisik ? FILM_ORANGE : 'var(--ink)', textDecoration: 'none' }}>⟳ Rastgele</Link>
+        </div>
       </section>
 
       <section style={{ maxWidth: 1400, margin: '0 auto', padding: '0 1.5rem 5rem' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', margin: '0 0 1rem', flexWrap: 'wrap', gap: '.8rem' }}>
           <div style={{ ...label }}>
-            {q ? <>“{q}” · {items.length} kare · <Link to={qs({ q: '' })} style={{ color: FILM_ORANGE }}>temizle</Link></> : `${items.length} kare`}
+            {q && <>“{q}” · </>}{renk && <>{RENKLER.find(c => c.k === renk)?.ad} · </>}{items.length} kare{(q || renk || karisik) && <> · <Link to="/pozlar" style={{ color: FILM_ORANGE }}>temizle</Link></>}
           </div>
           <div style={{ display: 'flex', gap: '1.2rem' }}>
             {[['yeni', 'Yeni'], ['populer', 'Popüler']].map(([k, t]) => (
-              <Link key={k} to={qs({ s: k === 'yeni' ? '' : k })} style={{ ...label, color: sort === k ? 'var(--ink)' : 'var(--muted)', borderBottom: sort === k ? `2px solid ${FILM_ORANGE}` : '2px solid transparent', paddingBottom: '.2rem', textDecoration: 'none' }}>{t}</Link>
+              <Link key={k} to={qs({ s: k === 'yeni' ? '' : k, k: '' })} style={{ ...label, color: !karisik && sort === k ? 'var(--ink)' : 'var(--muted)', borderBottom: !karisik && sort === k ? `2px solid ${FILM_ORANGE}` : '2px solid transparent', paddingBottom: '.2rem', textDecoration: 'none' }}>{t}</Link>
             ))}
           </div>
         </div>

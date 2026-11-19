@@ -69,7 +69,28 @@ const DIJITAL_POZLAR = [
   { id: 'd4', src: dij4, w: 1600, h: 900, baslik: 'Tarama masası', not: '', u: 'arda.t', makine: 'Fujifilm X100VI', lens: '23mm f/2', film: '', format: 'APS-C', konular: ['naturmort'], begeni: 18, tarih: '2026-11-10' },
 ].map(p => ({ tur: 'dijital', tarandi: false, ...p }))
 
-export const POZLAR = [...FILM_POZLAR, ...DIJITAL_POZLAR]
+// Renk araması — gerçek sürümde yüklemede baskın renkler otomatik çıkarılır
+// (küçültülmüş görselde ton kovaları + düşük doygunluk = siyah-beyaz).
+// Önizlemede örnek kareler için elle girildi.
+export const RENKLER = [
+  { k: 'kirmizi', ad: 'Kırmızı', hex: '#C8352B' },
+  { k: 'turuncu', ad: 'Turuncu', hex: '#E07A2E' },
+  { k: 'sari', ad: 'Sarı', hex: '#E3B23C' },
+  { k: 'yesil', ad: 'Yeşil', hex: '#4E8A4A' },
+  { k: 'mavi', ad: 'Mavi', hex: '#3B6EA8' },
+  { k: 'mor', ad: 'Mor', hex: '#7A4FA0' },
+  { k: 'pembe', ad: 'Pembe', hex: '#D9779B' },
+  { k: 'kahve', ad: 'Kahve', hex: '#7A5134' },
+  { k: 'sb', ad: 'Siyah-beyaz', hex: 'linear-gradient(135deg, #111 50%, #f4f4f4 50%)' },
+]
+const ORNEK_RENK = {
+  p1: ['sb'], p2: ['sb'], p3: ['sb'], p4: ['turuncu', 'kahve'], p5: ['turuncu', 'kirmizi'], p6: ['kahve', 'mavi'],
+  p7: ['sb'], p8: ['sb'], p9: ['turuncu', 'kahve'], p10: ['sb'], p11: ['mavi'], p12: ['sari', 'mavi'],
+  p13: ['sb'], p14: ['sb'], p15: ['sb'], p16: ['turuncu', 'kahve'],
+  d1: ['sb'], d2: ['sb', 'kahve'], d3: ['sb'], d4: ['turuncu', 'kahve'],
+}
+
+export const POZLAR = [...FILM_POZLAR, ...DIJITAL_POZLAR].map(p => ({ renkler: ORNEK_RENK[p.id] || [], ...p }))
 
 export const POPULAR_CHIPS = ['Portra 400', 'HP5', 'Mamiya', 'Canon AE-1', 'Manzara', 'Deneysel', 'Cinestill']
 
