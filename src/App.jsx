@@ -135,6 +135,7 @@ function App() {
         {/* Pozlar — GİZLİ ÖNİZLEME: menüde yok, noindex, prerender listesinde yok */}
         <Route path="/pozlar" element={<Pozlar />} />
         <Route path="/pozlar/ajanda" element={<Pozlar view="ajanda" />} />
+        <Route path="/pozlar/ogren" element={<Pozlar view="ogren" />} />
         <Route path="/pozlar/u/:kullanici" element={<Pozlar view="profile" />} />
         <Route path="/pozlar/:id" element={<Pozlar view="photo" />} />
         <Route path="*" element={<NotFound />} />

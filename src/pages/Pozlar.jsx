@@ -7,6 +7,7 @@ import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { Helmet } from 'react-helmet-async'
 import { POZLAR, POPULAR_CHIPS, searchPozlar, suggestions, photographer, topicName } from '../lib/pozlarDemo'
 import { AJANDA, ETIKETLER } from '../lib/pozlarAjanda'
+import { TEKNIKLER, ALANLAR, GUVENLIK } from '../lib/pozlarOgren'
 
 // Pozlar'ın kendi imzası: film kenarı baskısı hissi (monospace + film turuncusu)
 const MONO = "'Space Mono', ui-monospace, 'SF Mono', Menlo, monospace"
@@ -41,7 +42,7 @@ function Brand({ small }) {
 }
 
 function Tabs({ active }) {
-  const t = [['kesfet', 'Keşfet', '/pozlar'], ['ajanda', 'Ajanda', '/pozlar/ajanda']]
+  const t = [['kesfet', 'Keşfet', '/pozlar'], ['ajanda', 'Ajanda', '/pozlar/ajanda'], ['ogren', 'Öğren', '/pozlar/ogren']]
   return (
     <div style={{ display: 'flex', gap: '1.6rem', justifyContent: 'center', marginTop: '1.4rem' }}>
       {t.map(([k, ad, to]) => (
@@ -378,11 +379,73 @@ function AjandaPage() {
   )
 }
 
+function OgrenPage() {
+  const [params] = useSearchParams()
+  const alan = params.get('a') || ''
+  const [acik, setAcik] = useState(null)
+  const list = TEKNIKLER.filter(t => !alan || t.alan === alan)
+  const baslik = { ...label, color: 'var(--ink)', margin: '1.2rem 0 .5rem' }
+  return (
+    <>
+      <PozlarHead title="Öğren — Pozlar" />
+      <section style={{ textAlign: 'center', padding: '3.5rem 1.5rem 1rem' }}>
+        <Brand />
+        <Tabs active="ogren" />
+        <p style={{ color: 'var(--muted)', margin: '1.4rem auto 1.6rem', maxWidth: 580, lineHeight: 1.6 }}>
+          Deneysel film teknikleri: ne işe yarar, ne gerekir, nasıl yapılır. Her tekniğin altında okumak ve örnek görmek için kaynak linkleri var.
+        </p>
+        <div style={{ display: 'flex', gap: '.5rem', justifyContent: 'center', flexWrap: 'wrap' }}>
+          <Chip to="/pozlar/ogren" active={!alan}>Tümü</Chip>
+          {ALANLAR.map(a => <Chip key={a} to={`/pozlar/ogren?a=${encodeURIComponent(a)}`} active={alan === a}>{a}</Chip>)}
+        </div>
+      </section>
+      <section style={{ maxWidth: 860, margin: '0 auto', padding: '1.5rem 1.5rem 5rem' }}>
+        {list.map(t => {
+          const open = acik === t.id
+          return (
+            <div key={t.id} style={{ borderBottom: '1px solid var(--border)' }}>
+              <button onClick={() => setAcik(open ? null : t.id)} aria-expanded={open}
+                style={{ all: 'unset', cursor: 'pointer', display: 'grid', gridTemplateColumns: '1fr auto', gap: '1rem', width: '100%', padding: '1.3rem 0', boxSizing: 'border-box' }}>
+                <div>
+                  <div style={{ fontWeight: 600, fontSize: '1.08rem', color: 'var(--ink)' }}>{t.ad} <span style={{ fontWeight: 400, color: 'var(--muted)' }}>— {t.alt}</span></div>
+                  <div style={{ ...label, marginTop: '.4rem' }}>{t.alan} · {t.zorluk}</div>
+                  <p style={{ margin: '.6rem 0 0', lineHeight: 1.55, fontSize: '.92rem', color: 'var(--ink)' }}>{t.ozet}</p>
+                </div>
+                <div style={{ fontFamily: MONO, color: FILM_ORANGE, fontSize: '1.2rem', lineHeight: 1 }}>{open ? '–' : '+'}</div>
+              </button>
+              {open && (
+                <div style={{ padding: '0 0 1.6rem', fontSize: '.92rem', lineHeight: 1.6 }}>
+                  <div style={baslik}>Malzemeler</div>
+                  <ul style={{ margin: 0, paddingLeft: '1.1rem' }}>{t.malzeme.map(m => <li key={m}>{m}</li>)}</ul>
+                  <div style={baslik}>Adımlar</div>
+                  <ol style={{ margin: 0, paddingLeft: '1.2rem' }}>{t.adimlar.map(a => <li key={a}>{a}</li>)}</ol>
+                  {t.not && <p style={{ margin: '.9rem 0 0', color: 'var(--muted)' }}>{t.not}</p>}
+                  <div style={baslik}>Oku · örnek gör</div>
+                  <div style={{ display: 'grid', gap: '.35rem' }}>
+                    {t.linkler.map(l => (
+                      <a key={l.url} href={l.url} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--ink)', textDecorationColor: FILM_ORANGE, textUnderlineOffset: 3 }}>{l.ad} ↗</a>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          )
+        })}
+        <div style={{ marginTop: '3rem', padding: '1.2rem 1.4rem', border: '1px solid var(--border)' }}>
+          <div style={{ ...label, color: FILM_ORANGE, marginBottom: '.5rem' }}>Güvenlik</div>
+          <ul style={{ margin: 0, paddingLeft: '1.1rem', lineHeight: 1.6, fontSize: '.9rem' }}>{GUVENLIK.map(g => <li key={g}>{g}</li>)}</ul>
+        </div>
+        <p style={{ ...label, textAlign: 'center', marginTop: '2.4rem', lineHeight: 1.8 }}>Bir tekniği denedin mi? Karelerini Pozlar'a yükle, tekniği etiketle.</p>
+      </section>
+    </>
+  )
+}
+
 export default function Pozlar({ view = 'explore' }) {
   return (
     <div style={{ background: 'var(--bg)', minHeight: '80vh', paddingTop: '4.2rem' }}>
       <PreviewBanner />
-      {view === 'photo' ? <PhotoPage /> : view === 'profile' ? <ProfilePage /> : view === 'ajanda' ? <AjandaPage /> : <Explore />}
+      {view === 'photo' ? <PhotoPage /> : view === 'profile' ? <ProfilePage /> : view === 'ajanda' ? <AjandaPage /> : view === 'ogren' ? <OgrenPage /> : <Explore />}
     </div>
   )
 }
