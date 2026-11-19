@@ -23,6 +23,7 @@ import FineArtBaski from './pages/FineArtBaski'
 import Cerceve from './pages/Cerceve'
 import FotografBaski from './pages/FotografBaski'
 import FilmYikama from './pages/FilmYikama'
+import Pozlar from './pages/Pozlar'
 import Seo from './components/Seo'
 
 // React Router sayfa değiştirince scroll pozisyonunu KORUYOR, sıfırlamıyor —
@@ -99,7 +100,8 @@ function App() {
   const hasOwnSeo = pathname === '/' ||
     ROUTES_WITH_OWN_SEO.includes(pathname) ||
     pathname.startsWith('/product/') ||
-    pathname.startsWith('/yasal/')
+    pathname.startsWith('/yasal/') ||
+    pathname.startsWith('/pozlar')
 
   return (
     <>
@@ -130,6 +132,10 @@ function App() {
         <Route path="/film-yikama-tarama" element={<FilmYikama />} />
         <Route path="/cerceve" element={<Cerceve />} />
         <Route path="/fotograf-baski" element={<FotografBaski />} />
+        {/* Pozlar — GİZLİ ÖNİZLEME: menüde yok, noindex, prerender listesinde yok */}
+        <Route path="/pozlar" element={<Pozlar />} />
+        <Route path="/pozlar/u/:kullanici" element={<Pozlar view="profile" />} />
+        <Route path="/pozlar/:id" element={<Pozlar view="photo" />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
       <CartSidebar open={cartOpen} onClose={() => setCartOpen(false)} />
