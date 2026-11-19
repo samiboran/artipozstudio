@@ -192,13 +192,9 @@ function Navbar({ cartCount = 0, onCartClick }) {
                   Giriş Yap
                 </Link>
 
-                <Link to="/kayit" style={{
-                  fontSize: '.68rem', letterSpacing: '.14em',
-                  textTransform: 'uppercase', color: 'var(--bg)',
-                  background: 'var(--accent)', padding: '.5rem 1rem'
-                }}>
-                  Üye Ol
-                </Link>
+                {/* Üye Ol gizlendi: üyelik şimdilik kullanılmıyor, Pozlar ile
+
+                    "Pozlar'a Katıl" olarak geri gelecek. */}
               </>
             )}
           </div>
@@ -307,13 +303,9 @@ function Navbar({ cartCount = 0, onCartClick }) {
                 Giriş Yap
               </Link>
 
-              <Link to="/kayit" onClick={() => setMenuOpen(false)} style={{
-                fontSize: '.8rem', letterSpacing: '.16em',
-                textTransform: 'uppercase', color: 'var(--bg)',
-                background: 'var(--accent)', padding: '.7rem 1rem', textAlign: 'center'
-              }}>
-                Üye Ol
-              </Link>
+              {/* Üye Ol gizlendi: üyelik şimdilik kullanılmıyor, Pozlar ile
+
+                  "Pozlar'a Katıl" olarak geri gelecek. */}
             </>
           )}
 

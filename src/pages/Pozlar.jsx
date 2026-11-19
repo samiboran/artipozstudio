@@ -1,0 +1,301 @@
+// POZLAR — film fotoğrafçıları topluluğu (GİZLİ ÖNİZLEME)
+// Menüde yok, arama motorlarına kapalı (noindex), prerender listesinde yok.
+// Örnek verilerle çalışır (src/lib/pozlarDemo.js); yükleme / onay / üye
+// paneli henüz yok. Plan: "Pozlar — Topluluk Bölümü Planı" dokümanı.
+import { useEffect, useMemo, useRef, useState } from 'react'
+import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
+import { Helmet } from 'react-helmet-async'
+import { POZLAR, POPULAR_CHIPS, searchPozlar, suggestions, photographer, topicName } from '../lib/pozlarDemo'
+
+// Pozlar'ın kendi imzası: film kenarı baskısı hissi (monospace + film turuncusu)
+const MONO = "'Space Mono', ui-monospace, 'SF Mono', Menlo, monospace"
+const FILM_ORANGE = '#D9622B'
+
+const label = { fontFamily: MONO, fontSize: '.68rem', letterSpacing: '.12em', textTransform: 'uppercase', color: 'var(--muted)' }
+
+function PozlarHead({ title }) {
+  return (
+    <Helmet>
+      <title>{title}</title>
+      <meta name="robots" content="noindex, nofollow" />
+      <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap" />
+    </Helmet>
+  )
+}
+
+function PreviewBanner() {
+  return (
+    <div style={{ background: '#111', color: '#FAF7F1', textAlign: 'center', padding: '.55rem 1rem', fontFamily: MONO, fontSize: '.7rem', letterSpacing: '.1em' }}>
+      ÖNİZLEME · ÖRNEK İÇERİK · HENÜZ YAYINDA DEĞİL
+    </div>
+  )
+}
+
+function Brand({ small }) {
+  return (
+    <Link to="/pozlar" style={{ fontFamily: MONO, fontWeight: 700, color: FILM_ORANGE, letterSpacing: '.28em', fontSize: small ? '1rem' : 'clamp(2rem, 5vw, 3.2rem)', textDecoration: 'none' }}>
+      POZLAR<span style={{ fontSize: '.45em', letterSpacing: '.1em', marginLeft: '.6em', verticalAlign: 'middle' }}>▸ 35 · 120</span>
+    </Link>
+  )
+}
+
+// Flickr tarzı hizalı grid: her satır aynı yükseklikte, fotoğraflar kendi
+// oranında, kırpma yok; satırın genişliği kapsayıcıya tam oturur.
+function JustifiedGrid({ items, target = 260, gap = 6 }) {
+  const ref = useRef(null)
+  const [width, setWidth] = useState(1200)
+  useEffect(() => {
+    if (!ref.current) return
+    const ro = new ResizeObserver(([e]) => setWidth(e.contentRect.width))
+    ro.observe(ref.current)
+    return () => ro.disconnect()
+  }, [])
+  const rowTarget = width < 640 ? 170 : target
+  const rows = useMemo(() => {
+    const out = []
+    let row = [], sum = 0
+    items.forEach(p => {
+      row.push(p); sum += p.w / p.h
+      const h = (width - gap * (row.length - 1)) / sum
+      if (h <= rowTarget) { out.push({ row, h }); row = []; sum = 0 }
+    })
+    if (row.length) out.push({ row, h: Math.min(rowTarget, (width - gap * (row.length - 1)) / sum), last: true })
+    return out
+  }, [items, width, rowTarget, gap])
+
+  return (
+    <div ref={ref} style={{ display: 'flex', flexDirection: 'column', gap }}>
+      {rows.map((r, i) => (
+        <div key={i} style={{ display: 'flex', gap }}>
+          {r.row.map(p => <GridItem key={p.id} p={p} w={r.h * p.w / p.h} h={r.h} />)}
+        </div>
+      ))}
+    </div>
+  )
+}
+
+function GridItem({ p, w, h }) {
+  const [hover, setHover] = useState(false)
+  const ph = photographer(p.u)
+  return (
+    <Link to={`/pozlar/${p.id}`} onMouseEnter={() => setHover(true)} onMouseLeave={() => setHover(false)}
+      style={{ position: 'relative', width: w, height: h, flexShrink: 0, overflow: 'hidden', background: '#1a1a1a', display: 'block' }}>
+      <img src={p.src} alt={p.baslik || p.film} loading="lazy" decoding="async" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+      <div style={{
+        position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', justifyContent: 'flex-end',
+        padding: '.7rem .8rem', color: '#fff', opacity: hover ? 1 : 0, transition: 'opacity .2s',
+        background: 'linear-gradient(to top, rgba(0,0,0,.65), rgba(0,0,0,0) 55%)',
+      }}>
+        {p.baslik && <div style={{ fontSize: '.85rem', fontWeight: 600 }}>{p.baslik}</div>}
+        <div style={{ fontSize: '.72rem', opacity: .85 }}>{ph?.ad}</div>
+        <div style={{ fontFamily: MONO, fontSize: '.62rem', letterSpacing: '.08em', marginTop: '.25rem', color: '#FFB27F' }}>{p.film.toUpperCase()} · ♥ {p.begeni}</div>
+      </div>
+    </Link>
+  )
+}
+
+function SearchBox({ initial = '' }) {
+  const [q, setQ] = useState(initial)
+  const [open, setOpen] = useState(false)
+  const navigate = useNavigate()
+  useEffect(() => setQ(initial), [initial])
+  const sugg = suggestions(q)
+  const go = val => { setOpen(false); navigate(val ? `/pozlar?q=${encodeURIComponent(val)}` : '/pozlar') }
+  return (
+    <div style={{ position: 'relative', maxWidth: 640, margin: '0 auto' }}>
+      <form onSubmit={e => { e.preventDefault(); go(q.trim()) }}>
+        <input value={q} onChange={e => { setQ(e.target.value); setOpen(true) }} onFocus={() => setOpen(true)} onBlur={() => setTimeout(() => setOpen(false), 150)}
+          placeholder="Makine, film, lens ya da konu ara… (Mamiya, Portra 400, manzara)"
+          style={{ width: '100%', boxSizing: 'border-box', padding: '1rem 1.2rem', fontSize: '1rem', border: '1px solid var(--border)', background: '#fff', fontFamily: 'var(--font-body)', outline: 'none' }} />
+      </form>
+      {open && sugg.length > 0 && (
+        <div style={{ position: 'absolute', left: 0, right: 0, top: '100%', background: '#fff', border: '1px solid var(--border)', borderTop: 'none', zIndex: 20 }}>
+          {sugg.map(s => (
+            <button key={s.tip + s.ad} onMouseDown={() => go(s.ad)} style={{ display: 'flex', width: '100%', justifyContent: 'space-between', alignItems: 'center', padding: '.65rem 1.2rem', background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left', fontFamily: 'var(--font-body)', fontSize: '.9rem', color: 'var(--ink)' }}>
+              <span><span style={{ ...label, marginRight: '.8rem' }}>{s.tip}</span>{s.ad}</span>
+              <span style={{ ...label }}>{s.n} kare</span>
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
+function Chip({ to, children, active }) {
+  return (
+    <Link to={to} style={{ fontFamily: MONO, fontSize: '.7rem', letterSpacing: '.06em', padding: '.4rem .75rem', border: `1px solid ${active ? FILM_ORANGE : 'var(--border)'}`, color: active ? FILM_ORANGE : 'var(--ink)', background: '#fff', textDecoration: 'none', whiteSpace: 'nowrap' }}>
+      {children}
+    </Link>
+  )
+}
+
+function Explore() {
+  const [params] = useSearchParams()
+  const q = params.get('q') || ''
+  const sort = params.get('s') || 'yeni'
+  const items = useMemo(() => {
+    const r = [...searchPozlar(q)]
+    return sort === 'populer' ? r.sort((a, b) => b.begeni - a.begeni) : r.sort((a, b) => b.tarih.localeCompare(a.tarih))
+  }, [q, sort])
+  const qs = s => `/pozlar?${new URLSearchParams({ ...(q ? { q } : {}), s })}`
+
+  return (
+    <>
+      <PozlarHead title={q ? `${q} — Pozlar` : 'Pozlar — Film fotoğrafçıları topluluğu'} />
+      <section style={{ textAlign: 'center', padding: '3.5rem 1.5rem 2rem' }}>
+        <Brand />
+        <p style={{ color: 'var(--muted)', margin: '1rem auto 2rem', maxWidth: 520, lineHeight: 1.6 }}>
+          Film fotoğrafçılarının kareleri. Makineye, filme ya da konuya göre keşfet.
+        </p>
+        <SearchBox initial={q} />
+        <div style={{ display: 'flex', gap: '.5rem', justifyContent: 'center', flexWrap: 'wrap', marginTop: '1.2rem' }}>
+          {POPULAR_CHIPS.map(c => <Chip key={c} to={`/pozlar?q=${encodeURIComponent(c)}`} active={q.toLowerCase() === c.toLowerCase()}>{c}</Chip>)}
+        </div>
+      </section>
+
+      <section style={{ maxWidth: 1400, margin: '0 auto', padding: '0 1.5rem 5rem' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', margin: '0 0 1rem', flexWrap: 'wrap', gap: '.8rem' }}>
+          <div style={{ ...label }}>
+            {q ? <>“{q}” · {items.length} kare · <Link to="/pozlar" style={{ color: FILM_ORANGE }}>temizle</Link></> : `${items.length} kare`}
+          </div>
+          <div style={{ display: 'flex', gap: '1.2rem' }}>
+            {[['yeni', 'Yeni'], ['populer', 'Popüler']].map(([k, t]) => (
+              <Link key={k} to={qs(k)} style={{ ...label, color: sort === k ? 'var(--ink)' : 'var(--muted)', borderBottom: sort === k ? `2px solid ${FILM_ORANGE}` : '2px solid transparent', paddingBottom: '.2rem', textDecoration: 'none' }}>{t}</Link>
+            ))}
+          </div>
+        </div>
+        {items.length ? <JustifiedGrid items={items} /> : (
+          <p style={{ textAlign: 'center', color: 'var(--muted)', padding: '4rem 0' }}>Bu aramayla eşleşen kare yok.</p>
+        )}
+      </section>
+    </>
+  )
+}
+
+function InfoRow({ k, v, to }) {
+  if (!v) return null
+  return (
+    <div style={{ display: 'grid', gridTemplateColumns: '84px 1fr', gap: '.8rem', padding: '.7rem 0', borderBottom: '1px solid var(--border)' }}>
+      <span style={label}>{k}</span>
+      {to ? <Link to={to} style={{ color: 'var(--ink)', fontSize: '.92rem' }}>{v}</Link> : <span style={{ fontSize: '.92rem' }}>{v}</span>}
+    </div>
+  )
+}
+
+function Avatar({ ad, size = 44 }) {
+  return (
+    <div style={{ width: size, height: size, borderRadius: '50%', background: '#e8e3d8', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: MONO, fontSize: size * .36, color: 'var(--ink)', flexShrink: 0 }}>
+      {ad.split(' ').map(x => x[0]).join('').slice(0, 2)}
+    </div>
+  )
+}
+
+function Strip({ title, items }) {
+  if (!items.length) return null
+  return (
+    <div style={{ marginTop: '3rem' }}>
+      <div style={{ ...label, marginBottom: '.8rem' }}>{title}</div>
+      <JustifiedGrid items={items.slice(0, 6)} target={180} />
+    </div>
+  )
+}
+
+function PhotoPage() {
+  const { id } = useParams()
+  const p = POZLAR.find(x => x.id === id)
+  const [liked, setLiked] = useState(false)
+  if (!p) return <Explore />
+  const ph = photographer(p.u)
+  const q = s => `/pozlar?q=${encodeURIComponent(s)}`
+  return (
+    <>
+      <PozlarHead title={`${p.baslik || p.film} — ${ph.ad} — Pozlar`} />
+      <div style={{ background: '#151515', display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '2rem 1rem', minHeight: '60vh' }}>
+        <img src={p.src} alt={p.baslik || p.film} style={{ maxWidth: '100%', maxHeight: '78vh', objectFit: 'contain', display: 'block' }} />
+      </div>
+      <section style={{ maxWidth: 1200, margin: '0 auto', padding: '2.5rem 1.5rem 5rem' }}>
+        <div className="poz-detail" style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1.4fr) minmax(0, 1fr)', gap: '3rem' }}>
+          <style>{`@media (max-width: 760px){ .poz-detail { grid-template-columns: 1fr !important; gap: 2rem !important; } }`}</style>
+          <div>
+            <Link to={`/pozlar/u/${ph.u}`} style={{ display: 'flex', alignItems: 'center', gap: '.8rem', textDecoration: 'none', color: 'var(--ink)' }}>
+              <Avatar ad={ph.ad} />
+              <div>
+                <div style={{ fontWeight: 600 }}>{ph.ad}</div>
+                {ph.unvan && <div style={{ fontSize: '.8rem', color: 'var(--muted)' }}>{ph.unvan}</div>}
+              </div>
+            </Link>
+            {p.baslik && <h1 style={{ fontFamily: 'var(--font-heading)', fontWeight: 600, fontSize: '1.9rem', margin: '1.6rem 0 .6rem' }}>{p.baslik}</h1>}
+            {p.not && <p style={{ color: 'var(--muted)', lineHeight: 1.7, margin: '.4rem 0 0', maxWidth: 560 }}>{p.not}</p>}
+            <div style={{ display: 'flex', gap: '.5rem', flexWrap: 'wrap', marginTop: '1.4rem' }}>
+              {p.konular.map(k => <Chip key={k} to={q(topicName(k))}>{topicName(k)}</Chip>)}
+            </div>
+            <button onClick={() => setLiked(!liked)} style={{ marginTop: '1.6rem', background: liked ? FILM_ORANGE : '#fff', color: liked ? '#fff' : 'var(--ink)', border: `1px solid ${liked ? FILM_ORANGE : 'var(--border)'}`, padding: '.6rem 1.1rem', cursor: 'pointer', fontFamily: MONO, fontSize: '.75rem', letterSpacing: '.08em' }}>
+              ♥ {p.begeni + (liked ? 1 : 0)}
+            </button>
+          </div>
+          <div>
+            {p.tarandi && (
+              <div style={{ fontFamily: MONO, fontSize: '.68rem', letterSpacing: '.1em', color: FILM_ORANGE, border: `1px solid ${FILM_ORANGE}`, display: 'inline-block', padding: '.35rem .6rem', marginBottom: '1rem' }}>
+                ARTI POZ'DA TARANDI
+              </div>
+            )}
+            <InfoRow k="Makine" v={p.makine} to={q(p.makine)} />
+            <InfoRow k="Lens" v={p.lens} to={q(p.lens)} />
+            <InfoRow k="Film" v={p.film} to={q(p.film)} />
+            <InfoRow k="Format" v={p.format} />
+            <InfoRow k="Tarih" v={new Date(p.tarih).toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' })} />
+          </div>
+        </div>
+        <Strip title={`${ph.ad} — diğer kareler`} items={POZLAR.filter(x => x.u === p.u && x.id !== p.id)} />
+        <Strip title={`Aynı filmle: ${p.film}`} items={POZLAR.filter(x => x.film === p.film && x.id !== p.id)} />
+      </section>
+    </>
+  )
+}
+
+function ProfilePage() {
+  const { kullanici } = useParams()
+  const ph = photographer(kullanici)
+  if (!ph) return <Explore />
+  const mine = POZLAR.filter(p => p.u === ph.u)
+  const top = key => Object.entries(mine.reduce((a, p) => ({ ...a, [p[key]]: (a[p[key]] || 0) + 1 }), {})).sort((a, b) => b[1] - a[1]).slice(0, 3).map(([k]) => k)
+  return (
+    <>
+      <PozlarHead title={`${ph.ad} — Pozlar`} />
+      <section style={{ maxWidth: 1400, margin: '0 auto', padding: '3rem 1.5rem 5rem' }}>
+        <div style={{ display: 'flex', gap: '1.6rem', alignItems: 'center', flexWrap: 'wrap', marginBottom: '2.5rem' }}>
+          <Avatar ad={ph.ad} size={96} />
+          <div style={{ flex: 1, minWidth: 240 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '.8rem', flexWrap: 'wrap' }}>
+              <h1 style={{ fontFamily: 'var(--font-heading)', fontWeight: 600, fontSize: '1.8rem', margin: 0 }}>{ph.ad}</h1>
+              {ph.kurucu && <span style={{ fontFamily: MONO, fontSize: '.62rem', letterSpacing: '.1em', color: FILM_ORANGE, border: `1px solid ${FILM_ORANGE}`, padding: '.2rem .45rem' }}>KURUCU ÜYE</span>}
+            </div>
+            {ph.unvan && <div style={{ color: 'var(--muted)', marginTop: '.3rem' }}>{ph.unvan}</div>}
+            {ph.aciklama && <p style={{ margin: '.7rem 0 0', lineHeight: 1.6, maxWidth: 560 }}>{ph.aciklama}</p>}
+            {/* Önizlemede link yok: örnek kullanıcı adları gerçek bir hesaba denk gelebilir.
+                Gerçek sürümde https://instagram.com/<kullanıcı> linki olacak. */}
+            {ph.instagram && <span style={{ display: 'inline-block', marginTop: '.6rem', fontSize: '.85rem', color: 'var(--ink)' }}>Instagram: @{ph.instagram}</span>}
+          </div>
+          <div style={{ minWidth: 220 }}>
+            <div style={{ ...label, marginBottom: '.5rem' }}>Çanta</div>
+            <div style={{ display: 'flex', gap: '.4rem', flexWrap: 'wrap' }}>
+              {[...top('makine'), ...top('film')].map(x => <Chip key={x} to={`/pozlar?q=${encodeURIComponent(x)}`}>{x}</Chip>)}
+            </div>
+          </div>
+        </div>
+        <div style={{ ...label, marginBottom: '1rem' }}>{mine.length} kare</div>
+        <JustifiedGrid items={mine} />
+      </section>
+    </>
+  )
+}
+
+export default function Pozlar({ view = 'explore' }) {
+  return (
+    <div style={{ background: 'var(--bg)', minHeight: '80vh', paddingTop: '4.2rem' }}>
+      <PreviewBanner />
+      {view === 'photo' ? <PhotoPage /> : view === 'profile' ? <ProfilePage /> : <Explore />}
+    </div>
+  )
+}
