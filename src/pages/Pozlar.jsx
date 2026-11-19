@@ -5,7 +5,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { Helmet } from 'react-helmet-async'
-import { POZLAR, TURLER, POPULAR_CHIPS, searchPozlar, suggestions, photographer, topicName } from '../lib/pozlarDemo'
+import { POZLAR, POPULAR_CHIPS, searchPozlar, suggestions, photographer, topicName } from '../lib/pozlarDemo'
 import { AJANDA, ETIKETLER } from '../lib/pozlarAjanda'
 import { TEKNIKLER, ALANLAR, GUVENLIK } from '../lib/pozlarOgren'
 
@@ -13,15 +13,15 @@ import { TEKNIKLER, ALANLAR, GUVENLIK } from '../lib/pozlarOgren'
 const MONO = "'Space Mono', ui-monospace, 'SF Mono', Menlo, monospace"
 const FILM_ORANGE = '#D9622B'
 
-// Film seçiliyken sayfa arka planına hafif film greni (fotoğrafların kendisine değil)
-const GRAIN = `url("data:image/svg+xml,${encodeURIComponent("<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 .38 -.13'/></filter><rect width='100%' height='100%' filter='url(#n)'/></svg>")}")`
+// Film karelerinin sol üst köşesinde filmin modeli (Portra 400 gibi); dijitalde rozet yok
+const MARKALAR = /^(kodak|ilford|fujifilm|fuji|lomography|rollei|foma|agfa|kentmere|harman)\s+(?=\S)/i
+const kisaFilm = f => /bilinmeyen|etiketsiz/i.test(f) ? 'ETİKETSİZ' : f.replace(MARKALAR, '').toLocaleUpperCase('en')
 
-// Film / dijital rozeti — her karenin sol üstünde
-function TurRozet({ tur, buyuk }) {
-  const film = tur === 'film'
+function FilmRozet({ film, buyuk }) {
+  if (!film) return null
   return (
-    <span style={{ position: 'absolute', top: buyuk ? 14 : 8, left: buyuk ? 14 : 8, zIndex: 2, fontFamily: MONO, fontSize: buyuk ? '.66rem' : '.56rem', letterSpacing: '.12em', padding: buyuk ? '.3rem .55rem' : '.18rem .4rem', background: film ? FILM_ORANGE : 'rgba(20,20,20,.72)', color: '#fff', pointerEvents: 'none' }}>
-      {film ? 'FİLM' : 'DİJİTAL'}
+    <span style={{ position: 'absolute', top: buyuk ? 14 : 8, left: buyuk ? 14 : 8, zIndex: 2, fontFamily: MONO, fontSize: buyuk ? '.66rem' : '.56rem', letterSpacing: '.1em', padding: buyuk ? '.3rem .55rem' : '.18rem .4rem', background: FILM_ORANGE, color: '#fff', pointerEvents: 'none', whiteSpace: 'nowrap' }}>
+      {kisaFilm(film)}
     </span>
   )
 }
@@ -49,7 +49,7 @@ function PreviewBanner() {
 function Brand({ small }) {
   return (
     <Link to="/pozlar" style={{ fontFamily: MONO, fontWeight: 700, color: FILM_ORANGE, letterSpacing: '.28em', fontSize: small ? '1rem' : 'clamp(2rem, 5vw, 3.2rem)', textDecoration: 'none' }}>
-      POZLAR<span style={{ fontSize: '.45em', letterSpacing: '.1em', marginLeft: '.6em', verticalAlign: 'middle' }}>▸ 35 · 120</span>
+      POZLAR
     </Link>
   )
 }
@@ -123,7 +123,7 @@ function GridItem({ p, w, h }) {
   return (
     <Link to={`/pozlar/${p.id}`} onMouseEnter={() => setHover(true)} onMouseLeave={() => setHover(false)}
       style={{ position: 'relative', width: w, height: h, flexShrink: 0, overflow: 'hidden', background: '#1a1a1a', display: 'block' }}>
-      <TurRozet tur={p.tur} />
+      <FilmRozet film={p.film} />
       <img src={p.src} alt={p.baslik || p.film || p.makine} loading="lazy" decoding="async" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
       <div style={{
         position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', justifyContent: 'flex-end',
@@ -178,13 +178,12 @@ function Explore() {
   const [params] = useSearchParams()
   const q = params.get('q') || ''
   const sort = params.get('s') || 'yeni'
-  const tur = params.get('t') || ''
   const items = useMemo(() => {
-    const r = searchPozlar(q).filter(p => !tur || p.tur === tur)
+    const r = [...searchPozlar(q)]
     return sort === 'populer' ? r.sort((a, b) => b.begeni - a.begeni) : r.sort((a, b) => b.tarih.localeCompare(a.tarih))
-  }, [q, sort, tur])
+  }, [q, sort])
   const qs = (over = {}) => {
-    const o = { q, t: tur, s: sort === 'yeni' ? '' : sort, ...over }
+    const o = { q, s: sort === 'yeni' ? '' : sort, ...over }
     const u = new URLSearchParams(Object.entries(o).filter(([, v]) => v))
     return `/pozlar${u.toString() ? '?' + u : ''}`
   }
@@ -198,12 +197,6 @@ function Explore() {
         <p style={{ color: 'var(--muted)', margin: '1rem auto 2rem', maxWidth: 520, lineHeight: 1.6 }}>
           Film ve dijital fotoğrafçıların kareleri. Makineye, filme ya da konuya göre keşfet.
         </p>
-        <div role="tablist" style={{ display: 'inline-flex', border: '1px solid var(--ink)', marginBottom: '1.4rem', background: '#fff' }}>
-          {TURLER.map(([k, ad]) => (
-            <Link key={k || 'tumu'} role="tab" aria-selected={tur === k} to={qs({ t: k })}
-              style={{ fontFamily: MONO, fontSize: '.72rem', letterSpacing: '.14em', textTransform: 'uppercase', textDecoration: 'none', padding: '.55rem 1.1rem', background: tur === k ? (k === 'film' ? FILM_ORANGE : 'var(--ink)') : 'transparent', color: tur === k ? '#fff' : 'var(--ink)' }}>{ad}</Link>
-          ))}
-        </div>
         <SearchBox initial={q} />
         <div style={{ display: 'flex', gap: '.5rem', justifyContent: 'center', flexWrap: 'wrap', marginTop: '1.2rem' }}>
           {POPULAR_CHIPS.map(c => <Chip key={c} to={`/pozlar?q=${encodeURIComponent(c)}`} active={q.toLowerCase() === c.toLowerCase()}>{c}</Chip>)}
@@ -269,7 +262,7 @@ function PhotoPage() {
       <PozlarHead title={`${p.baslik || p.film || p.makine} — ${ph.ad} — Pozlar`} />
       <div style={{ background: '#151515', display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '2rem 1rem', minHeight: '60vh' }}>
         <div style={{ position: 'relative', display: 'inline-block', maxWidth: '100%' }}>
-          <TurRozet tur={p.tur} buyuk />
+          <FilmRozet film={p.film} buyuk />
           <img src={p.src} alt={p.baslik || p.film || p.makine} style={{ maxWidth: '100%', maxHeight: '78vh', objectFit: 'contain', display: 'block' }} />
         </div>
       </div>
@@ -470,18 +463,9 @@ function OgrenPage() {
   )
 }
 
-function useGrain(view) {
-  const [params] = useSearchParams()
-  const { id } = useParams()
-  if (view === 'explore') return params.get('t') === 'film'
-  if (view === 'photo') return POZLAR.find(x => x.id === id)?.tur === 'film'
-  return false
-}
-
 export default function Pozlar({ view = 'explore' }) {
-  const grain = useGrain(view)
   return (
-    <div style={{ backgroundColor: 'var(--bg)', backgroundImage: grain ? GRAIN : 'none', backgroundSize: '200px 200px', backgroundAttachment: 'fixed', minHeight: '80vh', paddingTop: '4.2rem' }}>
+    <div style={{ background: 'var(--bg)', minHeight: '80vh', paddingTop: '4.2rem' }}>
       <PreviewBanner />
       {view === 'photo' ? <PhotoPage /> : view === 'profile' ? <ProfilePage /> : view === 'ajanda' ? <AjandaPage /> : view === 'ogren' ? <OgrenPage /> : <Explore />}
     </div>

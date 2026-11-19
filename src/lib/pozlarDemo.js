@@ -70,7 +70,6 @@ const DIJITAL_POZLAR = [
 ].map(p => ({ tur: 'dijital', tarandi: false, ...p }))
 
 export const POZLAR = [...FILM_POZLAR, ...DIJITAL_POZLAR]
-export const TURLER = [['', 'Tümü'], ['film', 'Film'], ['dijital', 'Dijital']]
 
 export const POPULAR_CHIPS = ['Portra 400', 'HP5', 'Mamiya', 'Canon AE-1', 'Manzara', 'Deneysel', 'Cinestill']
 
