@@ -50,16 +50,33 @@ function JustifiedGrid({ items, target = 260, gap = 6 }) {
     ro.observe(ref.current)
     return () => ro.disconnect()
   }, [])
-  const rowTarget = width < 640 ? 170 : target
+  const rowTarget = width < 640 ? 140 : target
+  // Satır yükseklikleri hedefe yakın kalsın: çok geniş (panoramik) bir kare
+  // satırı aşırı basık yapacaksa o kare yeni satıra geçer; az kareli bir
+  // satır da tam genişliğe zorlanıp aşırı büyütülmez (hedefin en fazla
+  // 1.3 katı). Oranlar hiçbir zaman bozulmaz, kırpma yok.
   const rows = useMemo(() => {
     const out = []
-    let row = [], sum = 0
-    items.forEach(p => {
-      row.push(p); sum += p.w / p.h
-      const h = (width - gap * (row.length - 1)) / sum
-      if (h <= rowTarget) { out.push({ row, h }); row = []; sum = 0 }
-    })
-    if (row.length) out.push({ row, h: Math.min(rowTarget, (width - gap * (row.length - 1)) / sum), last: true })
+    const fit = r => (width - gap * (r.length - 1)) / r.reduce((a, p) => a + p.w / p.h, 0)
+    const close = (r, last) => {
+      const h = fit(r)
+      out.push({ row: r, h: last || h > rowTarget * 1.3 ? Math.min(rowTarget, h) : h })
+    }
+    // Satırı aşırı basıklaştıracak (panoramik) kareyi bekletip mevcut
+    // satır dolunca kendi satırında gösteriyoruz — sıra hafifçe değişir,
+    // ama hiçbir satır basık ya da dev olmaz.
+    let row = [], waiting = []
+    const add = p => {
+      if (row.length && fit([...row, p]) < rowTarget * 0.7) { waiting.push(p); return }
+      row.push(p)
+      if (fit(row) <= rowTarget) {
+        close(row); row = []
+        const w = waiting; waiting = []; w.forEach(add)
+      }
+    }
+    items.forEach(add)
+    waiting.forEach(p => { if (row.length) { close(row, true); row = [] } row.push(p); if (fit(row) <= rowTarget) { close(row); row = [] } })
+    if (row.length) close(row, true)
     return out
   }, [items, width, rowTarget, gap])
 
