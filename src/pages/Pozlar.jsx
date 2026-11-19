@@ -6,6 +6,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { Helmet } from 'react-helmet-async'
 import { POZLAR, POPULAR_CHIPS, searchPozlar, suggestions, photographer, topicName } from '../lib/pozlarDemo'
+import { AJANDA, ETIKETLER } from '../lib/pozlarAjanda'
 
 // Pozlar'ın kendi imzası: film kenarı baskısı hissi (monospace + film turuncusu)
 const MONO = "'Space Mono', ui-monospace, 'SF Mono', Menlo, monospace"
@@ -36,6 +37,17 @@ function Brand({ small }) {
     <Link to="/pozlar" style={{ fontFamily: MONO, fontWeight: 700, color: FILM_ORANGE, letterSpacing: '.28em', fontSize: small ? '1rem' : 'clamp(2rem, 5vw, 3.2rem)', textDecoration: 'none' }}>
       POZLAR<span style={{ fontSize: '.45em', letterSpacing: '.1em', marginLeft: '.6em', verticalAlign: 'middle' }}>▸ 35 · 120</span>
     </Link>
+  )
+}
+
+function Tabs({ active }) {
+  const t = [['kesfet', 'Keşfet', '/pozlar'], ['ajanda', 'Ajanda', '/pozlar/ajanda']]
+  return (
+    <div style={{ display: 'flex', gap: '1.6rem', justifyContent: 'center', marginTop: '1.4rem' }}>
+      {t.map(([k, ad, to]) => (
+        <Link key={k} to={to} style={{ fontFamily: MONO, fontSize: '.75rem', letterSpacing: '.14em', textTransform: 'uppercase', textDecoration: 'none', color: active === k ? 'var(--ink)' : 'var(--muted)', borderBottom: `2px solid ${active === k ? FILM_ORANGE : 'transparent'}`, paddingBottom: '.3rem' }}>{ad}</Link>
+      ))}
+    </div>
   )
 }
 
@@ -162,6 +174,7 @@ function Explore() {
       <PozlarHead title={q ? `${q} — Pozlar` : 'Pozlar — Film fotoğrafçıları topluluğu'} />
       <section style={{ textAlign: 'center', padding: '3.5rem 1.5rem 2rem' }}>
         <Brand />
+        <Tabs active="kesfet" />
         <p style={{ color: 'var(--muted)', margin: '1rem auto 2rem', maxWidth: 520, lineHeight: 1.6 }}>
           Film fotoğrafçılarının kareleri. Makineye, filme ya da konuya göre keşfet.
         </p>
@@ -308,11 +321,68 @@ function ProfilePage() {
   )
 }
 
+const TR_AY = ['Oca', 'Şub', 'Mar', 'Nis', 'May', 'Haz', 'Tem', 'Ağu', 'Eyl', 'Eki', 'Kas', 'Ara']
+const gun = d => `${Number(d.slice(8))} ${TR_AY.at(Number(d.slice(5, 7)) - 1)}${d.slice(0, 4) !== '2026' ? ' ' + d.slice(0, 4) : ''}`
+const tarihYazi = e => e.baslangic ? (e.bitis && e.bitis !== e.baslangic ? `${gun(e.baslangic)} – ${gun(e.bitis)}` : gun(e.baslangic)) : `Son gün ${gun(e.bitis)}`
+
+function AjandaPage() {
+  const [params] = useSearchParams()
+  const etiket = params.get('e') || ''
+  const bugun = new Date().toISOString().slice(0, 10)
+  const list = AJANDA.filter(e => !etiket || e.etiket === etiket).filter(e => (e.bitis || e.baslangic) >= bugun)
+  const devam = list.filter(e => !e.baslangic || e.baslangic <= bugun).sort((a, b) => a.bitis.localeCompare(b.bitis))
+  const yakinda = list.filter(e => e.baslangic && e.baslangic > bugun).sort((a, b) => a.baslangic.localeCompare(b.baslangic))
+
+  const Kart = ({ e }) => (
+    <a href={e.kaynak} target="_blank" rel="noopener noreferrer" style={{ display: 'grid', gridTemplateColumns: '150px 1fr', gap: '1.4rem', padding: '1.3rem 0', borderBottom: '1px solid var(--border)', textDecoration: 'none', color: 'var(--ink)' }} className="ajanda-kart">
+      <div>
+        <div style={{ fontFamily: MONO, fontSize: '.78rem', color: FILM_ORANGE, letterSpacing: '.04em' }}>{tarihYazi(e)}</div>
+        <div style={{ ...label, marginTop: '.45rem' }}>{e.etiket}</div>
+      </div>
+      <div>
+        <div style={{ fontWeight: 600, fontSize: '1.05rem' }}>{e.baslik}</div>
+        <div style={{ fontSize: '.82rem', color: 'var(--muted)', marginTop: '.2rem' }}>{e.yer}</div>
+        <p style={{ margin: '.55rem 0 0', lineHeight: 1.55, fontSize: '.92rem' }}>{e.ozet}</p>
+        <div style={{ ...label, marginTop: '.55rem' }}>Kaynak: {e.kaynakAd} ↗</div>
+      </div>
+    </a>
+  )
+  const Bolum = ({ ad, items }) => items.length > 0 && (
+    <div style={{ marginTop: '2.4rem' }}>
+      <div style={{ ...label, color: 'var(--ink)', marginBottom: '.2rem' }}>{ad} · {items.length}</div>
+      {items.map(e => <Kart key={e.id} e={e} />)}
+    </div>
+  )
+  return (
+    <>
+      <PozlarHead title="Ajanda — Pozlar" />
+      <style>{`@media (max-width: 640px){ .ajanda-kart { grid-template-columns: 1fr !important; gap: .6rem !important; } }`}</style>
+      <section style={{ textAlign: 'center', padding: '3.5rem 1.5rem 1rem' }}>
+        <Brand />
+        <Tabs active="ajanda" />
+        <p style={{ color: 'var(--muted)', margin: '1.4rem auto 1.6rem', maxWidth: 560, lineHeight: 1.6 }}>
+          İstanbul'da fotoğraf sergileri, kısa film gösterimleri, festivaller ve atölyeler.
+        </p>
+        <div style={{ display: 'flex', gap: '.5rem', justifyContent: 'center', flexWrap: 'wrap' }}>
+          <Chip to="/pozlar/ajanda" active={!etiket}>Tümü</Chip>
+          {ETIKETLER.filter(t => AJANDA.some(e => e.etiket === t)).map(t => <Chip key={t} to={`/pozlar/ajanda?e=${encodeURIComponent(t)}`} active={etiket === t}>{t}</Chip>)}
+        </div>
+      </section>
+      <section style={{ maxWidth: 860, margin: '0 auto', padding: '0 1.5rem 5rem' }}>
+        <Bolum ad="Devam ediyor" items={devam} />
+        <Bolum ad="Yaklaşan" items={yakinda} />
+        {!list.length && <p style={{ textAlign: 'center', color: 'var(--muted)', padding: '3rem 0' }}>Bu etikette yaklaşan etkinlik yok.</p>}
+        <p style={{ ...label, textAlign: 'center', marginTop: '3rem', lineHeight: 1.8 }}>Liste haftalık güncellenir · Etkinlik önermek için: info@artipozstudio.com</p>
+      </section>
+    </>
+  )
+}
+
 export default function Pozlar({ view = 'explore' }) {
   return (
     <div style={{ background: 'var(--bg)', minHeight: '80vh', paddingTop: '4.2rem' }}>
       <PreviewBanner />
-      {view === 'photo' ? <PhotoPage /> : view === 'profile' ? <ProfilePage /> : <Explore />}
+      {view === 'photo' ? <PhotoPage /> : view === 'profile' ? <ProfilePage /> : view === 'ajanda' ? <AjandaPage /> : <Explore />}
     </div>
   )
 }
